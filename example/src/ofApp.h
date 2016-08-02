@@ -27,10 +27,10 @@ class ofApp : public ofBaseApp{
 
     private:
         //ofxOSSIA class
-        Network             _network;
-        Parameter<float>    _radius;
-        Parameter<ofVec2f>   _position;
-        Parameter<bool>      _fill;
+        Network _network;
+        ossia::Parameter<float> _radius;
+        ossia::Parameter<ofVec2f> _position;
+        ossia::Parameter<bool> _fill;
 
         //ofxGui
         ofxPanel            _gui;

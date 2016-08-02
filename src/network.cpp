@@ -4,22 +4,23 @@ Network::Network(
         const std::string& localname,
         const std::string& remotename,
         const std::string& remoteip,
-        int localport, int remoteport)
+        int localport, int remoteport):
+    _device{std::make_unique<ossia::net::local_protocol>(), localname}
 {
-    // declare this program "B" as Local device
-    _localProtocol = Local::create();
-    _localDevice = Device::create(_localProtocol, localname);
+    auto& local_proto = static_cast<ossia::net::local_protocol&>(_device.getProtocol());
+
+    // declare a distant program as a Minuit device
+    local_proto.exposeTo(
+                std::make_unique<ossia::net::minuit_protocol>(
+                    localname, remoteip, localport, remoteport));
 
     // add a node "scene"
-    _localSceneNode = *(_localDevice->emplace(_localDevice->children().cend(), "scene"));
-
-    _remoteProtocol = Minuit::create(remoteip, localport, remoteport);
-    _remoteDevice = Device::create(_remoteProtocol, remotename);
+    _localSceneNode = _device.getRootNode().createChild("scene");
 }
 
 
-std::shared_ptr<Node> Network::getSceneNode()
+ossia::net::node_base& Network::getSceneNode()
 {
-    return _localSceneNode;
+    return *_localSceneNode;
 }
 
