@@ -2,9 +2,10 @@
 #include <ossia/detail/callback_container.hpp>
 #include <ossia/detail/destination_index.hpp>
 #include <ossia/network/common/address_properties.hpp>
-#include <ossia/network/domain/domain.hpp>
+#include <ossia/network/domain/domain_fwd.hpp>
 
 #include <functional>
+#include <vector>
 #include <memory>
 #include <nano_signal_slot.hpp>
 #include <ossia_export.h>
@@ -67,11 +68,7 @@ public:
   virtual value cloneValue(destination_index = {}) const = 0;
   virtual address_base& setValue(const value&) = 0;
 
-  value fetchValue()
-  {
-    pullValue();
-    return cloneValue();
-  }
+  value fetchValue();
 
   virtual val_type getValueType() const = 0;
   virtual address_base& setValueType(val_type) = 0;
@@ -88,33 +85,109 @@ public:
   virtual repetition_filter getRepetitionFilter() const = 0;
   virtual address_base& setRepetitionFilter(repetition_filter = repetition_filter::ON) = 0;
 
-  /**
-   * @brief getTextualAddress
-   * @return The address in the format device:/node/sub_node
-   */
-  virtual const std::string& getTextualAddress() const = 0;
-
   // Extended attributes
-  virtual std::vector<std::string> getTags() const { return {}; }
-  virtual address_base& setTags(const std::vector<std::string>& v) { return *this; }
+  virtual std::vector<std::string> getTags() const;
+  virtual address_base& setTags(const std::vector<std::string>& v);
 
-  virtual std::string getDescription() const { return {}; }
-  virtual address_base& setDescription(const std::string& v) { return *this; }
+  virtual std::string getDescription() const;
+  virtual address_base& setDescription(const std::string& v);
 
-  virtual ossia::value getDefaultValue() const { return {}; }
-  virtual address_base& setDefaultValue(const ossia::value& v) { return *this; }
+  virtual ossia::value getDefaultValue() const;
+  virtual address_base& setDefaultValue(const ossia::value& v);
 
-  virtual ossia::dataspace getDataspace() const { return {}; }
-  virtual address_base& setDataspace(const ossia::dataspace& v) { return *this; }
+  virtual ossia::dataspace_t getDataspace() const;
+  virtual address_base& setDataspace(const ossia::dataspace_t& v);
 
-  virtual ossia::dataspace_unit getUnit() const { return {}; }
-  virtual address_base& setUnit(const ossia::dataspace_unit& v) { return *this; }
+  virtual ossia::dataspace_unit_t getUnit() const;
+  virtual address_base& setUnit(const ossia::dataspace_unit_t& v);
 };
 
+
+
+inline bool operator==(const address_base& lhs, const address_base& rhs)
+{ return &lhs == &rhs; }
+inline bool operator!=(const address_base& lhs, const address_base& rhs)
+{ return &lhs != &rhs; }
+/*
+class address_reference
+{
+public:
+  address_reference(ossia::net::address_base& address): mAddress{&address} { }
+  address_reference(const address_reference&) = default;
+  address_reference(address_reference&&) = default;
+  address_reference& operator=(const address_reference&) = default;
+  address_reference& operator=(address_reference&&) = default;
+  address_reference& operator=(ossia::net::address_base& address)
+  { mAddress = &address; return *this; }
+
+  ossia::net::address_base& address() const
+  { return *mAddress; }
+  const ossia::net::node_base& getNode() const
+  { return mAddress->getNode(); }
+  void pullValue()
+  { return mAddress->pullValue(); }
+  address_base& pushValue(const value& v)
+  { return mAddress->pushValue(v); }
+  value cloneValue(destination_index d = {})
+  { return mAddress->cloneValue(d); }
+  address_base& setValue(const value& v)
+  { return mAddress->setValue(v); }
+  value fetchValue()
+  { return mAddress->fetchValue(); }
+
+  val_type getValueType() const
+  { return mAddress->getValueType(); }
+  address_base& setValueType(val_type v)
+  { return mAddress->setValueType(v); }
+
+  access_mode getAccessMode() const
+  { return mAddress->getAccessMode(); }
+  address_base& setAccessMode(access_mode a)
+  { return mAddress->setAccessMode(a); }
+
+  const domain& getDomain() const
+  { return mAddress->getDomain(); }
+  address_base& setDomain(const domain& d)
+  { return mAddress->setDomain(d); }
+
+  bounding_mode getBoundingMode() const
+  { return mAddress->getBoundingMode(); }
+  address_base& setBoundingMode(bounding_mode b)
+  { return mAddress->setBoundingMode(b); }
+
+  repetition_filter getRepetitionFilter() const
+  { return mAddress->getRepetitionFilter(); }
+  address_base& setRepetitionFilter(repetition_filter f = repetition_filter::ON)
+  { return mAddress->setRepetitionFilter(f); }
+
+  const std::string& getTextualAddress() const
+  { return mAddress->getTextualAddress(); }
+
+  // Extended attributes
+  std::vector<std::string> getTags() const { return mAddress->getTags(); }
+  address_base& setTags(const std::vector<std::string>& v) { return mAddress->setTags(v); }
+
+  std::string getDescription() const { return mAddress->getDescription(); }
+  address_base& setDescription(const std::string& v) { return mAddress->setDescription(v); }
+
+  ossia::value getDefaultValue() const { return mAddress->getDefaultValue(); }
+  address_base& setDefaultValue(const ossia::value& v) { return mAddress->setDefaultValue(v); }
+
+  ossia::dataspace getDataspace() const { return mAddress->getDataspace(); }
+  address_base& setDataspace(const ossia::dataspace& v) { return mAddress->setDataspace(v); }
+
+  ossia::dataspace_unit getUnit() const { return mAddress->getUnit(); }
+  address_base& setUnit(const ossia::dataspace_unit& v) { return mAddress->setUnit(v); }
+
+private:
+  ossia::net::address_base* mAddress{};
+};
+*/
 /*!
  * \brief getAddressFromNode
  * \return the textual address of a node : aDevice:/an/address
  */
 OSSIA_EXPORT std::string address_string_from_node(const ossia::net::node_base&);
+OSSIA_EXPORT std::string address_string_from_node(const ossia::net::address_base&);
 }
 }

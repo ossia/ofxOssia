@@ -35,7 +35,9 @@
 	requested that these non-binding requests be included whenever the
 	above license is reproduced.
 */
+#if !defined(WIN32_LEAN_AND_MEAN)
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <winsock2.h>   // this must come first to prevent errors with MSVC7
 #include <windows.h>
 #include <mmsystem.h>   // for timeGetTime()
@@ -381,12 +383,17 @@ public:
 				for( int i = waitResult - WAIT_OBJECT_0; i < (int)socketListeners_.size(); ++i ){
 					std::size_t size = socketListeners_[i].second->ReceiveFrom( remoteEndpoint, data, MAX_BUFFER_SIZE );
 					if( size > 0 ){
+						if (break_)
+							break;
 						socketListeners_[i].first->ProcessPacket( data, (int)size, remoteEndpoint );
 						if( break_ )
 							break;
 					}
 				}
 			}
+
+			if (break_)
+				break;
 
 			// execute any expired timers
 			currentTimeMs = GetCurrentTimeMs();

@@ -14,6 +14,13 @@ OSSIA_EXPORT ossia::value wrap(const ossia::value& val, const ossia::value& min,
 OSSIA_EXPORT ossia::value fold(const ossia::value& val, const ossia::value& min, const ossia::value& max);
 OSSIA_EXPORT ossia::value clamp_min(const ossia::value& val, const ossia::value& min);
 OSSIA_EXPORT ossia::value clamp_max(const ossia::value& val, const ossia::value& max);
+
+OSSIA_EXPORT ossia::value clamp(ossia::value&& val, const ossia::value& min, const ossia::value& max);
+OSSIA_EXPORT ossia::value wrap(ossia::value&& val, const ossia::value& min, const ossia::value& max);
+OSSIA_EXPORT ossia::value fold(ossia::value&& val, const ossia::value& min, const ossia::value& max);
+OSSIA_EXPORT ossia::value clamp_min(ossia::value&& val, const ossia::value& min);
+OSSIA_EXPORT ossia::value clamp_max(ossia::value&& val, const ossia::value& max);
+
 namespace net
 {
 template <typename T>
@@ -29,10 +36,11 @@ struct OSSIA_EXPORT domain_base
   {
   }
 
-  value clamp(bounding_mode b, const T& val) const
+  template<typename U>
+  value clamp(bounding_mode b, U&& val) const
   {
     if (b == bounding_mode::FREE)
-      return val;
+      return std::forward<U>(val);
 
     if (values.empty())
     {
@@ -43,17 +51,17 @@ struct OSSIA_EXPORT domain_base
         switch (b)
         {
           case bounding_mode::CLIP:
-            return T(ossia::clamp(val.value, *min, *max));
+            return T(ossia::clamp(std::forward<U>(val).value, *min, *max));
           case bounding_mode::WRAP:
-            return T(ossia::wrap(val.value, *min, *max));
+            return T(ossia::wrap(std::forward<U>(val).value, *min, *max));
           case bounding_mode::FOLD:
-            return T(ossia::fold(val.value, *min, *max));
+            return T(ossia::fold(std::forward<U>(val).value, *min, *max));
           case bounding_mode::LOW:
-            return T(ossia::clamp_min(val.value, *min));
+            return T(ossia::clamp_min(std::forward<U>(val).value, *min));
           case bounding_mode::HIGH:
-            return T(ossia::clamp_max(val.value, *max));
+            return T(ossia::clamp_max(std::forward<U>(val).value, *max));
           default:
-            return val;
+            return std::forward<U>(val);
         }
       }
       else if (has_min)
@@ -62,9 +70,9 @@ struct OSSIA_EXPORT domain_base
         {
           case bounding_mode::CLIP:
           case bounding_mode::LOW:
-            return T(ossia::clamp_min(val.value, *min));
+            return T(ossia::clamp_min(std::forward<U>(val).value, *min));
           default:
-            return val;
+            return std::forward<U>(val);
         }
       }
       else if (has_max)
@@ -75,12 +83,12 @@ struct OSSIA_EXPORT domain_base
           case bounding_mode::HIGH:
             return T(ossia::clamp_max(val.value, *max));
           default:
-            return val;
+            return std::forward<U>(val);
         }
       }
       else
       {
-        return val;
+        return std::forward<U>(val);
       }
     }
     else
@@ -127,7 +135,7 @@ struct OSSIA_EXPORT domain_base
 template <>
 struct OSSIA_EXPORT domain_base<Impulse>
 {
-  value clamp(bounding_mode b, const Impulse& val) const
+  value clamp(bounding_mode b, Impulse val) const
   {
     return val;
   }
@@ -154,26 +162,10 @@ struct OSSIA_EXPORT domain_base<Destination>
 template <>
 struct OSSIA_EXPORT domain_base<String>
 {
+  domain_base() = default;
+
   boost::container::flat_set<std::string> values;
-  value clamp(bounding_mode b, const String& val) const
-  {
-    if (values.empty())
-    {
-      return val;
-    }
-    else
-    {
-      auto it = values.find(val.value);
-      if (it != values.end())
-      {
-        return String(*it);
-      }
-      else
-      {
-        return ossia::value{};
-      }
-    }
-  }
+  value clamp(bounding_mode b, const String& val) const;
 };
 
 template <>
@@ -182,98 +174,10 @@ struct OSSIA_EXPORT domain_base<Tuple>
   boost::optional<ossia::value> min;
   boost::optional<ossia::value> max;
 
-  value clamp(bounding_mode b, const Tuple& val) const
-  {
-    if (b == bounding_mode::FREE)
-      return val;
-
-    bool has_min = bool(min);
-    bool has_max = bool(max);
-    if (has_min && has_max)
-    {
-      ossia::Tuple res;
-      res.value.reserve(val.value.size());
-
-      switch (b)
-      {
-        case bounding_mode::CLIP:
-          for(auto& v : val.value)
-          {
-            res.value.push_back(ossia::clamp(v, *min, *max));
-          }
-          break;
-        case bounding_mode::WRAP:
-          for(auto& v : val.value)
-          {
-            res.value.push_back(ossia::wrap(v, *min, *max));
-          }
-          break;
-        case bounding_mode::FOLD:
-          for(auto& v : val.value)
-          {
-            res.value.push_back(ossia::fold(v, *min, *max));
-          }
-          break;
-        case bounding_mode::LOW:
-          for(auto& v : val.value)
-          {
-            res.value.push_back(ossia::clamp_min(v, *min));
-          }
-          break;
-        case bounding_mode::HIGH:
-          for(auto& v : val.value)
-          {
-            res.value.push_back(ossia::clamp_max(v, *max));
-          }
-          break;
-        default:
-          return val;
-      }
-
-      return res;
-    }
-    else if (has_min)
-    {
-      switch(b)
-      {
-        case bounding_mode::CLIP:
-        case bounding_mode::LOW:
-        {
-          ossia::Tuple res;
-          for(auto& v : val.value)
-          {
-            res.value.push_back(ossia::clamp_min(v, *min));
-          }
-          return res;
-        }
-        default:
-          return val;
-      }
-    }
-    else if (has_max)
-    {
-      switch(b)
-      {
-        case bounding_mode::CLIP:
-        case bounding_mode::HIGH:
-        {
-          ossia::Tuple res;
-          for(auto& v : val.value)
-          {
-            res.value.push_back(ossia::clamp_max(v, *max));
-          }
-          return res;
-        }
-        default:
-          return val;
-      }
-    }
-    else
-    {
-      return val;
-    }
-  }
+  value clamp(bounding_mode b, const Tuple& val) const;
+  value clamp(bounding_mode b, Tuple&& val) const;
 };
+
 template <int N>
 struct OSSIA_EXPORT domain_base<Vec<float, N>>
 {
@@ -284,6 +188,45 @@ struct OSSIA_EXPORT domain_base<Vec<float, N>>
   }
 };
 
+
+template<typename T>
+struct domain_min_max
+{
+  domain_min_max(const domain_base<T>& dom):
+    min{dom.min},
+    max{dom.max}
+  {
+
+  }
+
+  decltype(domain_base<T>::min) min;
+  decltype(domain_base<T>::max) max;
+};
+
+
+template<>
+struct OSSIA_EXPORT domain_min_max<Impulse>
+{
+  domain_min_max(const domain_base<Impulse>& dom) { }
+};
+
+template<>
+struct OSSIA_EXPORT domain_min_max<String>
+{
+  domain_min_max(const domain_base<String>& dom) { }
+};
+
+template<>
+struct OSSIA_EXPORT domain_min_max<Destination>
+{
+  domain_min_max(const domain_base<Destination>& dom) { }
+};
+
+template<>
+struct OSSIA_EXPORT domain_min_max<Behavior>
+{
+  domain_min_max(const domain_base<Behavior>& dom) { }
+};
 /**
  * \typedef domain A domain of values
  *

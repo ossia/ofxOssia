@@ -3,11 +3,19 @@
 #include <string>
 
 #include <ossia/network/base/protocol.hpp>
-#include <ossia/network/osc/detail/receiver.hpp>
-#include <ossia/network/osc/detail/sender.hpp>
 #include <mutex>
 #include <unordered_map>
 
+namespace oscpack
+{
+class ReceivedMessage;
+class IpEndpointName;
+}
+namespace osc
+{
+class sender;
+class receiver;
+}
 namespace ossia
 {
 namespace net
@@ -21,12 +29,11 @@ private:
                           /// to (opened in this library)
   bool mLearning{};       /// if the device is currently learning from inbound
                           /// messages.
-
-  osc::sender mSender;
-  osc::receiver mReceiver;
-
   std::mutex mListeningMutex;
   std::unordered_map<std::string, ossia::net::address_base*> mListening;
+
+  std::unique_ptr<osc::sender> mSender;
+  std::unique_ptr<osc::receiver> mReceiver;
 
 public:
   osc_protocol(std::string ip, uint16_t remote_port, uint16_t local_port);

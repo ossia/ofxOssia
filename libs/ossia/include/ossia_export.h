@@ -9,15 +9,15 @@
 #  ifndef OSSIA_EXPORT
 #    ifdef ossia_EXPORTS
         /* We are building this library */
-#      define OSSIA_EXPORT __attribute__((visibility("default")))
+#      define OSSIA_EXPORT 
 #    else
         /* We are using this library */
-#      define OSSIA_EXPORT __attribute__((visibility("default")))
+#      define OSSIA_EXPORT 
 #    endif
 #  endif
 
 #  ifndef OSSIA_NO_EXPORT
-#    define OSSIA_NO_EXPORT __attribute__((visibility("hidden")))
+#    define OSSIA_NO_EXPORT 
 #  endif
 #endif
 

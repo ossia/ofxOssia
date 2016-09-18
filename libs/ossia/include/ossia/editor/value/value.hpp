@@ -83,22 +83,23 @@ public:
 
   // Construction
   template <typename T>
-  value(T*) = delete;
-  value(Impulse val) : v{val} { }
-  value(Bool val) : v{val} { }
-  value(Int val) : v{val} { }
-  value(Float val) : v{val} { }
-  value(Char val) : v{val} { }
-  value(const String& val) : v{val} { }
-  value(const Tuple& val) : v{val} { }
-  value(const Vec2f& val) : v{val} { }
-  value(const Vec3f& val) : v{val} { }
-  value(const Vec4f& val) : v{val} { }
-  value(const Destination& val) : v{val} { }
-  value(const Behavior& val) : v{val} { }
+  constexpr value(T*) = delete;
+  constexpr value(ossia::Impulse val) : v{val} { }
+  constexpr value(ossia::Bool val) : v{val} { }
+  constexpr value(ossia::Int val) : v{val} { }
+  constexpr value(ossia::Float val) : v{val} { }
+  constexpr value(ossia::Char val) : v{val} { }
+  constexpr value(const ossia::String& val) : v{val} { }
+  constexpr value(const ossia::Tuple& val) : v{val} { }
+  constexpr value(const ossia::Vec2f& val) : v{val} { }
+  constexpr value(const ossia::Vec3f& val) : v{val} { }
+  constexpr value(const ossia::Vec4f& val) : v{val} { }
+  constexpr value(const ossia::Destination& val) : v{val} { }
+  constexpr value(ossia::net::address_base& val) : v{eggs::variants::in_place<ossia::Destination>, val} { }
+  constexpr value(const ossia::Behavior& val) : v{val} { }
 
   template<typename T, typename... Args>
-  value(detail::dummy<T> t, Args&&... args):
+  constexpr value(detail::dummy<T> t, Args&&... args):
     v{eggs::variants::in_place<typename detail::dummy<T>::type>, std::forward<Args>(args)...}
   {
 
@@ -109,91 +110,91 @@ public:
   { return ossia::value{detail::dummy<T>{}, std::forward<Args>(args)...}; }
 
   // Movable overloads
-  value(String&& val) : v{std::move(val)} { }
-  value(Tuple&& val) : v{std::move(val)} { }
-  value(Destination&& val) : v{std::move(val)} { }
-  value(Behavior&& val) : v{std::move(val)} { }
+  constexpr value(ossia::String&& val) : v{std::move(val)} { }
+  constexpr value(ossia::Tuple&& val) : v{std::move(val)} { }
+  constexpr value(ossia::Destination&& val) : v{std::move(val)} { }
+  constexpr value(ossia::Behavior&& val) : v{std::move(val)} { }
 
 
   // Assignment
-  value& operator=(Impulse val)
+  value& operator=(ossia::Impulse val)
   {
     v = val;
     return *this;
   }
-  value& operator=(Bool val)
+  value& operator=(ossia::Bool val)
   {
     v = val;
     return *this;
   }
-  value& operator=(Int val)
+  value& operator=(ossia::Int val)
   {
     v = val;
     return *this;
   }
-  value& operator=(Float val)
+  value& operator=(ossia::Float val)
   {
     v = val;
     return *this;
   }
-  value& operator=(Char val)
+  value& operator=(ossia::Char val)
   {
     v = val;
     return *this;
   }
-  value& operator=(const String& val)
+  value& operator=(const ossia::String& val)
   {
     v = val;
     return *this;
   }
-  value& operator=(const Tuple& val)
+  value& operator=(const ossia::Tuple& val)
   {
     v = val;
     return *this;
   }
-  value& operator=(const Vec2f& val)
+  value& operator=(const ossia::Vec2f& val)
   {
     v = val;
     return *this;
   }
-  value& operator=(const Vec3f& val)
+  value& operator=(const ossia::Vec3f& val)
   {
     v = val;
     return *this;
   }
-  value& operator=(const Vec4f& val)
+  value& operator=(const ossia::Vec4f& val)
   {
     v = val;
     return *this;
   }
-  value& operator=(const Destination& val)
+  value& operator=(const ossia::Destination& val)
   {
     v = val;
     return *this;
   }
-  value& operator=(const Behavior& val)
+  value& operator=(const ossia::Behavior& val)
   {
     v = val;
     return *this;
   }
 
   // Movable overloads
-  value& operator=(String&& val)
+  value& operator=(ossia::String&& val)
   {
     v = std::move(val);
     return *this;
   }
-  value& operator=(Tuple&& val)
+  value& operator=(ossia::Tuple&& val)
   {
     v = std::move(val);
     return *this;
   }
-  value& operator=(Destination&& val)
+  value& operator=(ossia::Destination&& val)
   {
     v = std::move(val);
     return *this;
   }
-  value& operator=(Behavior&& val)
+  value& operator=(ossia::Behavior&& val)
   {
     v = std::move(val);
     return *this;
@@ -305,13 +306,13 @@ inline ossia::value init_value(ossia::val_type type)
       return Vec3f{};
     case val_type::VEC4F:
       return Vec4f{};
-    case val_type::DESTINATION:
-      return Destination{};
     case val_type::BEHAVIOR:
       return Behavior{{}};
+    case val_type::DESTINATION:
+      throw invalid_value_type_error("init_value: do not create Destination like this");
   }
 
-  throw invalid_value_type_error("to_pretty_string: Invalid type");
+  throw invalid_value_type_error("init_value: Invalid type");
   return {};
 }
 }

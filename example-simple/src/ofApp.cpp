@@ -33,6 +33,9 @@ void ofApp::draw(){
 
     if(!_fill)
         ofNoFill();
+    else
+        ofFill();
+        
     ofDrawCircle(_position.get(),_radius.get());
 
     //draw gui

@@ -113,11 +113,7 @@ struct NumericValue
       }
       bool operator()(const Destination& d) const
       {
-        if (const auto& addr = d.value->getAddress())
-        {
-          return fun(lhs, addr->cloneValue(d.index));
-        }
-        return false;
+        return fun(lhs, d.value.get().cloneValue(d.index));
       }
 
       bool operator()(const String& v) const
@@ -194,11 +190,7 @@ struct StringValue
 
       bool operator()(const Destination& d) const
       {
-        if (const auto& addr = d.value->getAddress())
-        {
-          return fun(lhs, addr->cloneValue(d.index));
-        }
-        return false;
+        return fun(lhs, d.value.get().cloneValue(d.index));
       }
 
       bool operator()(Vec2f v) const
@@ -300,37 +292,17 @@ struct DestinationVisitor
 public:
   bool operator()(Impulse) const
   {
-    return fun(lhs.value, Impulse_T{});
+    return fun(lhs.value.get(), Impulse_T{});
   }
   bool operator()(const Destination& d) const
   {
-    // if there are addresses compare values
-    if (lhs.value->getAddress() && d.value->getAddress())
-    {
-      auto c1 = lhs.value->getAddress()->cloneValue(lhs.index);
-      auto c2 = d.value->getAddress()->cloneValue(d.index);
-      return fun(c1, c2);
-    }
-
-    // if no addresses, compare nodes
-    else if (!lhs.value->getAddress() && !d.value->getAddress())
-    {
-      return fun(lhs.value, d.value);
-    }
-
-    return false;
+    return fun(lhs.value.get().cloneValue(lhs.index), d.value.get().cloneValue(d.index));
   }
 
   template <typename T>
   bool operator()(const T& v) const
   {
-    if (lhs.value->getAddress())
-    {
-      auto c = lhs.value->getAddress()->cloneValue(lhs.index);
-      return fun(c, rhs);
-    }
-
-    return false;
+    return fun(lhs.value.get().cloneValue(lhs.index), rhs);
   }
 
   bool operator()() const
