@@ -65,6 +65,8 @@ common:
 	# a specific platform
 	ADDON_SOURCES_EXCLUDE += libs/ossia/include/spdlog/fmt/bundled/format.cc
 	ADDON_SOURCES_EXCLUDE += libs/ossia/include/spdlog/fmt/bundled/ostream.cc
+        ADDON_SOURCES_EXCLUDE += libs/API
+        ADDON_SOURCES_EXCLUDE += libs/build
 	
 	# when parsing the file system looking for include paths exclude this for all or
 	# a specific platform
@@ -73,7 +75,7 @@ common:
 linux64:
 	ADDON_LIBS += asound
 	ADDON_LIBS += pthread
-	ADDON_LIBS += libs/ossia/lib/linux64/libossia.a
+	ADDON_LIBS += libs/ossia/lib/linux64/libossia.so
 	
 linux:
 	ADDON_LIBS += asound
