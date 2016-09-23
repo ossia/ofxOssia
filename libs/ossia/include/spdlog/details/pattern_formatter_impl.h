@@ -319,13 +319,21 @@ public:
         // it is very fast (already stored in tm.tm_gmtoff)
         int total_minutes = os::utc_minutes_offset(tm_time);
 #endif
+        bool is_negative = total_minutes < 0;
+        char sign;
+        if (is_negative)
+        {
+            total_minutes = -total_minutes;
+            sign = '-';
+        }
+        else
+        {
+            sign = '+';
+        }
 
         int h = total_minutes / 60;
         int m = total_minutes % 60;
-        if (h >= 0) //minus sign will be printed anyway if negative
-        {
-            msg.formatted << '+';
-        }
+        msg.formatted << sign;
         pad_n_join(msg.formatted, h, m, ':');
     }
 private:

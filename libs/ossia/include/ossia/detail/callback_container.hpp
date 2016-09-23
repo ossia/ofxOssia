@@ -123,9 +123,25 @@ public:
   }
 
 protected:
+  /**
+   * @brief onFirstCallbackAdded
+   *
+   * These functions can be reimplemented by
+   * subclasses wishing to perform special actions.
+   * For instance, when the last callback is removed,
+   * stop listening somewhere...
+   *
+   * \see \ref onRemovingLastCallback
+  */
   virtual void onFirstCallbackAdded()
   {
   }
+
+  /**
+   * @brief onRemovingLastCallback
+   *
+   * \see \ref onFirstCallbackAdded
+   */
   virtual void onRemovingLastCallback()
   {
   }
