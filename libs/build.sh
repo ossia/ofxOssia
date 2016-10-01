@@ -1,12 +1,12 @@
 #!/bin/sh
 
-git clone https://github.com/OSSIA/API
-(cd API ; git submodule update --init --recursive)
+git clone --recursive https://github.com/OSSIA/API -b wip/dataspace_2
+
 mkdir build
 (
 cd build
 cmake ../API -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=ossia -DOSSIA_TESTING=0 -DOSSIA_STATIC=0
-make all_unity -j8
+make -j8
 make install
 rm -rf ../ossia/include
 mv ossia/include ../ossia/include
