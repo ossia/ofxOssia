@@ -73,13 +73,9 @@ common:
     # ADDON_INCLUDES_EXCLUDE =
 	
 linux64:
-	ADDON_LIBS += asound
-	ADDON_LIBS += pthread
 	ADDON_LIBS += libs/ossia/lib/linux64/libossia.so
 	
 linux:
-	ADDON_LIBS += asound
-	ADDON_LIBS += pthread
 	
 msys2:
 	ADDON_CFLAGS += NOMINMAX
@@ -98,13 +94,9 @@ vs:
 	ADDON_LIBS += winmm
 		
 linuxarmv6l:
-	ADDON_LIBS += asound
-	ADDON_LIBS += pthread
 	
 	
 linuxarmv7l:
-	ADDON_LIBS += asound
-	ADDON_LIBS += pthread
 
 android/armeabi:	
 	
