@@ -1,8 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include "network.hpp"
-#include "parameter.hpp"
+#include "ofxOssia.hpp"
 #include "ofxGui.h"
 
 class ofApp : public ofBaseApp{
