@@ -147,7 +147,7 @@ private:
     /*
      * Methods to communicate via OSSIA to i-score
      * */
-    // Creates the node
+    // Creates the node without setting domain
     void createNode(const std::string& name, DataValue data)
     {
         //creates node
@@ -156,8 +156,19 @@ private:
         //set value
         _address = node->createAddress(MatchingType<DataValue>::val);
         _address->pushValue(MatchingType<DataValue>::convert(data));
-    }
+     }
+    // Creates the node setting domain
+    void createNode(const std::string& name, DataValue data, DataValue min, DataValue max)
+    {
+        //creates node
+        auto node = _parentNode->createChild(name);
 
+        //set value
+        _address = node->createAddress(MatchingType<DataValue>::val);
+        _address->pushValue(MatchingType<DataValue>::convert(data));
+        _address->setDomain(ossia::net::make_domain(MatchingType<DataValue>::convert(min),
+                                                    MatchingType<DataValue>::convert(max)));
+    }
     // Publishes value to the node
     void publishValue(DataValue other)
     {
@@ -260,7 +271,7 @@ public:
             DataValue data, DataValue min, DataValue max)
     {
         _parentNode = &parentNode;
-        createNode(name,data);
+        createNode(name,data,min,max);
         this->set(name,data,min,max);
         enableLocalUpdate();
         enableRemoteUpdate();
