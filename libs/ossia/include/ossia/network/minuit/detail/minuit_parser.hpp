@@ -9,6 +9,7 @@
 #include <oscpack/osc/OscPrintReceivedElements.h>
 #include <ossia/network/osc/detail/sender.hpp>
 #include <boost/container/small_vector.hpp>
+#include <ossia/editor/dataspace/dataspace_visitors.hpp>
 namespace ossia
 {
 namespace minuit
@@ -52,7 +53,7 @@ struct minuit_behavior<
       ossia::net::generic_device& dev,
       const oscpack::ReceivedMessage& mess)
   {
-    boost::string_ref full_address{mess.ArgumentsBegin()->AsString()};
+    boost::string_view full_address{mess.ArgumentsBegin()->AsString()};
     auto idx = full_address.find_first_of(":");
 
     if(idx == std::string::npos)
@@ -70,11 +71,11 @@ struct minuit_behavior<
     }
     else
     {
-      boost::string_ref address{full_address.data(), idx};
+      boost::string_view address{full_address.data(), idx};
 
       // Note : bug if address == "foo:"
       auto attr = get_attribute(
-            boost::string_ref(
+            boost::string_view(
               address.data() + idx + 1,
               full_address.size() - idx - 1));
 
@@ -89,34 +90,50 @@ struct minuit_behavior<
       {
         case minuit_attribute::Value:
           proto.sender().send(proto.name_table.get_action(minuit_action::GetReply),
-                          full_address, addr->cloneValue());
+                              full_address,
+                              addr->cloneValue());
           break;
         case minuit_attribute::Type:
           proto.sender().send(proto.name_table.get_action(minuit_action::GetReply),
-                          full_address,
-                          to_minuit_type_text(addr->getValueType())
-                          );
+                              full_address,
+                              to_minuit_type_text(addr->getValueType()));
           break;
         case minuit_attribute::RangeBounds:
           proto.sender().send(proto.name_table.get_action(minuit_action::GetReply),
-                          full_address, addr->getDomain());
+                              full_address,
+                              addr->getDomain());
           break;
         case minuit_attribute::RangeClipMode:
           proto.sender().send(proto.name_table.get_action(minuit_action::GetReply),
-                          full_address,
-                          to_minuit_bounding_text(addr->getBoundingMode())
-                          );
+                              full_address,
+                              to_minuit_bounding_text(addr->getBoundingMode()));
+          break;
+        case minuit_attribute::Dataspace:
+          proto.sender().send(proto.name_table.get_action(minuit_action::GetReply),
+                              full_address,
+                              ossia::get_dataspace_text(addr->getUnit()));
+          break;
+        case minuit_attribute::DataspaceUnit:
+          proto.sender().send(proto.name_table.get_action(minuit_action::GetReply),
+                              full_address,
+                              ossia::get_unit_text(addr->getUnit()));
           break;
         case minuit_attribute::RepetitionFilter:
           proto.sender().send(proto.name_table.get_action(minuit_action::GetReply),
-                          full_address, (int32_t)addr->getRepetitionFilter());
+                              full_address,
+                              (int32_t)addr->getRepetitionFilter());
           break;
         case minuit_attribute::Service:
           proto.sender().send(proto.name_table.get_action(minuit_action::GetReply),
-                          full_address, to_minuit_service_text(addr->getAccessMode()));
+                              full_address,
+                              to_minuit_service_text(addr->getAccessMode()));
+          break;
+        case minuit_attribute::Description:
+          proto.sender().send(proto.name_table.get_action(minuit_action::GetReply),
+                              full_address,
+                              addr->getDescription());
           break;
         case minuit_attribute::Priority:
-        case minuit_attribute::Description:
         default:
           break;
       }
@@ -135,7 +152,7 @@ struct minuit_behavior<
       ossia::net::generic_device& dev,
       const oscpack::ReceivedMessage& mess)
   {
-    // Add the address to the listeners
+    // TODO FIXME Add the address to the listeners
   }
 };
 
@@ -164,7 +181,7 @@ struct minuit_behavior<
   template<typename Children>
   void handle_container(
       ossia::net::minuit_protocol& proto,
-      boost::string_ref address,
+      boost::string_view address,
       Children&& c)
   {
     proto.sender().send(proto.name_table.get_action(minuit_action::NamespaceReply),
@@ -180,7 +197,7 @@ struct minuit_behavior<
 
   void handle_data(
       ossia::net::minuit_protocol& proto,
-      boost::string_ref address)
+      boost::string_view address)
   {
     proto.sender().send(proto.name_table.get_action(minuit_action::NamespaceReply),
                     address,
@@ -210,7 +227,7 @@ struct minuit_behavior<
 
   std::vector<std::string> get_children_names(
       ossia::net::generic_device& dev,
-      boost::string_ref address)
+      boost::string_view address)
   {
     auto node = ossia::net::find_node(dev, address);
     if (!node)
@@ -224,9 +241,9 @@ struct minuit_behavior<
       ossia::net::generic_device& dev,
       const oscpack::ReceivedMessage& mess)
   {
-    boost::string_ref address{mess.ArgumentsBegin()->AsString()};
+    boost::string_view address{mess.ArgumentsBegin()->AsString()};
 
-    if(address == boost::string_ref("/"))
+    if(address == boost::string_view("/"))
     {
       handle_root(proto, get_children_names(dev, address));
     }
@@ -280,103 +297,6 @@ inline ossia::net::domain get_domain(
   return {};
 }
 
-// Get
-template <>
-struct minuit_behavior<minuit_command::Answer, minuit_operation::Get>
-{
-
-  void operator()(
-      ossia::net::minuit_protocol& proto, ossia::net::generic_device& dev,
-      const oscpack::ReceivedMessage& mess)
-  {
-    auto mess_it = mess.ArgumentsBegin();
-    boost::string_ref full_address{mess_it->AsString()};
-    auto idx = full_address.find_first_of(":");
-
-    if (idx == std::string::npos)
-    {
-      // The OSC message is a standard OSC one, carrying a value.
-      auto node = ossia::net::find_node(dev, full_address);
-      if (node)
-      {
-        if (auto addr = node->getAddress())
-        {
-          ossia::net::update_value(
-                *addr, ++mess_it, mess.ArgumentsEnd(), mess.ArgumentCount() - 1);
-        }
-      }
-    }
-    else
-    {
-      // The OSC message is a Minuit one.
-      // address contains the "sanitized" OSC-like address.
-      boost::string_ref address{full_address.data(), idx};
-
-      // Note : bug if address == "foo:"
-      auto attr = get_attribute(
-            boost::string_ref(
-              address.data() + idx + 1, full_address.size() - idx - 1));
-
-      ++mess_it;
-      // mess_it is now at the first argument after the address:attribute
-
-      auto node = ossia::net::find_node(dev, address);
-      if (!node)
-        return;
-      auto addr = node->getAddress();
-      if (!addr)
-        return;
-
-      switch (attr)
-      {
-        case minuit_attribute::Value:
-        {
-          ossia::net::update_value(
-                *addr, mess_it, mess.ArgumentsEnd(), mess.ArgumentCount() - 1);
-          break;
-        }
-        case minuit_attribute::Type:
-        {
-          addr->setValueType(
-                ossia::minuit::type_from_minuit_type_text(mess_it->AsString()));
-
-          break;
-        }
-        case minuit_attribute::RangeBounds:
-        {
-          addr->setDomain(
-                get_domain(*addr, mess_it, mess.ArgumentsEnd()));
-          break;
-        }
-        case minuit_attribute::RangeClipMode:
-        {
-          addr->setBoundingMode(
-                from_minuit_bounding_text(mess_it->AsString()));
-          break;
-        }
-        case minuit_attribute::RepetitionFilter:
-        {
-          addr->setRepetitionFilter(
-                static_cast<repetition_filter>(mess_it->AsInt32()));
-          break;
-        }
-        case minuit_attribute::Service:
-        {
-          addr->setAccessMode(from_minuit_service_text(mess_it->AsString()));
-          break;
-        }
-        default:
-          break;
-      }
-    }
-
-    proto.pending_get_requests--;
-    try {
-    proto.get_promise.set_value();
-    } catch(...) { }
-  }
-};
-
 // Listen
 template <>
 struct minuit_behavior<minuit_command::Answer,
@@ -388,7 +308,7 @@ struct minuit_behavior<minuit_command::Answer,
   {
     // TODO refactor with get answer
     auto mess_it = mess.ArgumentsBegin();
-    boost::string_ref full_address{mess_it->AsString()};
+    boost::string_view full_address{mess_it->AsString()};
     auto idx = full_address.find_first_of(":");
 
     if (idx == std::string::npos)
@@ -408,11 +328,11 @@ struct minuit_behavior<minuit_command::Answer,
     {
       // The OSC message is a Minuit one.
       // address contains the "sanitized" OSC-like address.
-      boost::string_ref address{full_address.data(), idx};
+      boost::string_view address{full_address.data(), idx};
 
       // Note : bug if address == "foo:"
       auto attr = get_attribute(
-            boost::string_ref(
+            boost::string_view(
               address.data() + idx + 1, full_address.size() - idx - 1));
 
       ++mess_it;
@@ -458,15 +378,47 @@ struct minuit_behavior<minuit_command::Answer,
                 static_cast<repetition_filter>(mess_it->AsInt32()));
           break;
         }
+        case minuit_attribute::Dataspace:
+        {
+          addr->setUnit(ossia::parse_dataspace(mess_it->AsString()));
+          break;
+        }
+        case minuit_attribute::DataspaceUnit:
+        {
+          addr->setUnit(ossia::parse_unit(mess_it->AsString(), addr->getUnit()));
+          break;
+        }
         case minuit_attribute::Service:
         {
           addr->setAccessMode(from_minuit_service_text(mess_it->AsString()));
+          break;
+        }
+        case minuit_attribute::Description:
+        {
+          addr->setDescription(mess_it->AsString());
           break;
         }
         default:
           break;
       }
     }
+  }
+};
+
+// Get
+template <>
+struct minuit_behavior<minuit_command::Answer, minuit_operation::Get>
+{
+
+  void operator()(
+      ossia::net::minuit_protocol& proto, ossia::net::generic_device& dev,
+      const oscpack::ReceivedMessage& mess)
+  {
+    minuit_behavior<minuit_command::Answer, minuit_operation::Listen>{}(proto, dev, mess);
+    proto.pending_get_requests--;
+    try {
+    proto.get_promise.set_value();
+    } catch(...) { }
   }
 };
 
@@ -491,10 +443,10 @@ struct minuit_behavior<minuit_command::Answer,
       Str s, oscpack::ReceivedMessageArgumentIterator beg_it,
       oscpack::ReceivedMessageArgumentIterator end_it)
   {
-    std::vector<boost::string_ref> elements;
+    std::vector<boost::string_view> elements;
     auto nodes_beg_it = find_if(beg_it, end_it, [=](const auto& mess) {
       return mess.IsString()
-             && boost::string_ref(mess.AsStringUnchecked()) == s;
+             && boost::string_view(mess.AsStringUnchecked()) == s;
     });
 
     ++nodes_beg_it; // It will point on the first past "nodes={".
@@ -503,7 +455,7 @@ struct minuit_behavior<minuit_command::Answer,
 
     auto nodes_end_it = find_if(nodes_beg_it, end_it, [](const auto& mess) {
       return mess.IsString()
-             && boost::string_ref(mess.AsStringUnchecked()) == "}";
+             && boost::string_view(mess.AsStringUnchecked()) == "}";
     });
 
     if (nodes_end_it == end_it)
@@ -533,7 +485,7 @@ struct minuit_behavior<minuit_command::Answer,
 
   static auto handle_container(
       ossia::net::minuit_protocol& proto, ossia::net::generic_device& dev,
-      boost::string_ref address,
+      boost::string_view address,
       oscpack::ReceivedMessageArgumentIterator beg_it,
       oscpack::ReceivedMessageArgumentIterator end_it)
   {
@@ -560,7 +512,7 @@ struct minuit_behavior<minuit_command::Answer,
 
   static auto handle_data(
       ossia::net::minuit_protocol& proto, ossia::net::generic_device& dev,
-      boost::string_ref address,
+      boost::string_view address,
       oscpack::ReceivedMessageArgumentIterator beg_it,
       oscpack::ReceivedMessageArgumentIterator end_it)
   {
@@ -576,40 +528,53 @@ struct minuit_behavior<minuit_command::Answer,
     auto sub_request = proto.name_table.get_action(minuit_action::GetRequest);
 
     // Request all the attributes provided by the node
+    // type and dataspace have to be queried before the others since
+    // value and dataspace_unit correct parsing depends on correct values prior.
+    // note : we should really use TCP for this since there could be a reordering...
+    // or a queue of things to query.
+
     auto attribs = get_attributes(beg_it, end_it);
     for(auto it = attribs.begin(); it != attribs.end(); )
     {
-      if(*it == "type")
+      switch(get_attribute(*it))
       {
-        auto str = address.to_string() + ":type";
-        proto.pending_get_requests++;
-        proto.sender().send(sub_request, boost::string_ref(str));
+        case minuit_attribute::Type:
+        case minuit_attribute::Dataspace:
+        {
+          // name?get address:attribute
+          auto str = address.to_string();
+          str += ':';
+          str.append(it->begin(), it->end());
+          proto.pending_get_requests++;
+          proto.sender().send(sub_request, str);
 
-        it = attribs.erase(it);
-      }
-      else
-      {
-        ++it;
+          it = attribs.erase(it);
+        }
+          break;
+        default:
+          ++it;
+          break;
       }
     }
-    for (auto attrib : get_attributes(beg_it, end_it))
+
+    for (auto attrib : attribs)
     {
-      auto attr = get_attribute(attrib);
-      switch(attr)
+      switch(get_attribute(attrib))
       {
         case minuit_attribute::Value:
-        case minuit_attribute::Type:
         case minuit_attribute::RangeBounds:
         case minuit_attribute::RangeClipMode:
         case minuit_attribute::RepetitionFilter:
+        case minuit_attribute::DataspaceUnit:
         case minuit_attribute::Service:
+        case minuit_attribute::Description:
         {
           // name?get address:attribute
           auto str = address.to_string();
           str += ':';
           str.append(attrib.begin(), attrib.end());
           proto.pending_get_requests++;
-          proto.sender().send(sub_request, boost::string_ref(str));
+          proto.sender().send(sub_request, str);
         }
       default:
         break;
@@ -619,7 +584,7 @@ struct minuit_behavior<minuit_command::Answer,
 
   static auto handle_minuit(
       ossia::net::minuit_protocol& proto, ossia::net::generic_device& dev,
-      boost::string_ref address, minuit_type type,
+      boost::string_view address, minuit_type type,
       oscpack::ReceivedMessageArgumentIterator beg_it,
       oscpack::ReceivedMessageArgumentIterator end_it)
   {
@@ -650,7 +615,7 @@ struct minuit_behavior<minuit_command::Answer,
       const oscpack::ReceivedMessage& mess)
   {
     auto it = mess.ArgumentsBegin();
-    boost::string_ref address = it->AsString();
+    boost::string_view address = it->AsString();
     auto type = get_type((++it)->AsString()[0]);
 
     handle_minuit(proto, dev, address, type, it, mess.ArgumentsEnd());
@@ -670,7 +635,7 @@ class minuit_message_handler
 public:
   static void handleMinuitMessage(
       ossia::net::minuit_protocol& proto, ossia::net::generic_device& dev,
-      boost::string_ref address, const oscpack::ReceivedMessage& m)
+      boost::string_view address, const oscpack::ReceivedMessage& m)
   {
     // Look for either ':' or '?'
     auto idx = address.find_first_of(":?!");

@@ -4,10 +4,12 @@
 namespace ossia
 {
 
-class argb_u;
+struct argb_u;
 template<typename Impl>
 struct color_unit
 {
+  using is_unit = std::true_type;
+  using is_multidimensional = std::true_type; // number of dimensiosn -> decltype(value)::size_value
   using neutral_unit = argb_u;
   using concrete_type = Impl;
   using dataspace_type = struct color_dataspace;
@@ -15,6 +17,12 @@ struct color_unit
 
 struct argb_u : public color_unit<argb_u>
 {
+  static constexpr auto text()
+  { return ossia::make_string_array("argb"); }
+
+  static constexpr auto array_parameters()
+  { return "argb"; }
+
   using value_type = Vec4f;
 
   static constexpr strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
@@ -24,86 +32,116 @@ struct argb_u : public color_unit<argb_u>
 
   static constexpr value_type from_neutral(strong_value<neutral_unit> self)
   {
-    return self.val.value;
+    return self.value.value;
   }
 };
 
 struct rgba_u : public color_unit<rgba_u>
 {
+  static constexpr auto text()
+  { return ossia::make_string_array("rgba"); }
+
+  static constexpr auto array_parameters()
+  { return "rgba"; }
+
   using value_type = Vec4f;
 
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-    return std::array<double, 4>{self.val.value[3], self.val.value[0], self.val.value[1], self.val.value[2]};
+    return std::array<double, 4>{self.value.value[3], self.value.value[0], self.value.value[1], self.value.value[2]};
   }
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
-    return std::array<double, 4>{self.val.value[1], self.val.value[2], self.val.value[3], self.val.value[0]};
+    return std::array<double, 4>{self.value.value[1], self.value.value[2], self.value.value[3], self.value.value[0]};
   }
 };
 
 struct rgb_u : public color_unit<rgb_u>
 {
+  static constexpr auto text()
+  { return ossia::make_string_array("rgb"); }
+
+  static constexpr auto array_parameters()
+  { return "rgb"; }
+
   using value_type = Vec3f;
 
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-    return std::array<double, 4>{1., self.val.value[0], self.val.value[1], self.val.value[2]};
+    return std::array<double, 4>{1., self.value.value[0], self.value.value[1], self.value.value[2]};
   }
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
-    return std::array<double, 3>{self.val.value[1], self.val.value[2], self.val.value[3]};
+    return std::array<double, 3>{self.value.value[1], self.value.value[2], self.value.value[3]};
   }
 };
 
 struct bgr_u : public color_unit<bgr_u>
 {
+  static constexpr auto text()
+  { return ossia::make_string_array("bgr"); }
+
+  static constexpr auto array_parameters()
+  { return "bgr"; }
+
   using value_type = Vec3f;
 
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-    return std::array<double, 4>{1., self.val.value[2], self.val.value[1], self.val.value[0]};
+    return std::array<double, 4>{1., self.value.value[2], self.value.value[1], self.value.value[0]};
   }
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
-    return std::array<double, 3>{self.val.value[3], self.val.value[2], self.val.value[1]};
+    return std::array<double, 3>{self.value.value[3], self.value.value[2], self.value.value[1]};
   }
 };
 
 struct argb8_u : public color_unit<argb8_u>
 {
+  static constexpr auto text()
+  { return ossia::make_string_array("argb8"); }
+
+  static constexpr auto array_parameters()
+  { return "argb"; }
+
   using value_type = Vec4f;
 
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
     return std::array<double, 4>{
-      self.val.value[0] / 255.,
-      self.val.value[1] / 255.,
-      self.val.value[2] / 255.,
-      self.val.value[3] / 255.};
+      self.value.value[0] / 255.,
+      self.value.value[1] / 255.,
+      self.value.value[2] / 255.,
+      self.value.value[3] / 255.};
   }
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
     return std::array<double, 4>{
-      self.val.value[0] * 255.,
-      self.val.value[1] * 255.,
-      self.val.value[2] * 255.,
-      self.val.value[3] * 255.};
+      self.value.value[0] * 255.,
+      self.value.value[1] * 255.,
+      self.value.value[2] * 255.,
+      self.value.value[3] * 255.};
   }
 };
 
 struct hsv_u : public color_unit<hsv_u>
 {
+  static constexpr auto text()
+  { return ossia::make_string_array("hsv"); }
+
+  static constexpr auto array_parameters()
+  { return "hsv"; }
+
   using value_type = Vec3f;
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-    const auto H = self.val.value[0];
-    const auto S = self.val.value[1];
-    const auto V = self.val.value[2];
+    const auto H = self.value.value[0];
+    const auto S = self.value.value[1];
+    const auto V = self.value.value[2];
     if ( S == 0. )
     {
       return std::array<double, 4>{1., V, V, V };
@@ -138,13 +176,13 @@ struct hsv_u : public color_unit<hsv_u>
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
-    const auto var_R = self.val.value[1];
-    const auto var_G = self.val.value[2];
-    const auto var_B = self.val.value[3];
+    const auto var_R = self.value.value[1];
+    const auto var_G = self.value.value[2];
+    const auto var_B = self.value.value[3];
 
-    auto var_Min = std::min(std::min(var_R, var_G), var_B);    //Min. value of RGB
-    auto var_Max = std::max(std::max( var_R, var_G), var_B );    //Max. value of RGB
-    auto del_Max = var_Max - var_Min;             //Delta RGB value
+    const auto var_Min = std::min(std::min(var_R, var_G), var_B);    //Min. value of RGB
+    const auto var_Max = std::max(std::max( var_R, var_G), var_B );    //Max. value of RGB
+    const auto del_Max = var_Max - var_Min;             //Delta RGB value
 
 
     if ( del_Max == 0. )                     //This is a gray, no chroma...
@@ -153,7 +191,7 @@ struct hsv_u : public color_unit<hsv_u>
     }
     else                                    //Chromatic data...
     {
-      double H;
+      double H{};
       auto S = del_Max / var_Max;
       auto V = var_Max;
 
@@ -175,47 +213,71 @@ struct hsv_u : public color_unit<hsv_u>
 
 struct hsl_u : public color_unit<hsl_u>
 {
+  static constexpr auto text()
+  { return ossia::make_string_array("hsl"); }
+
+  static constexpr auto array_parameters()
+  { return "hsl"; }
+
   using value_type = Vec3f;
 
 };
 
 struct cmy8_u : public color_unit<cmy8_u>
 {
+  static constexpr auto text()
+  { return ossia::make_string_array("cmy8"); }
+
+  static constexpr auto array_parameters()
+  { return "cmy"; }
+
   using value_type = Vec3f;
 
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
     return std::array<double, 4>{
           1.,
-          (255. - self.val.value[0]) / 255.,
-          (255. - self.val.value[1]) / 255.,
-          (255. - self.val.value[2]) / 255.};
+          (255. - self.value.value[0]) / 255.,
+          (255. - self.value.value[1]) / 255.,
+          (255. - self.value.value[2]) / 255.};
   }
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
     return std::array<double, 3>{
-      255. * (1. - self.val.value[1]),
-      255. * (1. - self.val.value[2]),
-      255. * (1. - self.val.value[3])};
+      255. * (1. - self.value.value[1]),
+      255. * (1. - self.value.value[2]),
+      255. * (1. - self.value.value[3])};
   }
 };
 
 struct cmyk8_u : public color_unit<cmyk8_u>
 {
+  static constexpr auto text()
+  { return ossia::make_string_array("cmyk8"); }
+
+  static constexpr auto array_parameters()
+  { return "cmyk"; }
+
   using value_type = Vec4f;
 
 };
 
 struct xyz_u : public color_unit<xyz_u>
 {
+  static constexpr auto text()
+  { return ossia::make_string_array("xyz"); }
+
+  static constexpr auto array_parameters()
+  { return "xyz"; }
+
   using value_type = Vec3f;
 
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-    auto var_X = self.val.value[0] / 100.;        //X from 0 to  95.047      (Observer = 2°, Illuminant = D65)
-    auto var_Y = self.val.value[1] / 100.;        //Y from 0 to 100.000
-    auto var_Z = self.val.value[2] / 100.;        //Z from 0 to 108.883
+    auto var_X = self.value.value[0] / 100.;        //X from 0 to  95.047      (Observer = 2°, Illuminant = D65)
+    auto var_Y = self.value.value[1] / 100.;        //Y from 0 to 100.000
+    auto var_Z = self.value.value[2] / 100.;        //Z from 0 to 108.883
 
     auto var_R = var_X *  3.2406 + var_Y * -1.5372 + var_Z * -0.4986;
     auto var_G = var_X * -0.9689 + var_Y *  1.8758 + var_Z *  0.0415;
@@ -241,9 +303,9 @@ struct xyz_u : public color_unit<xyz_u>
                   ? std::pow( ( var + 0.055 ) / 1.055, 2.4)
                   : var / 12.92);
     };
-    auto var_R = translate(self.val.value[1]);
-    auto var_G = translate(self.val.value[2]);
-    auto var_B = translate(self.val.value[3]);
+    auto var_R = translate(self.value.value[1]);
+    auto var_G = translate(self.value.value[2]);
+    auto var_B = translate(self.value.value[3]);
 
     //Observer. = 2°, Illuminant = D65
 
@@ -257,28 +319,47 @@ struct xyz_u : public color_unit<xyz_u>
 
 struct yxy_u : public color_unit<yxy_u>
 {
+  static constexpr auto text()
+  { return ossia::make_string_array("Yxy"); }
+
+  static constexpr auto array_parameters()
+  { return "Yxy"; }
+
   using value_type = Vec3f;
 };
 
 struct hunter_lab_u : public color_unit<hunter_lab_u>
 {
+  static constexpr auto text()
+  { return ossia::make_string_array("hunter_lab"); }
+  static constexpr auto array_parameters()
+  { return "lab"; }
   using value_type = Vec3f;
 };
 
 struct cie_lab_u : public color_unit<cie_lab_u>
 {
+  static constexpr auto text()
+  { return ossia::make_string_array("cie_lab"); }
+  static constexpr auto array_parameters()
+  { return "lab"; }
   using value_type = Vec3f;
 };
 
 struct cie_luv_u : public color_unit<cie_luv_u>
 {
+  static constexpr auto text()
+  { return ossia::make_string_array("cie_luv"); }
+  static constexpr auto array_parameters()
+  { return "luv"; }
   using value_type = Vec3f;
 };
 
 
 using color_u =
   eggs::variant<
-    argb_u, rgba_u, rgb_u, bgr_u, argb8_u, hsv_u, hsl_u, cmy8_u, cmyk8_u, xyz_u, yxy_u, hunter_lab_u, cie_lab_u, cie_luv_u>;
+    argb_u, rgba_u, rgb_u, bgr_u, argb8_u, hsv_u, cmy8_u, xyz_u
+/*, hsl_u, cmyk8_u, yxy_u, hunter_lab_u, cie_lab_u, cie_luv_u*/>;
 
 using argb = strong_value<argb_u>;
 using rgba = strong_value<rgba_u>;
@@ -295,7 +376,10 @@ using hunter_lab = strong_value<hunter_lab_u>;
 using cie_lab = strong_value<cie_lab_u>;
 using cie_luv = strong_value<cie_luv_u>;
 
-using color =
-  eggs::variant<
-    argb, rgba, rgb, bgr, argb8, hsv, hsl, cmy8, cmyk8, xyz, yxy, hunter_lab, cie_lab, cie_luv>;
+template<>
+struct dataspace_traits<color_u>
+{
+  static constexpr auto text()
+  { return ossia::make_string_array("color"); }
+};
 }

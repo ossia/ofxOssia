@@ -175,13 +175,20 @@ private:
             if(val.template try_get<value_type>())
                 return MatchingType<DataValue>::convertFromOssia(val);
             else
-                std::cerr <<  "error [ofxOssia] : "<<(int) val.getType()  << " " << (int) MatchingType<DataValue>::val << "\n" ;
+                std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<<(int) val.getType()  << " " << (int) MatchingType<DataValue>::val << "\n" ;
             return {};
         }
+        catch(std::exception& e)
+        {
+            std::cerr <<  "error [ofxOssia::pullNodeValue()] : " << e.what() << "\n" ;
+            return {};
+
+        }
+
         catch(...)
         {
             auto val = this->getAddress()->cloneValue();
-            std::cerr <<  "error [ofxOssia] : "<<ossia::to_pretty_string(val)  << " " << (int) MatchingType<DataValue>::val << "\n" ;
+            std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<<ossia::to_pretty_string(val)  << " " << (int) MatchingType<DataValue>::val << "\n" ;
             return {};
         }
     }
@@ -202,7 +209,7 @@ private:
             }
             else
             {
-                std::cerr <<   "error [ofxOssia] : "<< (int) val.getType()  << " " << (int) MatchingType<DataValue>::val << "\n" ;
+                std::cerr <<   "error [ofxOssia::enableRemoteUpdate()] : "<< (int) val.getType()  << " " << (int) MatchingType<DataValue>::val << "\n" ;
                 return;
             }
         });

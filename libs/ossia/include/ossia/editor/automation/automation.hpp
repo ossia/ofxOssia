@@ -1,6 +1,7 @@
 #pragma once
 #include <ossia/detail/ptr_container.hpp>
 #include <ossia/editor/scenario/time_process.hpp>
+#include <ossia/editor/dataspace/dataspace.hpp>
 #include <ossia_export.h>
 
 namespace ossia
@@ -25,6 +26,10 @@ class address_base;
  * The driving \ref value can either be a single \ref Behavior or a \ref Tuple of \ref Behavior,
  * in accordance to the type of the driven \ref net::address_base.
  *
+ * \todo The automation should have a "source" domain, i.e. the data space in which the transformation
+ * happens. The target domain could be taken from the driven address_base.
+ *
+ *
  * \see \ref Behavior \ref curve \ref curve_segment
  */
 class OSSIA_EXPORT automation final :
@@ -40,6 +45,8 @@ class OSSIA_EXPORT automation final :
     Destination getDrivenAddress() const;
     const ossia::value& getDriving() const;
 
+    void setUnit(ossia::unit_t);
+
   private:
     ossia::state_element offset(ossia::time_value) override;
     ossia::state_element state() override;
@@ -51,8 +58,11 @@ class OSSIA_EXPORT automation final :
 
     static ossia::value computeValue(double, const ossia::value&);
 
+    void updateMessage(double t);
+
     Destination mDrivenAddress;
     ossia::value mDrive;
     ossia::message mLastMessage;
+    ossia::unit_t mUnit;
 };
 }

@@ -17,6 +17,7 @@ using foot_per_second_u = speed_ratio<std::ratio<254 * 12, 10000>>;
 template<typename Impl>
 struct speed_unit
 {
+  using is_unit = std::true_type;
   using neutral_unit = meter_per_second_u;
   using value_type = Float;
   using concrete_type = Impl;
@@ -40,8 +41,54 @@ using foot_per_hour = strong_value<foot_per_hour_u>;
 using speed_u =
   eggs::variant<
     meter_per_second_u, miles_per_hour_u, kilometer_per_hour_u, knot_u, foot_per_second_u, foot_per_hour_u>;
-using speed =
-  eggs::variant<
-    meter_per_second, miles_per_hour, kilometer_per_hour, knot, foot_per_second, foot_per_hour>;
+
+template<>
+struct unit_traits<meter_per_second_u>
+{
+  static constexpr auto text()
+  { return ossia::make_string_array("m/s"); }
+};
+
+template<>
+struct unit_traits<miles_per_hour_u>
+{
+  static constexpr auto text()
+  { return ossia::make_string_array("mph", "mi/h"); }
+};
+
+template<>
+struct unit_traits<kilometer_per_hour_u>
+{
+  static constexpr auto text()
+  { return ossia::make_string_array("km/h", "kmph"); }
+};
+
+template<>
+struct unit_traits<knot_u>
+{
+  static constexpr auto text()
+  { return ossia::make_string_array("kn"); }
+};
+
+template<>
+struct unit_traits<foot_per_hour_u>
+{
+  static constexpr auto text()
+  { return ossia::make_string_array("ft/h"); }
+};
+
+template<>
+struct unit_traits<foot_per_second_u>
+{
+  static constexpr auto text()
+  { return ossia::make_string_array("ft/s"); }
+};
+
+template<>
+struct dataspace_traits<speed_u>
+{
+  static constexpr auto text()
+  { return ossia::make_string_array("speed"); }
+};
 
 }
