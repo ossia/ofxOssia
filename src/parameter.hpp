@@ -22,6 +22,7 @@ struct GenericMatchingType
     using ofx_type = OfType;
     using ossia_type = OssiaType;
     static constexpr const auto val = OssiaTypeEnum;
+    using ossia_unit = ossia::unit_t;
 
     static ofx_type convertFromOssia(const ossia::value& v)
     {
@@ -63,6 +64,7 @@ template<> struct MatchingType<double> {
     using ofx_type = double;
     static constexpr const auto val = ossia::val_type::FLOAT;
     using ossia_type = ossia::Float;
+    using ossia_unit = ossia::unit_t;
 
     static ofx_type convertFromOssia(const ossia::value& v)
     {
@@ -75,59 +77,57 @@ template<> struct MatchingType<double> {
     }
 };
 
-template<> struct MatchingType<ofVec3f> {
-    using ofx_type = ofVec3f;
-    static constexpr const auto val = ossia::val_type::TUPLE;
-    using ossia_type = ossia::Tuple;
+template<> struct MatchingType<ofVec2f> {
+    using ofx_type = ofVec2f;
+    static constexpr const auto val = ossia::val_type::VEC2F;
+    using ossia_type = ossia::Vec2f;
+    using ossia_unit = ossia::unit_t;
 
     static ofx_type convertFromOssia(const ossia::value& v)
     {
-        // TODO vec2, 3, 4
-        const auto& t = v.get<ossia::Tuple>();
-
-        float x{}, y{}, z{};
-
-        if(t.value.size() == 3)
-        {
-            if(auto ossia_x = t.value[0].try_get<Float>())
-                x = ossia_x->value;
-            if(auto ossia_y = t.value[1].try_get<Float>())
-                y = ossia_y->value;
-            if(auto ossia_z = t.value[2].try_get<Float>())
-                z = ossia_z->value;
-        }
-        return ofx_type(x,y,z);
+        const auto& t = v.get<ossia_type>();
+        return ofx_type(t.value[0], t.value[1]);
     }
 
     static ossia_type convert(ofx_type f)
     {
-        return ossia::Tuple{ossia::Float(f.x), ossia::Float(f.y), ossia::Float(f.z)};
+        return ossia::make_vec(f.x, f.y);
     }
 };
 
-template<> struct MatchingType<ofVec2f>
-{
-    using ofx_type = ofVec2f;
-    static constexpr const auto val = ossia::val_type::TUPLE;
-    using ossia_type = ossia::Tuple;
+template<> struct MatchingType<ofVec3f> {
+    using ofx_type = ofVec3f;
+    static constexpr const auto val = ossia::val_type::VEC3F;
+    using ossia_type = ossia::Vec3f;
+    using ossia_unit = ossia::unit_t;
 
-    static ofx_type convertFromOssia(const ossia::value& v) {
-
-        const auto& t = v.get<ossia::Tuple>();
-        float x{}, y{};
-
-        if(t.value.size() == 2)
-        {
-            if(auto ossia_x = t.value[0].try_get<Float>())
-                x = ossia_x->value;
-            if(auto ossia_y = t.value[1].try_get<Float>())
-                y = ossia_y->value;
-        }
-        return ofx_type(x,y);
+    static ofx_type convertFromOssia(const ossia::value& v)
+    {
+        const auto& t = v.get<ossia_type>();
+        return ofx_type(t.value[0], t.value[1], t.value[2]);
     }
 
-    static ossia_type convert(ofx_type f) {
-        return ossia::Tuple{ossia::Float(f.x), ossia::Float(f.y)};
+    static ossia_type convert(ofx_type f)
+    {
+        return ossia::make_vec(f.x, f.y, f.z);
+    }
+};
+
+template<> struct MatchingType<ofColor> {
+    using ofx_type = ofColor;
+    static constexpr const auto val = ossia::val_type::VEC4F;
+    using ossia_type = ossia::Vec4f;
+    using ossia_unit = ossia::rgba_u;
+
+    static ofx_type convertFromOssia(const ossia::value& v)
+    {
+        const auto& t = v.get<ossia_type>();
+        return ofx_type(t.value[0] * 255., t.value[1] * 255., t.value[2] * 255., t.value[3] * 255.);
+    }
+
+    static ossia_type convert(ofx_type f)
+    {
+        return ossia::make_vec(f.r / 255., f.g / 255., f.b / 255., f.a / 255.);
     }
 };
 
@@ -141,6 +141,7 @@ template <class DataValue>
 class Parameter : public ofParameter<DataValue>
 {
 private:
+    using ossia_type = MatchingType<DataValue>;
     ossia::net::node_base* _parentNode{};
     mutable ossia::net::address_base*  _address{};
 
@@ -154,8 +155,8 @@ private:
         auto node = _parentNode->createChild(name);
 
         //set value
-        _address = node->createAddress(MatchingType<DataValue>::val);
-        _address->pushValue(MatchingType<DataValue>::convert(data));
+        _address = node->createAddress(ossia_type::val);
+        _address->pushValue(ossia_type::convert(data));
      }
     // Creates the node setting domain
     void createNode(const std::string& name, DataValue data, DataValue min, DataValue max)
@@ -164,29 +165,30 @@ private:
         auto node = _parentNode->createChild(name);
 
         //set value
-        _address = node->createAddress(MatchingType<DataValue>::val);
-        _address->pushValue(MatchingType<DataValue>::convert(data));
-        _address->setDomain(ossia::net::make_domain(MatchingType<DataValue>::convert(min),
-                                                    MatchingType<DataValue>::convert(max)));
+        _address = node->createAddress(ossia_type::val);
+        _address->pushValue(ossia_type::convert(data));
+        _address->setDomain(ossia::net::make_domain(ossia_type::convert(min),
+                                                    ossia_type::convert(max)));
+        _address->setUnit(typename ossia_type::ossia_unit{});
     }
     // Publishes value to the node
     void publishValue(DataValue other)
     {
-        _address->pushValue(MatchingType<DataValue>::convert(other));
+        _address->pushValue(ossia_type::convert(other));
     }
 
     // Pulls the node value
     DataValue pullNodeValue()
     {
-        using value_type = const typename MatchingType<DataValue>::ossia_type;
+        using value_type = const typename ossia_type::ossia_type;
 
         try
         {
             auto val = this->getAddress()->fetchValue();
             if(val.template try_get<value_type>())
-                return MatchingType<DataValue>::convertFromOssia(val);
+                return ossia_type::convertFromOssia(val);
             else
-                std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<<(int) val.getType()  << " " << (int) MatchingType<DataValue>::val << "\n" ;
+                std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<<(int) val.getType()  << " " << (int) ossia_type::val << "\n" ;
             return {};
         }
         catch(std::exception& e)
@@ -199,7 +201,7 @@ private:
         catch(...)
         {
             auto val = this->getAddress()->cloneValue();
-            std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<<ossia::to_pretty_string(val)  << " " << (int) MatchingType<DataValue>::val << "\n" ;
+            std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<< ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ;
             return {};
         }
     }
@@ -209,10 +211,10 @@ private:
     {
         this->getAddress()->add_callback([&](const ossia::value& val)
         {
-            using value_type = const typename MatchingType<DataValue>::ossia_type;
+            using value_type = const typename ossia_type::ossia_type;
             if(val.try_get<value_type>())
             {
-                DataValue data = MatchingType<DataValue>::convertFromOssia(val);
+                DataValue data = ossia_type::convertFromOssia(val);
                 if(data != this->get())
                 {
                     this->set(data);
@@ -220,7 +222,7 @@ private:
             }
             else
             {
-                std::cerr <<   "error [ofxOssia::enableRemoteUpdate()] : "<< (int) val.getType()  << " " << (int) MatchingType<DataValue>::val << "\n" ;
+                std::cerr <<   "error [ofxOssia::enableRemoteUpdate()] : "<< (int) val.getType()  << " " << (int) ossia_type::val << "\n" ;
                 return;
             }
         });

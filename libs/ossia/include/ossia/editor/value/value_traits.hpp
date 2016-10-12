@@ -4,7 +4,7 @@
 namespace ossia
 {
 
-template <typename T, int N>
+template <typename T, std::size_t N>
 class Vec;
 
 template <typename T>
@@ -74,6 +74,15 @@ struct value_trait<ossia::Tuple>
 };
 
 template <>
+struct value_trait<ossia::Behavior>
+{
+  using ossia_type = ossia::Behavior;
+  using value_type = std::shared_ptr<curve_abstract>;
+  static const constexpr auto ossia_enum = val_type::BEHAVIOR;
+  static const constexpr bool is_numeric = false;
+};
+
+template <>
 struct value_trait<ossia::Destination>
 {
   using ossia_type = ossia::Destination;
@@ -125,7 +134,7 @@ template <>
 struct matching_value<std::string> { using type = String; };
 template <>
 struct matching_value<std::vector<value>> { using type = Tuple; };
-template <int N>
+template <std::size_t N>
 struct matching_value<std::array<float, N>> { using type = Vec<float, N>; };
 
 

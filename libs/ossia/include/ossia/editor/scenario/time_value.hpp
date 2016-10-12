@@ -1,9 +1,10 @@
 #pragma once
 #include <cmath>
+#include <cinttypes>
 #include <ossia_export.h>
+
 namespace ossia
 {
-
 /**
  * @brief The time_value class
  *
@@ -16,8 +17,13 @@ class OSSIA_EXPORT time_value
 public:
   /*! constructor
    \param int value */
-  constexpr time_value(double d = 0.) noexcept :
+  explicit constexpr time_value(double d) noexcept :
     m_value{d}
+  {
+  }
+
+  explicit constexpr time_value() noexcept :
+    m_value{0.}
   {
   }
 
@@ -111,6 +117,26 @@ public:
     return time_value(m_value - t.m_value);
   }
 
+  /*! multiplication operator */
+  constexpr time_value operator*(float d) const noexcept
+  { return time_value(m_value * d); }
+
+  constexpr time_value operator*(double d) const noexcept
+  { return time_value(m_value * d); }
+
+  constexpr time_value operator*(int32_t d) const noexcept
+  { return time_value(m_value * d); }
+
+  constexpr time_value operator*(int64_t d) const noexcept
+  { return time_value(m_value * d); }
+
+  constexpr time_value operator*(uint32_t d) const noexcept
+  { return time_value(m_value * d); }
+
+  constexpr time_value operator*(uint64_t d) const noexcept
+  { return time_value(m_value * d); }
+
+
   /*! double casting operator */
   constexpr operator double() const noexcept
   {
@@ -124,11 +150,19 @@ public:
     return std::isinf(m_value);
   }
 
+  bool operator==(time_value rhs) const noexcept { return m_value == rhs.m_value; }
+  bool operator!=(time_value rhs) const noexcept { return m_value != rhs.m_value; }
 protected:
   double m_value;
 };
 
+OSSIA_EXPORT inline time_value operator "" _tv(long double v)
+{
+    return time_value(v);
+}
+
 const constexpr time_value Infinite{INFINITY};
 const constexpr time_value Zero{0.};
 const constexpr time_value One{1.};
+
 }

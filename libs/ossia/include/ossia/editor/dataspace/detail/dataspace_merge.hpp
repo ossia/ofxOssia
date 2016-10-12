@@ -29,13 +29,22 @@ template<typename T, typename U, typename = void>
 struct whole_value_merger_helper;
 
 template<typename T, typename U>
-using enable_if_both_iterable =    std::enable_if_t< is_iterable_t<decltype(T::value)>::value &&  is_iterable_t<decltype(U::value)>::value>;
+const constexpr bool both_iterable = is_iterable_t<decltype(T::value)>::value && is_iterable_t<decltype(U::value)>::value;
 template<typename T, typename U>
-using enable_if_first_iterable =   std::enable_if_t< is_iterable_t<decltype(T::value)>::value && !is_iterable_t<decltype(U::value)>::value>;
+const constexpr bool first_iterable = is_iterable_t<decltype(T::value)>::value && !is_iterable_t<decltype(U::value)>::value;
 template<typename T, typename U>
-using enable_if_second_iterable =  std::enable_if_t<!is_iterable_t<decltype(T::value)>::value &&  is_iterable_t<decltype(U::value)>::value>;
+const constexpr bool second_iterable = !is_iterable_t<decltype(T::value)>::value && is_iterable_t<decltype(U::value)>::value;
 template<typename T, typename U>
-using enable_if_neither_iterable = std::enable_if_t<!is_iterable_t<decltype(T::value)>::value && !is_iterable_t<decltype(U::value)>::value>;
+const constexpr bool neither_iterable = !is_iterable_t<decltype(T::value)>::value && !is_iterable_t<decltype(U::value)>::value;
+
+template<typename T, typename U>
+using enable_if_both_iterable =    std::enable_if_t<both_iterable<T,U>>;
+template<typename T, typename U>
+using enable_if_first_iterable =   std::enable_if_t<first_iterable<T,U>>;
+template<typename T, typename U>
+using enable_if_second_iterable =  std::enable_if_t<second_iterable<T,U>>;
+template<typename T, typename U>
+using enable_if_neither_iterable = std::enable_if_t<neither_iterable<T,U>>;
 
 // Case where both T and U are array types, e.g. RGB && Tuple, or CMYK && Vec2f...
 template<typename T, typename U>
@@ -101,7 +110,34 @@ struct partial_value_merger_helper<T, U, enable_if_both_iterable<decltype(T::val
       value_unit.value.value[i] = ossia::convert<std::remove_reference_t<decltype(value_unit.value.value[i])>>(value.value[i]);
     }
 
+    return value_unit;
+  }
+
+  template<std::size_t N>
+  ossia::value_with_unit operator()(T value_unit, const U& value, const std::bitset<N>& idx)
+  {
+    if(handle_vec(value_unit.value, value, idx))
+      return value_unit;
     return {};
+  }
+
+  template<std::size_t N>
+  bool handle_vec(Vec<float, N>& src, const Vec<float, N>& incoming, const std::bitset<N>& idx)
+  {
+    for(std::size_t i = 0; i < N; i++)
+    {
+      if(idx.test(i))
+      {
+        src.value[i] = incoming.value[i];
+      }
+    }
+    return true;
+  }
+
+  template<typename... Args>
+  bool handle_vec(Args&&...)
+  {
+    return false;
   }
 };
 
@@ -114,6 +150,12 @@ struct partial_value_merger_helper<T, U, enable_if_first_iterable<decltype(T::va
     value_unit.value.value[i] = ossia::convert<std::remove_reference_t<decltype(value_unit.value.value[i])>>(value.value);
     return value_unit;
   }
+
+  template<std::size_t N>
+  ossia::value_with_unit operator()(T value_unit, const U& value, const std::bitset<N>& idx)
+  {
+    return {};
+  }
 };
 
 template<typename T, typename U>
@@ -122,6 +164,12 @@ struct partial_value_merger_helper<T, U, enable_if_second_iterable<decltype(T::v
   ossia::value_with_unit operator()(T value_unit, const U& value, const ossia::destination_index& idx)
   {
     return value_unit;
+  }
+
+  template<std::size_t N>
+  ossia::value_with_unit operator()(T value_unit, const U& value, const std::bitset<N>& idx)
+  {
+    return {};
   }
 };
 
@@ -132,7 +180,15 @@ struct partial_value_merger_helper<T, U, enable_if_neither_iterable<decltype(T::
   {
     return value_unit;
   }
+
+  template<std::size_t N>
+  ossia::value_with_unit operator()(T value_unit, const U& value, const std::bitset<N>& idx)
+  {
+    return {};
+  }
 };
+
+
 struct value_merger
 {
   const ossia::destination_index& index;
@@ -168,6 +224,29 @@ struct value_merger
   ossia::value_with_unit operator()(const strong_value<T>& value_unit, const Behavior& value)
   {
     return value_unit;
+  }
+};
+
+template<std::size_t N>
+struct vec_value_merger
+{
+  const std::bitset<N>& index;
+
+  template<typename T, typename U>
+  ossia::value_with_unit operator()(const strong_value<T>& value_unit, const U& value)
+  {
+    return {};
+  }
+
+  template<typename T>
+  ossia::value_with_unit operator()(const strong_value<T>& value_unit, const Vec<float, N>& value)
+  {
+    if(index.all())
+      return whole_value_merger_helper<strong_value<T>, Vec<float, N>>{}(value_unit, value);
+    else if(index.any())
+      return partial_value_merger_helper<strong_value<T>, Vec<float, N>>{}(value_unit, value, index);
+    else
+      return value_unit;
   }
 };
 }

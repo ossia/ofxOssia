@@ -48,14 +48,19 @@
 
 namespace oscpack{
 
-std::ostream& operator<<( std::ostream & os, const ReceivedPacket& p );
-std::ostream& operator<<( std::ostream & os, const ReceivedMessageArgument& arg );
-std::ostream& operator<<( std::ostream & os, const ReceivedMessage& m );
-std::ostream& operator<<( std::ostream & os, const ReceivedBundle& b );
+template<typename Ostream_T>
+Ostream_T& operator<<( Ostream_T & os, const ReceivedPacket& p );
+template<typename Ostream_T>
+Ostream_T& operator<<( Ostream_T & os, const ReceivedMessageArgument& arg );
+template<typename Ostream_T>
+Ostream_T& operator<<( Ostream_T & os, const ReceivedMessage& m );
+template<typename Ostream_T>
+Ostream_T& operator<<( Ostream_T & os, const ReceivedBundle& b );
 
 
-inline std::ostream& operator<<(
-    std::ostream & os,
+template<typename Ostream_T>
+inline Ostream_T& operator<<(
+    Ostream_T & os,
     const ReceivedMessageArgument& arg )
 {
     switch( arg.TypeTag() ){
@@ -185,7 +190,8 @@ inline std::ostream& operator<<(
 }
 
 
-inline std::ostream& operator<<( std::ostream & os, const ReceivedMessage& m )
+template<typename Ostream_T>
+inline Ostream_T& operator<<( Ostream_T& os, const ReceivedMessage& m )
 {
     os << "[";
     if( m.AddressPatternIsUInt32() )
@@ -212,7 +218,8 @@ inline std::ostream& operator<<( std::ostream & os, const ReceivedMessage& m )
 }
 
 
-inline std::ostream& operator<<( std::ostream & os, const ReceivedBundle& b )
+template<typename Ostream_T>
+inline Ostream_T& operator<<( Ostream_T & os, const ReceivedBundle& b )
 {
     static int indent = 0;
 
@@ -250,7 +257,8 @@ inline std::ostream& operator<<( std::ostream & os, const ReceivedBundle& b )
 }
 
 
-inline std::ostream& operator<<( std::ostream & os, const ReceivedPacket& p )
+template<typename Ostream_T>
+inline Ostream_T& operator<<( Ostream_T& os, const ReceivedPacket& p )
 {
     if( p.IsBundle() ){
         ReceivedBundle b(p);

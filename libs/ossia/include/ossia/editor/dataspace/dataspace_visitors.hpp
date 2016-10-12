@@ -1,5 +1,6 @@
 #pragma once
 #include <ossia/editor/dataspace/dataspace.hpp>
+#include <bitset>
 
 namespace ossia
 {
@@ -47,6 +48,14 @@ ossia::unit_t parse_unit(boost::string_view text, ossia::unit_t dataspace);
 
 
 /**
+ * @brief parse_pretty_unit Create a unit from a valid unit in the format
+ * of get_pretty_unit_text
+ */
+OSSIA_EXPORT
+ossia::unit_t parse_pretty_unit(boost::string_view text);
+
+
+/**
  * @brief parse_unit Alternative if we already have a dataspace type at hand.
  * @note T should be a dataspace, such as ossia::color_u.
  * @todo In 2020 enforce this with concepts...
@@ -56,6 +65,24 @@ OSSIA_EXPORT
 ossia::unit_t parse_unit(boost::string_view text, T dataspace);
 
 
+/**
+ * @brief make_value Create a value_with_unit
+ * @param v A value
+ * @param u A unit
+ *
+ * @return The same value with the unit attached if the types were correct.
+ */
+OSSIA_EXPORT
+value_with_unit make_value(const ossia::value& v, const ossia::unit_t& u);
+
+
+/**
+ * @brief matching_type Get the implementation type of an unit
+ * @param u An unit
+ * @return The matching type. Will return Impulse if the unit is invalid.
+ */
+OSSIA_EXPORT
+ossia::val_type matching_type(const ossia::unit_t& u);
 
 /**
  * @brief convert Convert a value to another unit in the same dataspace
@@ -103,7 +130,7 @@ std::string to_pretty_string(ossia::value_with_unit v);
  *
  * @param The value with an unit
  * @param The value to merge
- * @param Optional destination index to merge with
+ * @param Optional destination index or bitset to merge with
  * @return
  */
 OSSIA_EXPORT
@@ -112,4 +139,21 @@ ossia::value_with_unit merge(
     const ossia::value&,
     ossia::destination_index);
 
+OSSIA_EXPORT
+ossia::value_with_unit merge(
+    ossia::value_with_unit,
+    const ossia::Vec2f&,
+    std::bitset<2>);
+
+OSSIA_EXPORT
+ossia::value_with_unit merge(
+    ossia::value_with_unit,
+    const ossia::Vec3f&,
+    std::bitset<3>);
+
+OSSIA_EXPORT
+ossia::value_with_unit merge(
+    ossia::value_with_unit,
+    const ossia::Vec4f&,
+    std::bitset<4>);
 }

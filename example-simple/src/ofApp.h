@@ -30,6 +30,7 @@ class ofApp : public ofBaseApp{
         ossia::Parameter<float> _radius;
         ossia::Parameter<ofVec2f> _position;
         ossia::Parameter<bool> _fill;
+        ossia::Parameter<ofColor> _color;
 
         //ofxGui
         ofxPanel            _gui;

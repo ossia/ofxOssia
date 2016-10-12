@@ -137,7 +137,6 @@ static void merge_tuple(Tuple& lhs, Tuple_T&& rhs)
 }
 };
 
-
 namespace detail
 {
 /**
@@ -183,7 +182,7 @@ struct destination_index_retriever
     }
   }
 
-  template<int N>
+  template<std::size_t N>
   ossia::value operator()(const Vec<float, N>& t)
   {
     if(it == index.end())

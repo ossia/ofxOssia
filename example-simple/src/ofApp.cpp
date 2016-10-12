@@ -19,7 +19,23 @@ ofSetCircleResolution(100);
 
     // setup ofxOSSIA parameters to be add on the Gui
     _gui.add(_radius.setup(_network.getSceneNode(),"radius",10.,1.,100.));
-    _gui.add(_position.setup(_network.getSceneNode(),"position",ofVec2f(ofGetWidth()/2,ofGetHeight()/2),ofVec2f(0.,0.),ofVec2f(ofGetWidth(),ofGetHeight())));
+    _gui.add(
+        _position.setup(
+            _network.getSceneNode(),
+            "position", 
+            ofVec2f(ofGetWidth() / 2, ofGetHeight() / 2), 
+            ofVec2f(0., 0.), // Min
+            ofVec2f(ofGetWidth(), ofGetHeight()))); // Max
+            
+     
+    _gui.add(
+        _color.setup(
+            _network.getSceneNode(),
+            "color", 
+            ofColor(123, 255, 17), 
+            ofColor(0., 0., 0.),
+            ofColor(255., 255., 255.)));
+        
     _gui.add(_fill.setup(_network.getSceneNode(),"fill",false));
 }
 
@@ -36,6 +52,7 @@ void ofApp::draw(){
     else
         ofFill();
         
+    ofSetColor(_color.get());
     ofDrawCircle(_position.get(),_radius.get());
 
     //draw gui

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-git clone --recursive https://github.com/OSSIA/API -b wip/dataspace_2
+git clone --recursive -j4 https://github.com/OSSIA/API -b wip/dataspace_2
 
 mkdir build
 (
