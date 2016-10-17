@@ -2,7 +2,7 @@
 
 **Introduction**
 
-This openFrameworks addon allows you to share parameters with i-score: the class `ossia::Parameter` inheriting the openFrameworks' class `ofParameter` can be controlled both via the UI and i-score.
+This openFrameworks addon is a wrapper for the OSSIA API https://github.com/OSSIA/API , allowing you to share parameters with i-score: the class `ossia::Parameter` inheriting the openFrameworks' class `ofParameter` can be controlled both via the UI and i-score.
 
 **Dependencies**
 
