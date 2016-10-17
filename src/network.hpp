@@ -30,10 +30,11 @@
 class Network
 {
 public:
-    Network(const std::string& localname,
-            const std::string& remotename,
-            const std::string& remoteip,
-            int localport, int remoteport);
+    Network(const std::string& localname = "newDevice",
+            const std::string& remotename = "i-score",
+            const std::string& remoteip = "127.0.0.1",
+            int localport = 13579,
+            int remoteport = 9998);
 
     // get the scene node
     ossia::net::node_base& getSceneNode();

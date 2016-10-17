@@ -1,11 +1,5 @@
 #include "ofApp.h"
-//--------------------------------------------------------------
-ofApp::ofApp():
-     _network("ofExample","i-score","127.0.0.1",13579, 9998)
-   // initialized network with local device 'ofExample' and remote device 'i-score' at localhost
-{
 
-}
 
 //--------------------------------------------------------------
 void ofApp::setup(){
