@@ -274,7 +274,7 @@ inline ossia::net::domain get_domain(
     oscpack::ReceivedMessageArgumentIterator end_it)
 {
   boost::container::small_vector<ossia::value, 2> val;
-  auto cur = addr.cloneValue();
+  const auto cur = addr.cloneValue();
 
   // We read all the values one by one
   while (beg_it != end_it)
@@ -284,19 +284,7 @@ inline ossia::net::domain get_domain(
     val.push_back(ossia::net::to_value(cur, cur_it, beg_it, 1));
   }
 
-  if (val.size() == 2)
-  {
-    if(cur.getType() != val_type::TUPLE)
-      return ossia::net::make_domain(val[0], val[1]);
-    else
-    {
-      if(val[0].valid() && val[1].valid())
-        return ossia::net::domain_base<Tuple>{val[0], val[1]};
-      else
-        return {};
-    }
-  }
-  return {};
+  return ossia::net::make_domain(val, cur);
 }
 
 // Listen
@@ -548,7 +536,7 @@ struct minuit_behavior<minuit_command::Answer,
           str += ':';
           str.append(it->begin(), it->end());
           proto.pending_get_requests++;
-          proto.sender().send(sub_request, str);
+          proto.sender().send(sub_request, boost::string_view(str));
 
           it = attribs.erase(it);
         }
@@ -576,7 +564,7 @@ struct minuit_behavior<minuit_command::Answer,
           str += ':';
           str.append(attrib.begin(), attrib.end());
           proto.pending_get_requests++;
-          proto.sender().send(sub_request, str);
+          proto.sender().send(sub_request, boost::string_view(str));
         }
       default:
         break;

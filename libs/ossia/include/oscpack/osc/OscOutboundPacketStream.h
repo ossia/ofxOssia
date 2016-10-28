@@ -494,6 +494,13 @@ public:
       return *this;
     }
 
+    OutboundPacketStream& operator<<(
+        const std::string& rhs)
+    {
+      operator<<(boost::string_view(rhs));
+      return *this;
+    }
+
     template<int N>
     OutboundPacketStream& operator<<(
         const char (&ref)[N])

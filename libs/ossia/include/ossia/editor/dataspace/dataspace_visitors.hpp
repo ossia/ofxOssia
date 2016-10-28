@@ -1,5 +1,7 @@
 #pragma once
 #include <ossia/editor/dataspace/dataspace.hpp>
+#include <ossia/network/common/address_properties.hpp>
+#include <ossia/detail/destination_index.hpp>
 #include <bitset>
 
 namespace ossia
@@ -26,6 +28,15 @@ boost::string_view get_unit_text(ossia::unit_t);
 OSSIA_EXPORT
 std::string get_pretty_unit_text(ossia::unit_t);
 
+
+/**
+ * @brief get_unit_accessor Return the character corresponding to the accessor
+ *
+ * e.g. for unit == rgb, n == 1, the function returns 'g'.
+ * @note Will return 0 (as in "(char)0") if anything is invalid.
+ */
+OSSIA_EXPORT
+char get_unit_accessor(const ossia::unit_t&, uint8_t n);
 
 /**
  * @brief parse_dataspace
@@ -75,6 +86,18 @@ ossia::unit_t parse_unit(boost::string_view text, T dataspace);
 OSSIA_EXPORT
 value_with_unit make_value(const ossia::value& v, const ossia::unit_t& u);
 
+/**
+ * @brief get_unit Create an unit from indexes in the variant
+ * @param dataspace Identifier in the first variant
+ * @param unit Optional identifier in the second variant
+ *
+ * Ex. : position.opengl_u == (1, 4).
+ * This is useful for concise serialization / deserialization.
+ *
+ * @return A corresponding unit
+ */
+OSSIA_EXPORT
+ossia::unit_t make_unit(uint64_t dataspace, uint64_t unit);
 
 /**
  * @brief matching_type Get the implementation type of an unit
@@ -96,6 +119,19 @@ ossia::val_type matching_type(const ossia::unit_t& u);
  */
 OSSIA_EXPORT
 ossia::value_with_unit convert(ossia::value_with_unit v, ossia::unit_t t);
+
+/**
+ * @brief convert Convert a value to another unit.
+ * @param v A value.
+ * @param source_unit The unit of v.
+ * @param destination_unit The unit in which v shall be converted.
+ *
+ * Dataspaces ought to be similar.
+ *
+ * @return Converted value, else the input value.
+ */
+OSSIA_EXPORT
+ossia::value convert(ossia::value v, ossia::unit_t source_unit, ossia::unit_t destination_unit);
 
 
 /**

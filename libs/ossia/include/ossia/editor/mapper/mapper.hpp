@@ -4,6 +4,7 @@
 #include <ossia/editor/scenario/time_process.hpp>
 #include <ossia/editor/state/state.hpp>
 #include <ossia/network/base/address.hpp>
+#include <ossia/editor/curve/behavior.hpp>
 #include <ossia_export.h>
 
 #include <mutex>
@@ -29,15 +30,16 @@ class OSSIA_EXPORT mapper final :
 {
 public:
   mapper(
-      ossia::net::address_base&, ossia::net::address_base&,
-      const ossia::value&);
+      ossia::Destination,
+      ossia::Destination,
+      ossia::behavior);
 
   ~mapper();
 
-  const ossia::net::address_base& getDriverAddress() const;
-  const ossia::net::address_base& getDrivenAddress() const;
+  const ossia::Destination& getDriverAddress() const;
+  const ossia::Destination& getDrivenAddress() const;
 
-  const ossia::value& getDriving() const;
+  const ossia::behavior& getDriving() const;
 
 private:
   ossia::state_element offset(ossia::time_value) override;
@@ -49,13 +51,13 @@ private:
   void pause() override;
   void resume() override;
 
-  ossia::value computeValue(const ossia::value&, const ossia::value&);
+  static ossia::value computeValue(const ossia::value&, const ossia::behavior&);
 
-  void driverValueCallback(const ossia::value& value);
+  void driverValueCallback(ossia::value value);
 
-  ossia::net::address_base& mDriverAddress;
-  ossia::net::address_base& mDrivenAddress;
-  ossia::value mDrive;
+  ossia::Destination mDriverAddress;
+  ossia::Destination mDrivenAddress;
+  ossia::behavior mDrive;
 
   ossia::message mLastMessage;
   ossia::value mValueToMap;
@@ -63,5 +65,7 @@ private:
 
   ossia::net::address_base::callback_index mDriverValueCallbackIndex;
   bool mDriverValueObserved{};
+
+  friend struct mapper_compute_visitor;
 };
 }

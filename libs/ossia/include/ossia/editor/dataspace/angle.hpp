@@ -1,8 +1,10 @@
 #pragma once
 #include <ossia/editor/dataspace/dataspace_base.hpp>
+#include <eggs/variant.hpp>
 
 namespace ossia
 {
+struct angle_dataspace;
 struct radian_u;
 template<typename Impl>
 struct angle_unit
@@ -11,7 +13,7 @@ struct angle_unit
   using neutral_unit = radian_u;
   using value_type = Float;
   using concrete_type = Impl;
-  using dataspace_type = struct angle_dataspace;
+  using dataspace_type = angle_dataspace;
 };
 
 struct radian_u : public angle_unit<radian_u>
@@ -26,7 +28,7 @@ struct radian_u : public angle_unit<radian_u>
 
   static OSSIA_DECL_RELAXED_CONSTEXPR value_type from_neutral(strong_value<neutral_unit> self)
   {
-    return self.value;
+    return self.dataspace_value;
   }
 };
 
@@ -37,12 +39,12 @@ struct degree_u : public angle_unit<degree_u>
 
   static OSSIA_DECL_RELAXED_CONSTEXPR strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-    return {self.value.value * ossia::deg_to_rad};
+    return {self.dataspace_value * ossia::deg_to_rad};
   }
 
   static OSSIA_DECL_RELAXED_CONSTEXPR value_type from_neutral(strong_value<neutral_unit> self)
   {
-    return {self.value.value * ossia::rad_to_deg};
+    return self.dataspace_value * ossia::rad_to_deg;
   }
 };
 

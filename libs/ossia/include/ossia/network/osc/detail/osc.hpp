@@ -30,45 +30,42 @@ struct osc_outbound_visitor
     }
     void operator()(ossia::Int i) const
     {
-      p << int32_t(i.value);
+      p << int32_t(i);
     }
     void operator()(ossia::Float f) const
     {
-      p << f.value;
+      p << float(f);
     }
     void operator()(ossia::Bool b) const
     {
-      p << int32_t(b.value);
+      p << int32_t(b);
     }
     void operator()(ossia::Char c) const
     {
-      p << int32_t(c.value);
+      p << int32_t(c);
     }
     void operator()(const ossia::String& str) const
     {
-      p << boost::string_view(str.value);
+      p << (boost::string_view)str;
     }
     void operator()(ossia::Vec2f vec) const
     {
-      p << vec.value[0] << vec.value[1];
+      p << vec[0] << vec[1];
     }
     void operator()(ossia::Vec3f vec) const
     {
-      p << vec.value[0] << vec.value[1] << vec.value[2];
+      p << vec[0] << vec[1] << vec[2];
     }
     void operator()(ossia::Vec4f vec) const
     {
-      p << vec.value[0] << vec.value[1] << vec.value[2] << vec.value[3];
+      p << vec[0] << vec[1] << vec[2] << vec[3];
     }
     void operator()(const ossia::Destination& d) const
     {
     }
-    void operator()(const ossia::Behavior&) const
-    {
-    }
     void operator()(const ossia::Tuple& t) const
     {
-      for (const auto& val : t.value)
+      for (const auto& val : t)
       {
         p << val;
       }
@@ -126,35 +123,41 @@ struct osc_inbound_visitor
         return i;
       }
     }
+
+    float get_float(oscpack::ReceivedMessageArgumentIterator it, float f) const
+    {
+        try {
+          switch (it->TypeTag())
+          {
+            case oscpack::INT32_TYPE_TAG:
+              return it->AsInt32Unchecked();
+            case oscpack::INT64_TYPE_TAG:
+              return it->AsInt64Unchecked();
+            case oscpack::FLOAT_TYPE_TAG:
+              return it->AsFloatUnchecked();
+            case oscpack::DOUBLE_TYPE_TAG:
+              return it->AsDoubleUnchecked();
+            case oscpack::CHAR_TYPE_TAG:
+              return it->AsCharUnchecked();
+            case oscpack::TRUE_TYPE_TAG:
+              return 1.f;
+            case oscpack::FALSE_TYPE_TAG:
+              return 0.f;
+            case oscpack::STRING_TYPE_TAG:
+              return boost::lexical_cast<float>(it->AsStringUnchecked());
+            case oscpack::SYMBOL_TYPE_TAG:
+              return boost::lexical_cast<float>(it->AsSymbolUnchecked());
+            default:
+              return f;
+          }
+        } catch(const boost::bad_lexical_cast &) {
+          return f;
+        }
+    }
+
     ossia::value operator()(ossia::Float f) const
     {
-      try {
-        switch (cur_it->TypeTag())
-        {
-          case oscpack::INT32_TYPE_TAG:
-            return ossia::Float{float(cur_it->AsInt32Unchecked())};
-          case oscpack::INT64_TYPE_TAG:
-            return ossia::Float{float(cur_it->AsInt64Unchecked())};
-          case oscpack::FLOAT_TYPE_TAG:
-            return ossia::Float{float(cur_it->AsFloatUnchecked())};
-          case oscpack::DOUBLE_TYPE_TAG:
-            return ossia::Float{float(cur_it->AsDoubleUnchecked())};
-          case oscpack::CHAR_TYPE_TAG:
-            return ossia::Float{float(cur_it->AsCharUnchecked())};
-          case oscpack::TRUE_TYPE_TAG:
-            return ossia::Float{1.};
-          case oscpack::FALSE_TYPE_TAG:
-            return ossia::Float{0.};
-          case oscpack::STRING_TYPE_TAG:
-            return ossia::Float{boost::lexical_cast<float>(cur_it->AsStringUnchecked())};
-          case oscpack::SYMBOL_TYPE_TAG:
-            return ossia::Float{boost::lexical_cast<float>(cur_it->AsSymbolUnchecked())};
-          default:
-            return f;
-        }
-      } catch(const boost::bad_lexical_cast &) {
-        return f;
-      }
+        return get_float(cur_it, f);
     }
 
     ossia::value operator()(ossia::Bool b) const
@@ -241,6 +244,7 @@ struct osc_inbound_visitor
       }
     }
 
+
     template <std::size_t N>
     ossia::value operator()(ossia::Vec<float, N> vec) const
     {
@@ -252,13 +256,7 @@ struct osc_inbound_visitor
         auto vec_end = end_it;
         for (; vec_it != vec_end; ++vec_it)
         {
-          if (vec_it->IsFloat())
-            ret.value[i] = vec_it->AsFloatUnchecked();
-          else if (vec_it->IsDouble())
-            ret.value[i] = vec_it->AsDoubleUnchecked();
-          else
-            return vec;
-
+          ret[i] = get_float(vec_it, 0.);
           i++;
         }
         return ret;
@@ -272,10 +270,6 @@ struct osc_inbound_visitor
     ossia::value operator()(const ossia::Destination& d) const
     {
       return d;
-    }
-    ossia::value operator()(const ossia::Behavior& b) const
-    {
-      return b;
     }
 
     ossia::value create_value(oscpack::ReceivedMessageArgumentIterator it)
@@ -308,13 +302,13 @@ struct osc_inbound_visitor
     ossia::value operator()(const ossia::Tuple&)
     {
       /* This code preserves type info, this is not what we want.
-    int n = t.value.size();
+    int n = t.size();
     if (numArguments == n)
     {
       for (int i = 0; i < n; i++)
       {
-        auto res = eggs::variants::apply(*this, t.value[i].v);
-        t.value[i] = std::move(res);
+        auto res = eggs::variants::apply(*this, t[i].v);
+        t[i] = std::move(res);
         ++cur_it;
       }
     }
@@ -322,7 +316,7 @@ struct osc_inbound_visitor
       ossia::Tuple t;
       for(int i = 0; i < numArguments; ++i)
       {
-        t.value.push_back(create_value(cur_it));
+        t.push_back(create_value(cur_it));
         ++cur_it;
       }
       return t;
@@ -355,7 +349,7 @@ inline ossia::value filter_value(
 {
   if (dom)
   {
-    auto res = ossia::net::clamp(dom, mode, std::forward<Value_T>(base_val));
+    auto res = ossia::net::apply_domain(dom, mode, std::forward<Value_T>(base_val));
     if (res.valid())
       return res;
     else
@@ -441,8 +435,8 @@ operator<<(oscpack::OutboundPacketStream& p, const ossia::value& val)
 inline oscpack::OutboundPacketStream&
 operator<<(oscpack::OutboundPacketStream& p, const ossia::net::domain& dom)
 {
-  auto dom_min = ossia::net::min(dom);
-  auto dom_max = ossia::net::max(dom);
+  auto dom_min = dom.get_min();
+  auto dom_max = dom.get_max();
   if (bool(dom_min.v) && bool(dom_max.v))
     p << dom_min << dom_max;
 

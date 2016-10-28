@@ -237,35 +237,35 @@ public:
       destination_index::const_iterator index;
       Y operator()(Int i) const
       {
-        return i.value;
+        return i;
       }
       Y operator()(Float f) const
       {
-        return f.value;
+        return f;
       }
       Y operator()(Bool b) const
       {
-        return b.value;
+        return b;
       }
       Y operator()(Char c) const
       {
-        return c.value;
+        return c;
       }
       Y operator()(Vec2f vec) const
       {
-        return vec.value[*index];
+        return vec[*index];
       }
       Y operator()(Vec3f vec) const
       {
-        return vec.value[*index];
+        return vec[*index];
       }
       Y operator()(Vec4f vec) const
       {
-        return vec.value[*index];
+        return vec[*index];
       }
       Y operator()(const Tuple& t) const
       {
-        auto& val = t.value[*index];
+        auto& val = t[*index];
         return convertToTemplateTypeValue(val, index + 1);
       }
 
@@ -287,12 +287,6 @@ public:
                                        "Cannot convert Destination to a numeric type");
         return {};
         ;
-      }
-      Y operator()(const Behavior&) const
-      {
-        throw invalid_value_type_error("curve_impl::convertToTemplateTypeValue: "
-                                       "Cannot convert Behavior to a numeric type");
-        return {};
       }
       Y operator()() const
       {

@@ -13,7 +13,6 @@ namespace detail
 template<typename T>
 struct dummy { using type = T; };
 }
-class value;
 
 /**
  * \brief ossia::apply : helper function to apply a visitor to a variant
@@ -24,7 +23,7 @@ class value;
  * This allows a simpler handling of the default case.
  */
 template <typename Visitor, typename Variant>
-auto apply(Visitor&& v, Variant&& var) -> decltype(auto)
+auto apply(Visitor&& v, Variant&& var) -> decltype(std::forward<Visitor>(v)())
 {
   // Thanks K-Ballo (eggs-cpp/variant#21)
   if (var)
@@ -37,6 +36,8 @@ auto apply(Visitor&& v, Variant&& var) -> decltype(auto)
 
 
 OSSIA_EXPORT std::string to_pretty_string(const ossia::destination_index& index);
+
+class value;
 
 /*!
  * \brief getValueAsString Returns a string corresponding to the value
@@ -51,6 +52,23 @@ OSSIA_EXPORT std::string to_pretty_string(const ossia::destination_index& index)
  */
 OSSIA_EXPORT std::string value_to_pretty_string(const ossia::value& val);
 
+using value_variant_type = eggs::variant<
+    Impulse, 
+    bool, int, float, char, 
+    std::string, 
+    std::vector<ossia::value>, 
+    std::array<float, 2ul>, std::array<float, 3ul>, std::array<float, 4ul>, 
+    Destination>;
+
+#if defined(_MSC_VER)
+using value_variant = value_variant_type;
+#else
+struct OSSIA_EXPORT value_variant : public value_variant_type
+{
+    using value_variant_type::value_variant_type;
+};
+#endif
+
 /**
  * @brief The value class
  *
@@ -63,7 +81,7 @@ OSSIA_EXPORT std::string value_to_pretty_string(const ossia::value& val);
  * void f(ossia::value& v) {
  *   if(v.valid())
  *   {
- *     auto maybe_int = v.try_get<Int>();
+ *     auto maybe_int = v.target<Int>();
  *     if(maybe_int)
  *       std::cout << maybe_int->value;
  *     else // we know for some reason that it is a float
@@ -78,137 +96,129 @@ OSSIA_EXPORT std::string value_to_pretty_string(const ossia::value& val);
 class OSSIA_EXPORT value
 {
 public:
-  using value_type
-      = eggs::variant<Impulse, Bool, Int, Float, Char, String, Tuple, Vec2f,
-                      Vec3f, Vec4f, Destination, Behavior>;
+  using value_type = value_variant;
 
   value_type v;
 
   // Construction
   template <typename T>
   OSSIA_DECL_RELAXED_CONSTEXPR value(T*) = delete;
-  OSSIA_DECL_RELAXED_CONSTEXPR value(ossia::Impulse val) : v{val} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(ossia::Bool val) : v{val} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(ossia::Int val) : v{val} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(ossia::Float val) : v{val} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(ossia::Char val) : v{val} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(const ossia::String& val) : v{val} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(const ossia::Tuple& val) : v{val} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(const ossia::Vec2f& val) : v{val} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(const ossia::Vec3f& val) : v{val} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(const ossia::Vec4f& val) : v{val} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(const ossia::Destination& val) : v{val} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(ossia::net::address_base& val) : v{eggs::variants::in_place<ossia::Destination>, val} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(const ossia::Behavior& val) : v{val} { }
+  OSSIA_DECL_RELAXED_CONSTEXPR value(Impulse val) noexcept : v{val} { }
+  OSSIA_DECL_RELAXED_CONSTEXPR value(const ossia::Destination& val) noexcept : v{val} { }
+
+  OSSIA_DECL_RELAXED_CONSTEXPR value(bool val) noexcept : v{eggs::variants::in_place<ossia::Bool>, val} { }
+  OSSIA_DECL_RELAXED_CONSTEXPR value(int val) noexcept : v{eggs::variants::in_place<ossia::Int>, val} { }
+  OSSIA_DECL_RELAXED_CONSTEXPR value(char val) noexcept : v{eggs::variants::in_place<ossia::Char>, val} { }
+  OSSIA_DECL_RELAXED_CONSTEXPR value(float val) noexcept : v{eggs::variants::in_place<ossia::Float>, val} { }
+  OSSIA_DECL_RELAXED_CONSTEXPR value(double val) noexcept : v{eggs::variants::in_place<ossia::Float>, val} { }
+  OSSIA_DECL_RELAXED_CONSTEXPR value(const std::string& val) noexcept : v{eggs::variants::in_place<ossia::String>, val} { }
+  OSSIA_DECL_RELAXED_CONSTEXPR value(const std::vector<ossia::value>& val) noexcept : v{eggs::variants::in_place<ossia::Tuple>, val} { }
+  OSSIA_DECL_RELAXED_CONSTEXPR value(std::array<float, 2> val) noexcept : v{eggs::variants::in_place<ossia::Vec2f>, val} { }
+  OSSIA_DECL_RELAXED_CONSTEXPR value(std::array<float, 3> val) noexcept : v{eggs::variants::in_place<ossia::Vec3f>, val} { }
+  OSSIA_DECL_RELAXED_CONSTEXPR value(std::array<float, 4> val) noexcept : v{eggs::variants::in_place<ossia::Vec4f>, val} { }
+  OSSIA_DECL_RELAXED_CONSTEXPR value(ossia::net::address_base& val) noexcept : v{eggs::variants::in_place<ossia::Destination>, val} { }
+
+  // Movable overloads
+  OSSIA_DECL_RELAXED_CONSTEXPR value(ossia::Destination&& val) noexcept : v{std::move(val)} { }
+
+  OSSIA_DECL_RELAXED_CONSTEXPR explicit value(std::string&& val) noexcept : v{eggs::variants::in_place<ossia::String>, std::move(val)} { }
+  OSSIA_DECL_RELAXED_CONSTEXPR explicit value(std::vector<ossia::value>&& val) noexcept : v{eggs::variants::in_place<ossia::Tuple>, std::move(val)} { }
+
 
   template<typename T, typename... Args>
-  OSSIA_DECL_RELAXED_CONSTEXPR value(detail::dummy<T> t, Args&&... args):
+  OSSIA_DECL_RELAXED_CONSTEXPR value(detail::dummy<T> t, Args&&... args) noexcept :
     v{eggs::variants::in_place<typename detail::dummy<T>::type>, std::forward<Args>(args)...}
   {
 
   }
 
+  // To initialize a value directly with correct arguments
   template<typename T, typename... Args>
-  static ossia::value make(Args&&... args)
+  static ossia::value make(Args&&... args) noexcept
   { return ossia::value{detail::dummy<T>{}, std::forward<Args>(args)...}; }
 
-  // Movable overloads
-  OSSIA_DECL_RELAXED_CONSTEXPR value(ossia::String&& val) : v{std::move(val)} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(ossia::Tuple&& val) : v{std::move(val)} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(ossia::Destination&& val) : v{std::move(val)} { }
-  OSSIA_DECL_RELAXED_CONSTEXPR value(ossia::Behavior&& val) : v{std::move(val)} { }
-
-
   // Assignment
-  value& operator=(ossia::Impulse val)
+  value& operator=(ossia::Impulse val) noexcept
   {
     v = val;
     return *this;
   }
-  value& operator=(ossia::Bool val)
+  value& operator=(const ossia::Destination& val) noexcept
   {
     v = val;
     return *this;
   }
-  value& operator=(ossia::Int val)
+  value& operator=(bool val) noexcept
   {
     v = val;
     return *this;
   }
-  value& operator=(ossia::Float val)
+  value& operator=(int val) noexcept
   {
     v = val;
     return *this;
   }
-  value& operator=(ossia::Char val)
+  value& operator=(float val) noexcept
   {
     v = val;
     return *this;
   }
-  value& operator=(const ossia::String& val)
+  value& operator=(char val) noexcept
   {
     v = val;
     return *this;
   }
-  value& operator=(const ossia::Tuple& val)
+  value& operator=(const std::string& val) noexcept
   {
     v = val;
     return *this;
   }
-  value& operator=(const ossia::Vec2f& val)
+  value& operator=(const std::vector<ossia::value>& val) noexcept
   {
     v = val;
     return *this;
   }
-  value& operator=(const ossia::Vec3f& val)
+  value& operator=(std::array<float, 2> val) noexcept
   {
     v = val;
     return *this;
   }
-  value& operator=(const ossia::Vec4f& val)
+  value& operator=(std::array<float, 3> val) noexcept
   {
     v = val;
     return *this;
   }
-  value& operator=(const ossia::Destination& val)
+  value& operator=(std::array<float, 4> val) noexcept
   {
     v = val;
     return *this;
   }
-  value& operator=(const ossia::Behavior& val)
+  value& operator=(ossia::net::address_base& val) noexcept
   {
-    v = val;
+    v = Destination{val};
     return *this;
   }
 
-  // Movable overloads
-  value& operator=(ossia::String&& val)
+  value& operator=(std::string&& val) noexcept
   {
     v = std::move(val);
     return *this;
   }
-  value& operator=(ossia::Tuple&& val)
-  {
-    v = std::move(val);
-    return *this;
-  }
-  value& operator=(ossia::Destination&& val)
-  {
-    v = std::move(val);
-    return *this;
-  }
-  value& operator=(ossia::Behavior&& val)
+  value& operator=(std::vector<ossia::value>&& val) noexcept
   {
     v = std::move(val);
     return *this;
   }
 
-  value() = default;
+  value() noexcept = default;
   value(const value& other) = default;
-  value(value&& other) = default;
+  value(value&& other) noexcept : v{std::move(other.v)} {}
   value& operator=(const value& other) = default;
-  value& operator=(value&& other) = default;
+  value& operator=(value&& other) noexcept { v = std::move(other.v); return *this; }
 
+
+  operator value_type&() { return v; }
+  operator const value_type&() const { return v; }
 
   // Operations
   template <typename T>
@@ -224,13 +234,13 @@ public:
   }
 
   template <typename T>
-  const T* try_get() const
+  const T* target() const noexcept
   {
     return v.target<T>();
   }
 
   template <typename T>
-  T* try_get()
+  T* target()  noexcept
   {
     return v.target<T>();
   }
@@ -241,19 +251,19 @@ public:
     if (t == v.npos)
     {
       throw ossia::invalid_value_type_error{"value::getType: "
-                                            "called with type == npos"};
+                                            "called with no value"};
       return {};
     }
 
     return static_cast<ossia::val_type>(t);
   }
 
-  bool valid() const
+  bool valid() const noexcept
   {
-    return v.target();
+    return bool(v);
   }
 
-  void reset()
+  void reset() noexcept
   {
     v = value_type{};
   }
@@ -261,21 +271,21 @@ public:
   template <typename Visitor>
   auto apply(Visitor&& vis) -> decltype(auto)
   {
-    return ossia::apply(vis, v);
+    return ossia::apply(std::forward<Visitor>(vis), v);
   }
 
   template <typename Visitor>
   auto apply(Visitor&& vis) const -> decltype(auto)
   {
-    return ossia::apply(vis, v);
+    return ossia::apply(std::forward<Visitor>(vis), v);
   }
 
-  bool operator==(const value& rhs) const;
-  bool operator!=(const value& rhs) const;
-  bool operator>(const value& rhs) const;
-  bool operator>=(const value& rhs) const;
-  bool operator<(const value& rhs) const;
-  bool operator<=(const value& rhs) const;
+  friend OSSIA_EXPORT bool operator==(const value& lhs, const value& rhs);
+  friend OSSIA_EXPORT bool operator!=(const value& lhs, const value& rhs);
+  friend OSSIA_EXPORT bool operator>(const value& lhs, const value& rhs);
+  friend OSSIA_EXPORT bool operator>=(const value& lhs, const value& rhs);
+  friend OSSIA_EXPORT bool operator<(const value& lhs, const value& rhs);
+  friend OSSIA_EXPORT bool operator<=(const value& lhs, const value& rhs);
 
   template<typename ostream_t>
   friend ostream_t& operator<<(ostream_t& os, const ossia::value& c)
@@ -309,8 +319,6 @@ inline ossia::value init_value(ossia::val_type type)
       return Vec3f{};
     case val_type::VEC4F:
       return Vec4f{};
-    case val_type::BEHAVIOR:
-      return Behavior{{}};
     case val_type::DESTINATION:
       throw invalid_value_type_error("init_value: do not create Destination like this");
   }

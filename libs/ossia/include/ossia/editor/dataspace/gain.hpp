@@ -1,9 +1,11 @@
 #pragma once
 #include <ossia/editor/dataspace/dataspace_base.hpp>
+#include <eggs/variant.hpp>
 
 namespace ossia
 {
 struct linear_u;
+struct gain_dataspace;
 template<typename Impl>
 struct gain_unit
 {
@@ -11,15 +13,15 @@ struct gain_unit
   using neutral_unit = linear_u;
   using value_type = Float;
   using concrete_type = Impl;
-  using dataspace_type = struct gain_dataspace;
+  using dataspace_type = gain_dataspace;
 };
 
 /** Utility functions taken from Jamoma TTBase.h **/
 namespace detail
 {
 const constexpr double DecibelHeadroom = 96.;
-const double GainMidiPower = std::log( std::log(12. / DecibelHeadroom + 1.) / std::log(127. / 100.) ) / std::log(2.);
-const double GainMidiPowPow2 = std::pow(2., GainMidiPower);
+const double GainMidiPower = std::log( std::log1p(12. / DecibelHeadroom) / std::log(127. / 100.) ) / std::log(2.);
+const double GainMidiPowPow2 = std::exp2(GainMidiPower);
 
 template<typename T>
 T LinearGainToDecibels(const T value)
@@ -57,7 +59,7 @@ T MidiToLinearGain(const T value)
     return value <= 0.
             ? 0.
             : DecibelsToLinearGainClipped(
-                  DecibelHeadroom * ( std::pow( value / 100., std::pow(2., GainMidiPower)) - 1.));
+                  DecibelHeadroom * ( std::pow( value / 100., std::exp2(GainMidiPower)) - 1.));
 }
 
 template<typename T>
@@ -87,7 +89,7 @@ struct linear_u : public gain_unit<linear_u>
 
   static OSSIA_DECL_RELAXED_CONSTEXPR value_type from_neutral(strong_value<neutral_unit> self)
   {
-    return self.value;
+    return self.dataspace_value;
   }
 };
 
@@ -98,12 +100,12 @@ struct midigain_u : public gain_unit<midigain_u>
 
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-      return detail::MidiToLinearGain(self.value.value);
+      return detail::MidiToLinearGain(self.dataspace_value);
   }
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
-      return detail::LinearGainToMidi(self.value.value);
+      return detail::LinearGainToMidi(self.dataspace_value);
   }
 };
 
@@ -114,12 +116,12 @@ struct decibel_u : public gain_unit<decibel_u>
 
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-      return detail::DecibelsToLinearGainClipped(self.value.value);
+      return detail::DecibelsToLinearGainClipped(self.dataspace_value);
   }
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
-      return detail::LinearGainToDecibelsClipped(self.value.value);
+      return detail::LinearGainToDecibelsClipped(self.dataspace_value);
   }
 };
 
@@ -131,12 +133,12 @@ struct decibel_raw_u : public gain_unit<decibel_raw_u>
 
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-      return detail::DecibelsToLinearGain(self.value.value);
+      return detail::DecibelsToLinearGain(self.dataspace_value);
   }
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
-      return 20.0 * (std::log10(self.value.value));
+      return 20.0 * (std::log10(self.dataspace_value));
   }
 };
 

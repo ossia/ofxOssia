@@ -1,7 +1,7 @@
 #pragma once
-#include <ossia/editor/value/value.hpp>
-#include <ossia/editor/value/value_traits.hpp>
 #include <ossia/detail/algorithms.hpp>
+#include <ossia/editor/value/float.hpp>
+#include <ossia/editor/value/vec.hpp>
 
 #include <ossia/detail/math.hpp>
 #include <brigand/algorithms/transform.hpp>
@@ -33,59 +33,75 @@ struct strong_value
   using value_type = typename Unit::value_type;
   using dataspace_type = typename Unit::dataspace_type;
   using neutral_unit = typename Unit::neutral_unit;
-  value_type value;
+  value_type dataspace_value;
 
-  strong_value() = default;
+  constexpr strong_value() = default;
 
   // Constructor that takes anyything able to initialize val
-  template<typename U,
-           typename = std::enable_if_t<
-             std::is_constructible<value_type, U>::value>>
-  constexpr strong_value(U other):
-      value{other}
+/* Sadly does not work on MSVC........
+  template<typename... Args,
+           typename = std::enable_if<
+             std::is_constructible<value_type, Args...>::value>::type>
+      OSSIA_DECL_RELAXED_CONSTEXPR strong_value(Args&&... other):
+      value{std::forward<Args>(other)...}
   {
   }
+*/
+  OSSIA_INLINE constexpr strong_value(float other) : dataspace_value{ other } { }
+  OSSIA_INLINE constexpr strong_value(double other) : dataspace_value{ (float)other } { }
+  OSSIA_INLINE constexpr strong_value(int other) : dataspace_value{ (float)other } { }
+  OSSIA_INLINE constexpr strong_value(char other) : dataspace_value{ (float)other } { }
+  OSSIA_INLINE constexpr strong_value(bool other) : dataspace_value{ (float)other } { }
+  OSSIA_INLINE constexpr strong_value(std::array<float, 2> other) : dataspace_value{ other } { }
+  OSSIA_INLINE constexpr strong_value(std::array<float, 3> other) : dataspace_value{ other } { }
+  OSSIA_INLINE constexpr strong_value(std::array<float, 4> other) : dataspace_value{ other } { }
+  OSSIA_INLINE constexpr strong_value(std::array<double, 2> other) : dataspace_value{ (float)other[0], (float)other[1] } { }
+  OSSIA_INLINE constexpr strong_value(std::array<double, 3> other) : dataspace_value{ (float)other[0], (float)other[1], (float)other[2] } { }
+  OSSIA_INLINE constexpr strong_value(std::array<double, 4> other) : dataspace_value{ (float)other[0], (float)other[1], (float)other[2], (float)other[3] } { }
+  OSSIA_INLINE constexpr strong_value(float f0, float f1) : dataspace_value{ f0, f1 } { }
+  OSSIA_INLINE constexpr strong_value(float f0, float f1, float f2) : dataspace_value{ f0, f1, f2 } { }
+  OSSIA_INLINE constexpr strong_value(float f0, float f1, float f2, float f3) : dataspace_value{ f0, f1, f2, f3} { }
 
   // Conversion constructor
-  template<typename U,
-           typename = enable_if_same_dataspace<U, unit_type>>
+  template<typename U>
   constexpr strong_value(strong_value<U> other):
-    value{unit_type::from_neutral(U::to_neutral(other))}
+    dataspace_value{unit_type::from_neutral(U::to_neutral(other))}
   {
+    static_assert(std::is_same<dataspace_type, typename U::dataspace_type>::value, "Trying to convert between different dataspaces");
   }
 
   // Copy constructor
-  constexpr strong_value<Unit>(const strong_value<Unit>& other):
-      value{other.value}
+  OSSIA_INLINE constexpr strong_value<Unit>(const strong_value<Unit>& other):
+      dataspace_value{other.dataspace_value}
   {
   }
 
-  friend bool operator==(
+  OSSIA_INLINE friend bool operator==(
       const strong_value& lhs,
       const strong_value& rhs)
-  { return lhs.value == rhs.value; }
-  friend bool operator!=(
+  { return lhs.dataspace_value == rhs.dataspace_value; }
+  OSSIA_INLINE friend bool operator!=(
       const strong_value& lhs,
       const strong_value& rhs)
-  { return lhs.value != rhs.value; }
+  { return lhs.dataspace_value != rhs.dataspace_value; }
 };
 
 template<typename T, typename Ratio_T>
 struct linear_unit : public T
 {
-  static OSSIA_DECL_RELAXED_CONSTEXPR strong_value<typename T::neutral_unit>
+  OSSIA_INLINE static OSSIA_DECL_RELAXED_CONSTEXPR strong_value<typename T::neutral_unit>
     to_neutral(strong_value<typename T::concrete_type> self)
   {
-    return {self.value.value * ratio()};
+    return {self.dataspace_value * ratio()};
   }
 
-  static OSSIA_DECL_RELAXED_CONSTEXPR typename T::value_type
+  OSSIA_INLINE static OSSIA_DECL_RELAXED_CONSTEXPR typename T::value_type
     from_neutral(strong_value<typename T::neutral_unit> self)
   {
-    return self.value.value / ratio();
+    return self.dataspace_value / ratio();
   }
 
-  static OSSIA_DECL_RELAXED_CONSTEXPR double ratio()
+  OSSIA_INLINE static OSSIA_DECL_RELAXED_CONSTEXPR double ratio()
   {
     return double(Ratio_T::num) / double(Ratio_T::den);
   }

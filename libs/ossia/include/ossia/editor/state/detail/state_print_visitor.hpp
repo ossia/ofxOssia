@@ -33,27 +33,24 @@ struct state_print_visitor
   {
     out << padding << "message: "
         << ossia::to_pretty_string(m.destination) << " => "
-        << ossia::value_to_pretty_string(m.value);
-
-    if(m.unit)
-    {
-      out << " " << ossia::get_pretty_unit_text(m.unit);
-    }
+        << ossia::value_to_pretty_string(m.message_value);
 
     out << "\n";
   }
 
   void operator()(const piecewise_message& m)
   {
-    out << padding << "message: "
+    out << padding << "piecewise_message: "
         << ossia::net::address_string_from_node(m.address.get()) << " => "
-        << ossia::value_to_pretty_string(m.value) << "\n";
+        << ossia::value_to_pretty_string(m.message_value) << "\n";
   }
 
   template<std::size_t N>
   void operator()(const piecewise_vec_message<N>& m)
   {
-    // TODO
+    out << padding << "piecewise_vec_message<" << N << ">: "
+        << ossia::net::address_string_from_node(m.address.get()) << " => "
+        << ossia::value_to_pretty_string(m.message_value) << "\n";
   }
 
   void operator()()

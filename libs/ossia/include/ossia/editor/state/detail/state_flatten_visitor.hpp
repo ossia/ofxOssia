@@ -2,18 +2,16 @@
 #include <ossia/detail/algorithms.hpp>
 #include <ossia/editor/state/state_element.hpp>
 #include <ossia/editor/value/value_algorithms.hpp>
+#include <ossia/editor/value/value_traits.hpp>
+#include <ossia/network/base/address.hpp>
+#include <ossia/editor/dataspace/dataspace_visitors.hpp>
 #include <iostream>
 namespace ossia
 {
 
-static bool same_vec_type(const ossia::value& lhs, const ossia::value& rhs)
+static OSSIA_DECL_RELAXED_CONSTEXPR bool is_vec(ossia::val_type v)
 {
-  const auto first = lhs.getType();
-  const auto second = rhs.getType();
-  if(first != second)
-    return false;
-
-  switch(first)
+  switch(v)
   {
     case ossia::val_type::VEC2F:
     case ossia::val_type::VEC3F:
@@ -24,12 +22,29 @@ static bool same_vec_type(const ossia::value& lhs, const ossia::value& rhs)
   }
 }
 
+static bool same_vec_type(const ossia::value& lhs, const ossia::value& rhs)
+{
+  const auto first = lhs.getType();
+  const auto second = rhs.getType();
+  if(first != second)
+    return false;
+
+  return is_vec(first);
+}
+
 struct vec_merger
 {
   const ossia::Destination& existing_dest;
   const ossia::Destination& incoming_dest;
-  const ossia::unit_t& unit;
 
+  template<typename T, typename U>
+  ossia::state_element operator()(T&, const U&) const
+  {
+    // Invalid cases.
+    // TODO Do nothing, or throw ?
+    // throw std::runtime_error("vec_merger: invalid case");
+    return {};
+  }
   template<typename T, typename U>
   ossia::state_element operator()(const T&, const U&) const
   {
@@ -40,7 +55,60 @@ struct vec_merger
   }
 
   template<std::size_t N>
-  ossia::state_element operator()(ossia::Vec<float, N>& orig, const Float& incoming) const
+  auto make_piecewise_from_floats(Float orig, Float incoming) const
+  {
+    piecewise_vec_message<N> mess{existing_dest.value, {}, incoming_dest.unit, {}};
+
+    auto& existing_index = existing_dest.index;
+    if(existing_index[0] < N)
+    {
+      mess.message_value[existing_index[0]] = orig;
+      mess.used_values.set(existing_index[0]);
+    }
+
+    auto& incoming_index = incoming_dest.index;
+    if(incoming_index[0] < N)
+    {
+      mess.message_value[incoming_index[0]] = incoming;
+      mess.used_values.set(incoming_index[0]);
+    }
+    return mess;
+  }
+
+  ossia::state_element operator()(Float orig, Float incoming) const
+  {
+    auto& existing_index = existing_dest.index;
+    auto& incoming_index = incoming_dest.index;
+
+    if(!existing_index.empty() &&
+       !incoming_index.empty() &&
+       existing_index != incoming_index)
+    {
+      ossia::val_type type;
+      if(incoming_dest.unit)
+        type = ossia::matching_type(incoming_dest.unit);
+      else
+        type = existing_dest.value.get().getValueType();
+
+      switch(type)
+      {
+        case ossia::val_type::VEC2F:
+          return make_piecewise_from_floats<2>(orig, incoming);
+        case ossia::val_type::VEC3F:
+          return make_piecewise_from_floats<3>(orig, incoming);
+        case ossia::val_type::VEC4F:
+          return make_piecewise_from_floats<4>(orig, incoming);
+        default:
+          break;
+      }
+    }
+
+    return ossia::message{incoming_dest, incoming};
+  }
+
+
+  template<std::size_t N>
+  ossia::state_element operator()(ossia::Vec<float, N>& orig, Float incoming) const
   {
     auto& existing_index = existing_dest.index;
     auto& incoming_index = incoming_dest.index;
@@ -52,13 +120,13 @@ struct vec_merger
     {
       auto i = incoming_index[0];
       if(i < N)
-        orig.value[i] = incoming.value;
+        orig[i] = incoming;
 
       if(existing_index != incoming_index && !existing_index.empty())
       {
         // Case where we had a message setting the index [0] and another setting the index [2]
         // for instance
-        piecewise_vec_message<N> mess{existing_dest.value, orig, unit, {}};
+        piecewise_vec_message<N> mess{existing_dest.value, orig, incoming_dest.unit, {}};
         mess.used_values.set(existing_index[0]);
         mess.used_values.set(i);
         return mess;
@@ -77,20 +145,20 @@ struct vec_merger
     auto& incoming_index = incoming_dest.index;
     if(incoming_index.empty())
     {
-      orig.value = incoming.value;
+      orig = incoming;
       return {};
     }
     else
     {
       auto i = incoming_index[0];
       if(i < N)
-        orig.value[i] = incoming.value[i];
+        orig[i] = incoming[i];
 
       if(existing_index != incoming_index && !existing_index.empty())
       {
         // Case where we had a message setting the index [0] and another setting the index [2]
         // for instance
-        piecewise_vec_message<N> mess{existing_dest.value, orig, unit, {}};
+        piecewise_vec_message<N> mess{existing_dest.value, orig, incoming_dest.unit, {}};
         mess.used_values.set(existing_index[0]);
         mess.used_values.set(i);
         return mess;
@@ -113,16 +181,17 @@ struct state_flatten_visitor_merger
   {
     auto to_append_index_empty = incoming.destination.index.empty();
     auto source_index_empty = existing.destination.index.empty();
-    if(same_vec_type(existing.value, incoming.value))
+    if(same_vec_type(existing.message_value, incoming.message_value) ||
+       is_vec(existing.destination.value.get().getValueType()))
     {
       // We handle the Vec types a bit differently :
       // since it's very cheap, the value will contain the whole array data
       // and the index will be the relevant index in the array.
       // Hence we merge both indexes.
       auto res = eggs::variants::apply(
-            vec_merger{existing.destination, incoming.destination, incoming.unit},
-            existing.value.v,
-            incoming.value.v);
+            vec_merger{existing.destination, incoming.destination},
+            existing.message_value.v,
+            incoming.message_value.v);
 
       if(res)
       {
@@ -134,28 +203,28 @@ struct state_flatten_visitor_merger
     else if(to_append_index_empty && source_index_empty)
     {
       // Simple case : we just replace the values
-      value_merger<true>::merge_value(existing.value, incoming.value);
+      value_merger<true>::merge_value(existing.message_value, incoming.message_value);
     }
     else
     {
-      piecewise_message pw{incoming.destination.value, {}, incoming.unit};
+      piecewise_message pw{incoming.destination.value, {}, incoming.destination.unit};
       if(!to_append_index_empty && !source_index_empty)
       {
         // Most complex case : we create a tuple big enough to host both values
-        value_merger<true>::insert_in_tuple(pw.value, existing.value, existing.destination.index);
-        value_merger<true>::insert_in_tuple(pw.value, incoming.value, incoming.destination.index);
+        value_merger<true>::insert_in_tuple(pw.message_value, existing.message_value, existing.destination.index);
+        value_merger<true>::insert_in_tuple(pw.message_value, incoming.message_value, incoming.destination.index);
       }
       // For these cases, we mix in the one that has the index;
       // the one without index information becomes index [0] :
       else if(!to_append_index_empty)
       {
-        pw.value.value.push_back(existing.value);
-        value_merger<true>::insert_in_tuple(pw.value, incoming.value, incoming.destination.index);
+        pw.message_value.push_back(existing.message_value);
+        value_merger<true>::insert_in_tuple(pw.message_value, incoming.message_value, incoming.destination.index);
       }
       else if(!source_index_empty)
       {
-        value_merger<true>::insert_in_tuple(pw.value, existing.value, existing.destination.index);
-        value_merger<true>::set_first_value(pw.value, incoming.value);
+        value_merger<true>::insert_in_tuple(pw.message_value, existing.message_value, existing.destination.index);
+        value_merger<true>::set_first_value(pw.message_value, incoming.message_value);
       }
       state.remove(existing);
       state.add(std::move(pw));
@@ -167,20 +236,20 @@ struct state_flatten_visitor_merger
     if(incoming.destination.index.empty())
     {
       // add it at [0]
-      value_merger<true>::set_first_value(existing.value, incoming.value);
+      value_merger<true>::set_first_value(existing.message_value, incoming.message_value);
     }
     else
     {
       // add it wherever possible, by extending the tuple as required
-      value_merger<true>::insert_in_tuple(existing.value, incoming.value, incoming.destination.index);
+      value_merger<true>::insert_in_tuple(existing.message_value, incoming.message_value, incoming.destination.index);
     }
   }
 
   template<std::size_t N>
   void operator()(piecewise_vec_message<N>& existing, const message& incoming)
   {
-    auto t = incoming.value.getType();
-    using vec_type = decltype(existing.value);
+    auto t = incoming.message_value.getType();
+    using vec_type = decltype(existing.message_value);
     switch(t)
     {
       // incoming is a Float with index
@@ -191,7 +260,7 @@ struct state_flatten_visitor_merger
           auto i = incoming.destination.index[0];
           if(i < N)
           {
-            existing.value.value[i] = incoming.value.get<ossia::Float>().value;
+            existing.message_value[i] = incoming.message_value.get<ossia::Float>();
             existing.used_values.set(i);
           }
         }
@@ -206,15 +275,15 @@ struct state_flatten_visitor_merger
           auto i = incoming.destination.index[0];
           if(i < N)
           {
-            auto& inc = incoming.value.get<vec_type>();
-            existing.value.value[i] = inc.value[i];
+            auto& inc = incoming.message_value.get<vec_type>();
+            existing.message_value[i] = inc[i];
             existing.used_values.set(i);
           }
         }
         // Without index -> replace everything
         else
         {
-          existing.value.value = incoming.value.get<vec_type>().value;
+          existing.message_value = incoming.message_value.get<vec_type>();
         }
         break;
       }
@@ -236,12 +305,12 @@ struct state_flatten_visitor_merger
     if(existing.destination.index.empty())
     {
       // add it at [0]
-      value_merger<false>::set_first_value(other.value, existing.value);
+      value_merger<false>::set_first_value(other.message_value, existing.message_value);
     }
     else
     {
       // add it wherever possible, by extending the tuple as required
-      value_merger<false>::insert_in_tuple(other.value, existing.value, existing.destination.index);
+      value_merger<false>::insert_in_tuple(other.message_value, existing.message_value, existing.destination.index);
     }
 
     state.remove(existing);
@@ -253,7 +322,7 @@ struct state_flatten_visitor_merger
   void operator()(piecewise_message& existing, const piecewise_message& incoming)
   {
     // merge the new piecewise into the existing one
-    value_merger<true>::merge_tuple(existing.value, incoming.value);
+    value_merger<true>::merge_tuple(existing.message_value, incoming.message_value);
   }
 
   //// Piecewise Vec Message incoming
@@ -264,7 +333,7 @@ struct state_flatten_visitor_merger
     {
       if(incoming.used_values.test(i))
       {
-        existing.value.value[i] = incoming.value.value[i];
+        existing.message_value[i] = incoming.message_value[i];
         existing.used_values.set(i);
       }
     }
@@ -274,18 +343,24 @@ struct state_flatten_visitor_merger
   //// Message incoming
   void operator()(message& existing, message&& incoming)
   {
+//    std::cerr << ossia::to_pretty_string(existing.destination) << " : "
+//              << ossia::value_to_pretty_string(existing) << " <= "
+//              << ossia::to_pretty_string(incoming.destination) << " : "
+//              << ossia::value_to_pretty_string(incoming) << std::endl;
+
     auto to_append_index_empty = incoming.destination.index.empty();
     auto source_index_empty = existing.destination.index.empty();
-    if(same_vec_type(existing.value, incoming.value))
+    if(same_vec_type(existing.message_value, incoming.message_value) ||
+       is_vec(existing.destination.value.get().getValueType()))
     {
       // We handle the Vec types a bit differently :
       // since it's very cheap, the value will contain the whole array data
       // and the index will be the relevant index in the array.
       // Hence we merge both indexes.
       auto res = eggs::variants::apply(
-            vec_merger{existing.destination, incoming.destination, incoming.unit},
-            existing.value.v,
-            incoming.value.v);
+            vec_merger{existing.destination, incoming.destination},
+            existing.message_value.v,
+            incoming.message_value.v);
 
       if(res)
       {
@@ -297,28 +372,28 @@ struct state_flatten_visitor_merger
     else if(to_append_index_empty && source_index_empty)
     {
       // Simple case : we just replace the values
-      value_merger<true>::merge_value(existing.value, std::move(incoming.value));
+      value_merger<true>::merge_value(existing.message_value, std::move(incoming.message_value));
     }
     else
     {
-      piecewise_message pw{incoming.destination.value, {}, incoming.unit};
+      piecewise_message pw{incoming.destination.value, {}, incoming.destination.unit};
       if(!to_append_index_empty && !source_index_empty)
       {
         // Most complex case : we create a tuple big enough to host both values
-        value_merger<true>::insert_in_tuple(pw.value, existing.value, existing.destination.index);
-        value_merger<true>::insert_in_tuple(pw.value, std::move(incoming.value), incoming.destination.index);
+        value_merger<true>::insert_in_tuple(pw.message_value, existing.message_value, existing.destination.index);
+        value_merger<true>::insert_in_tuple(pw.message_value, std::move(incoming.message_value), incoming.destination.index);
       }
       // For these cases, we mix in the one that has the index;
       // the one without index information becomes index [0] :
       else if(!to_append_index_empty)
       {
-        pw.value.value.push_back(existing.value);
-        value_merger<true>::insert_in_tuple(pw.value, std::move(incoming.value), incoming.destination.index);
+        pw.message_value.push_back(existing.message_value);
+        value_merger<true>::insert_in_tuple(pw.message_value, std::move(incoming.message_value), incoming.destination.index);
       }
       else if(!source_index_empty)
       {
-        value_merger<true>::insert_in_tuple(pw.value, existing.value, existing.destination.index);
-        value_merger<true>::set_first_value(pw.value, std::move(incoming.value));
+        value_merger<true>::insert_in_tuple(pw.message_value, existing.message_value, existing.destination.index);
+        value_merger<true>::set_first_value(pw.message_value, std::move(incoming.message_value));
       }
 
       state.remove(existing);
@@ -330,12 +405,12 @@ struct state_flatten_visitor_merger
     if(incoming.destination.index.empty())
     {
       // add it at [0]
-      value_merger<true>::set_first_value(existing.value, std::move(incoming.value));
+      value_merger<true>::set_first_value(existing.message_value, std::move(incoming.message_value));
     }
     else
     {
       // add it wherever possible, by extending the tuple as required
-      value_merger<true>::insert_in_tuple(existing.value, std::move(incoming.value), incoming.destination.index);
+      value_merger<true>::insert_in_tuple(existing.message_value, std::move(incoming.message_value), incoming.destination.index);
     }
   }
 
@@ -351,12 +426,12 @@ struct state_flatten_visitor_merger
     if(existing.destination.index.empty())
     {
       // add it at [0]
-      value_merger<false>::set_first_value(other.value, existing.value);
+      value_merger<false>::set_first_value(other.message_value, existing.message_value);
     }
     else
     {
       // add it wherever possible, by extending the tuple as required
-      value_merger<false>::insert_in_tuple(other.value, existing.value, existing.destination.index);
+      value_merger<false>::insert_in_tuple(other.message_value, existing.message_value, existing.destination.index);
     }
 
     state.remove(existing);
@@ -367,7 +442,7 @@ struct state_flatten_visitor_merger
   void operator()(piecewise_message& existing, piecewise_message&& incoming)
   {
     // merge the new piecewise into the existing one
-    value_merger<true>::merge_tuple(existing.value, std::move(incoming.value));
+    value_merger<true>::merge_tuple(existing.message_value, std::move(incoming.message_value));
   }
 
 
@@ -452,15 +527,15 @@ struct state_flatten_visitor
     {
       auto address = address_ptr(incoming);
       if (auto m = e.target<message>())
-        return &m->destination.value.get() == address && incoming.unit == m->unit;
+        return &m->destination.value.get() == address && incoming.get_unit() == m->get_unit();
       else if(auto p = e.target<piecewise_message>())
-        return &p->address.get() == address && incoming.unit == p->unit;
+        return &p->address.get() == address && incoming.get_unit() == p->get_unit();
       else if(auto p2 = e.target<piecewise_vec_message<2>>())
-        return &p2->address.get() == address && incoming.unit == p2->unit;
+        return &p2->address.get() == address && incoming.get_unit() == p2->get_unit();
       else if(auto p3 = e.target<piecewise_vec_message<3>>())
-        return &p3->address.get() == address && incoming.unit == p3->unit;
+        return &p3->address.get() == address && incoming.get_unit() == p3->get_unit();
       else if(auto p4 = e.target<piecewise_vec_message<4>>())
-        return &p4->address.get() == address && incoming.unit == p4->unit;
+        return &p4->address.get() == address && incoming.get_unit() == p4->get_unit();
       else
         return false;
     });
@@ -510,7 +585,7 @@ struct state_flatten_visitor
     state.reserve(state.size() + s.size());
     for (const auto& e : s)
     {
-      flatten_and_filter(state, e);
+      ossia::apply(*this, e);
     }
   }
 
@@ -524,7 +599,7 @@ struct state_flatten_visitor
     state.reserve(state.size() + s.size());
     for (auto&& e : s)
     {
-      flatten_and_filter(state, std::move(e));
+      ossia::apply(*this, std::move(e));
     }
   }
 

@@ -1,16 +1,18 @@
 #pragma once
 #include <ossia/editor/dataspace/dataspace_base.hpp>
+#include <eggs/variant.hpp>
 
 namespace ossia
 {
 
 struct quaternion_u;
+struct orientation_dataspace;
 template<typename Impl>
 struct orientation_unit
 {
   using is_unit = std::true_type;
   using is_multidimensional = std::true_type;
-  using dataspace_type = struct orientation_dataspace;
+  using dataspace_type = orientation_dataspace;
   using neutral_unit = quaternion_u;
   using concrete_type = Impl;
 };
@@ -22,7 +24,7 @@ struct quaternion_u :
   static OSSIA_DECL_RELAXED_CONSTEXPR auto text()
   { return ossia::make_string_array("quaternion", "quat"); }
   static OSSIA_DECL_RELAXED_CONSTEXPR auto array_parameters()
-  { return "1ijk"; } // TODO find something better than 1 ?
+  { return ossia::make_string_view("1ijk"); } // TODO find something better than 1 ?
 
   using value_type = Vec4f;
   static OSSIA_DECL_RELAXED_CONSTEXPR strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
@@ -32,7 +34,7 @@ struct quaternion_u :
 
   static OSSIA_DECL_RELAXED_CONSTEXPR value_type from_neutral(strong_value<neutral_unit> self)
   {
-    return self.value.value;
+    return self.dataspace_value;
   }
 };
 
@@ -42,15 +44,15 @@ struct euler_u :
   static OSSIA_DECL_RELAXED_CONSTEXPR auto text()
   { return ossia::make_string_array("euler", "ypr"); }
   static OSSIA_DECL_RELAXED_CONSTEXPR auto array_parameters()
-  { return "ypr"; }
+  { return ossia::make_string_view("ypr"); }
 
   using value_type = Vec4f;
 
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-    const auto yaw = self.value.value[0] * deg_to_rad * -0.5;
-    const auto pitch = self.value.value[1] * deg_to_rad * 0.5;
-    const auto roll = self.value.value[2] * deg_to_rad * 0.5;
+    const auto yaw = self.dataspace_value[0] * deg_to_rad * -0.5;
+    const auto pitch = self.dataspace_value[1] * deg_to_rad * 0.5;
+    const auto roll = self.dataspace_value[2] * deg_to_rad * 0.5;
 
     const auto sinYaw = std::sin(yaw);
     const auto cosYaw = std::cos(yaw);
@@ -71,15 +73,15 @@ struct euler_u :
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
-    const auto x = self.value.value[0];
-    const auto y = self.value.value[1];
-    const auto z = self.value.value[2];
-    const auto w = self.value.value[3];
+    const auto x = self.dataspace_value[0];
+    const auto y = self.dataspace_value[1];
+    const auto z = self.dataspace_value[2];
+    const auto w = self.dataspace_value[3];
 
-    return std::array<double, 4>{
-          rad_to_deg * std::atan2(-2. * (z*w - x*y), w*w - x*x + y*y - z*z),
-          rad_to_deg * std::asin(2. * (w*x + y*z)),
-          rad_to_deg * std::atan2(2. * (w*y + x*z), w*w - x*x - y*y + z*z)
+    return {
+          (float)(rad_to_deg * std::atan2(-2. * (z*w - x*y), w*w - x*x + y*y - z*z)),
+          (float)(rad_to_deg * std::asin(2. * (w*x + y*z))),
+          (float)(rad_to_deg * std::atan2(2. * (w*y + x*z), w*w - x*x - y*y + z*z))
         };
   }
 };
@@ -91,20 +93,20 @@ struct axis_u :
   static OSSIA_DECL_RELAXED_CONSTEXPR auto text()
   { return ossia::make_string_array("axis", "xyza"); }
   static OSSIA_DECL_RELAXED_CONSTEXPR auto array_parameters()
-  { return "xyza"; }
+  { return ossia::make_string_view("xyza"); }
   using value_type = Vec4f;
 
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-    const auto x = self.value.value[0];
-    const auto y = self.value.value[1];
-    const auto z = self.value.value[2];
-    const auto angle = self.value.value[3] * deg_to_rad * 0.5;
+    const auto x = self.dataspace_value[0];
+    const auto y = self.dataspace_value[1];
+    const auto z = self.dataspace_value[2];
+    const auto angle = self.dataspace_value[3] * deg_to_rad * 0.5;
 
     const auto sinAngle = std::sin(angle);
 
     //vector normalization:
-    const auto norm = std::sqrt(x*x + y*y + z*z);
+    const auto norm = ossia::norm(x, y, z);
     const auto n = norm > 0.0 ? 1.0 / norm : norm;
 
     /* x = x * n;
@@ -121,10 +123,10 @@ struct axis_u :
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
-    const auto x = self.value.value[0];
-    const auto y = self.value.value[1];
-    const auto z = self.value.value[2];
-    const auto w = self.value.value[3];
+    const auto x = self.dataspace_value[0];
+    const auto y = self.dataspace_value[1];
+    const auto z = self.dataspace_value[2];
+    const auto w = self.dataspace_value[3];
 
     const auto sin_a = std::sqrt( 1.0 - w * w );
 
@@ -133,11 +135,11 @@ struct axis_u :
             ? 1.0
             : 1.0 / sin_a;
 
-    return std::array<double, 4>{
-     x * sin_a2,
-     y * sin_a2,
-     z * sin_a2,
-     rad_to_deg * 2.0 * std::atan2(sin_a, w)
+    return {
+     (float)(x * sin_a2),
+     (float)(y * sin_a2),
+     (float)(z * sin_a2),
+     (float)(rad_to_deg * 2.0 * std::atan2(sin_a, w))
     };
   }
 };

@@ -1,6 +1,10 @@
 #pragma once
 #include <ossia/editor/dataspace/dataspace_visitors.hpp>
+#include <ossia/editor/dataspace/dataspace_parse.hpp>
+#include <boost/spirit/include/qi.hpp>
+#include <brigand/algorithms/for_each.hpp>
 #include <unordered_map>
+
 namespace ossia
 {
 namespace detail
@@ -8,23 +12,23 @@ namespace detail
 struct unit_text_visitor
 {
   template<typename... Args>
-  boost::string_view operator()(const eggs::variant<Args...>& dataspace)
+  OSSIA_INLINE boost::string_view operator()(const eggs::variant<Args...>& dataspace)
   {
     return ossia::apply(*this, dataspace);
   }
 
   template<typename Unit>
-  boost::string_view operator()(Unit)
+  OSSIA_INLINE boost::string_view operator()(Unit)
   {
     return ossia::unit_traits<Unit>::text()[0];
   }
 
-  boost::string_view operator()(const ossia::value&)
+  OSSIA_INLINE boost::string_view operator()(const ossia::value&)
   {
     return {};
   }
 
-  boost::string_view operator()()
+  OSSIA_INLINE boost::string_view operator()()
   {
     return {};
   }
@@ -33,12 +37,12 @@ struct unit_text_visitor
 struct dataspace_text_visitor
 {
   template<typename Dataspace>
-  boost::string_view operator()(const Dataspace& dataspace)
+  OSSIA_INLINE boost::string_view operator()(const Dataspace& dataspace)
   {
     return ossia::dataspace_traits<Dataspace>::text()[0];
   }
 
-  boost::string_view operator()()
+  OSSIA_INLINE boost::string_view operator()()
   {
     return {};
   }
@@ -90,8 +94,98 @@ struct unit_factory_visitor
     return it != units.end() ? it->second : arg;
   }
 
-  ossia::unit_t operator()()
+  OSSIA_INLINE ossia::unit_t operator()()
   { return {}; }
 };
+
+template<typename Unit>
+using enable_if_multidimensional = std::enable_if_t<Unit::is_multidimensional::value>;
+
+template<typename Dataspace, typename Unit, typename = void>
+struct make_unit_symbols_sub_helper
+{
+  void operator()(unit_parse_symbols_t& map)
+  {
+    using unit_type = Unit;
+
+    std::string res;
+    res.reserve(20);
+
+    for(auto ds : dataspace_traits<Dataspace>::text())
+    {
+      // For each unit :
+      for(auto un : unit_traits<unit_type>::text())
+      {
+        res.clear();
+
+        res += ds.to_string(); // color
+        res += '.'; // color.
+
+        res += un.to_string(); // color.rgb
+
+        // Add the unit in long form
+        map.add(res, {{}, unit_type{}});
+      }
+    }
+  }
+};
+
+template<typename Dataspace, typename Unit>
+struct make_unit_symbols_sub_helper<Dataspace, Unit, enable_if_multidimensional<Unit>>
+{
+  void operator()(unit_parse_symbols_t& map)
+  {
+    using unit_type = Unit;
+
+    std::string res;
+    res.reserve(20);
+
+    for(auto ds : dataspace_traits<Dataspace>::text())
+    {
+      // For each unit :
+      for(auto un : unit_traits<unit_type>::text())
+      {
+        res.clear();
+
+        res += ds.to_string(); // color
+        res += '.'; // color.
+
+        res += un.to_string(); // color.rgb
+
+        // Add the unit in long form
+        map.add(res, {{}, unit_type{}});
+
+        // Add all the accessors
+        res += "._"; // color.rgb._
+
+        const auto& params = unit_type::array_parameters();
+        const auto n = params.size();
+        for(std::size_t i = 0; i < n; i++)
+        {
+          // replace the last char with the one in the array parameter
+          res[res.size() - 1] = params[i]; // color.rgb.r
+          map.add(res, {{(uint8_t)i}, unit_type{}});
+        }
+      }
+    }
+  }
+};
+
+struct make_unit_symbols_helper
+{
+  unit_parse_symbols_t map;
+
+  make_unit_symbols_helper()
+  {
+    brigand::for_each<ossia::unit_t>([&] (auto t) {
+      using dataspace_type = typename decltype(t)::type;
+      brigand::for_each<dataspace_type>([&] (auto u) {
+        using unit_type = typename decltype(u)::type;
+        make_unit_symbols_sub_helper<dataspace_type, unit_type>{}(map);
+      });
+    });
+  }
+};
+
 }
 }

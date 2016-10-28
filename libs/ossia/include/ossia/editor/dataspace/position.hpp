@@ -1,15 +1,17 @@
 #pragma once
 #include <ossia/editor/dataspace/dataspace_base.hpp>
+#include <eggs/variant.hpp>
 
 namespace ossia
 {
 struct cartesian_3d_u;
+struct position_dataspace;
 template<typename Impl>
 struct position_unit
 {
   using is_unit = std::true_type;
   using is_multidimensional = std::true_type;
-  using dataspace_type = struct position_dataspace;
+  using dataspace_type = position_dataspace;
   using neutral_unit = cartesian_3d_u;
   using concrete_type = Impl;
 };
@@ -20,7 +22,7 @@ struct cartesian_3d_u :
   static OSSIA_DECL_RELAXED_CONSTEXPR auto text()
   { return ossia::make_string_array("cart3D", "xyz"); }
   static OSSIA_DECL_RELAXED_CONSTEXPR auto array_parameters()
-  { return "xyz"; }
+  { return ossia::make_string_view("xyz"); }
 
   using value_type = Vec3f;
   static OSSIA_DECL_RELAXED_CONSTEXPR strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
@@ -30,7 +32,7 @@ struct cartesian_3d_u :
 
   static OSSIA_DECL_RELAXED_CONSTEXPR value_type from_neutral(strong_value<neutral_unit> self)
   {
-    return self.value.value;
+    return self.dataspace_value;
   }
 };
 
@@ -40,16 +42,16 @@ struct cartesian_2d_u :
   static OSSIA_DECL_RELAXED_CONSTEXPR auto text()
   { return ossia::make_string_array("cart2D", "xy"); }
   static OSSIA_DECL_RELAXED_CONSTEXPR auto array_parameters()
-  { return "xy"; }
+  { return ossia::make_string_view("xy"); }
   using value_type = Vec2f;
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-    return std::array<double, 3>{self.value.value[0], self.value.value[1], 0.f};
+    return {self.dataspace_value[0], self.dataspace_value[1], 0.f};
   }
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
-    return std::array<double, 2>{self.value.value[0], self.value.value[1]};
+    return {self.dataspace_value[0], self.dataspace_value[1]};
   }
 };
 
@@ -60,35 +62,35 @@ struct spherical_u :
   static OSSIA_DECL_RELAXED_CONSTEXPR auto text()
   { return ossia::make_string_array("spherical", "aed"); }
   static OSSIA_DECL_RELAXED_CONSTEXPR auto array_parameters()
-  { return "aed"; }
+  { return ossia::make_string_view("aed"); }
   using value_type = Vec3f;
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-    const auto a = self.value.value[0] * deg_to_rad;
-    const auto e = self.value.value[1] * deg_to_rad;
-    const auto d = self.value.value[2];
+    const auto a = self.dataspace_value[0] * deg_to_rad;
+    const auto e = self.dataspace_value[1] * deg_to_rad;
+    const auto d = self.dataspace_value[2];
 
     const auto temp = std::cos(e) * d;
 
-    return std::array<double, 3>{
-      std::sin(a) * temp,
-      std::cos(a) * temp,
-      std::sin(e) * d
+    return strong_value<neutral_unit>{
+      (float)(std::sin(a) * temp),
+      (float)(std::cos(a) * temp),
+      (float)(std::sin(e) * d)
     };
   }
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
-    const auto x = self.value.value[0];
-    const auto y = self.value.value[1];
-    const auto z = self.value.value[2];
+    const auto x = self.dataspace_value[0];
+    const auto y = self.dataspace_value[1];
+    const auto z = self.dataspace_value[2];
 
-    const auto temp = x * x + y * y;
+    const auto temp = std::pow(x, 2.) + std::pow(y, 2.);
 
-    return std::array<double, 3>{
-          std::atan2(x, y) * rad_to_deg,
-          std::atan2(z, std::pow(temp, 0.5)) * rad_to_deg,
-          std::pow(temp + (z * z), 0.5)
+    return {
+          (float)(std::atan2(x, y) * rad_to_deg),
+          (float)(std::atan2(z, std::sqrt(temp)) * rad_to_deg),
+          (float)(std::sqrt(temp + std::pow(z, 2.)))
         };
   }
 };
@@ -100,28 +102,28 @@ struct polar_u :
   static OSSIA_DECL_RELAXED_CONSTEXPR auto text()
   { return ossia::make_string_array("polar", "ad"); }
   static OSSIA_DECL_RELAXED_CONSTEXPR auto array_parameters()
-  { return "ad"; }
+  { return ossia::make_string_view("ad"); }
   using value_type = Vec2f;
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-    const auto a = self.value.value[0] * deg_to_rad;
-    const auto d = self.value.value[2];
+    const auto a = self.dataspace_value[0] * deg_to_rad;
+    const auto d = self.dataspace_value[1];
 
-    return std::array<double, 3>{
-          std::sin(a) * d,
-          std::cos(a) * d,
+    return {
+          (float)(std::sin(a) * d),
+          (float)(std::cos(a) * d),
           0.
         };
   }
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
-    const auto x = self.value.value[0];
-    const auto y = self.value.value[1];
+    const auto x = self.dataspace_value[0];
+    const auto y = self.dataspace_value[1];
 
-    return std::array<double, 2>{
-          std::atan2(x, y) * rad_to_deg,
-          std::pow(x * x + y * y, 0.5)
+    return {
+          (float)(std::atan2(x, y) * rad_to_deg),
+          (float)(ossia::norm(x, y))
         };
   }
 };
@@ -132,16 +134,16 @@ struct opengl_u :
   static OSSIA_DECL_RELAXED_CONSTEXPR auto text()
   { return ossia::make_string_array("openGL"); }
   static OSSIA_DECL_RELAXED_CONSTEXPR auto array_parameters()
-  { return "xyz"; }
+  { return ossia::make_string_view("xyz"); }
   using value_type = Vec3f;
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-    return std::array<double, 3>{self.value.value[0], -self.value.value[2], self.value.value[1]};
+    return {self.dataspace_value[0], -self.dataspace_value[2], self.dataspace_value[1]};
   }
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
-    return std::array<double, 3>{self.value.value[0], self.value.value[2], -self.value.value[1]};
+    return {self.dataspace_value[0], self.dataspace_value[2], -self.dataspace_value[1]};
   }
 };
 
@@ -151,30 +153,30 @@ struct cylindrical_u :
   static OSSIA_DECL_RELAXED_CONSTEXPR auto text()
   { return ossia::make_string_array("cylindrical", "daz"); }
   static OSSIA_DECL_RELAXED_CONSTEXPR auto array_parameters()
-  { return "daz"; }
+  { return ossia::make_string_view("daz"); }
   using value_type = Vec3f;
   static strong_value<neutral_unit> to_neutral(strong_value<concrete_type> self)
   {
-    const auto d = self.value.value[0];
-    const auto a = self.value.value[1] * deg_to_rad;
-    const auto z = self.value.value[2];
+    const auto d = self.dataspace_value[0];
+    const auto a = self.dataspace_value[1] * deg_to_rad;
+    const auto z = self.dataspace_value[2];
 
-    return std::array<double, 3>{
-      std::sin(a) * d,
-      std::cos(a) * d,
+    return {
+      (float)(std::sin(a) * d),
+      (float)(std::cos(a) * d),
       z
     };
   }
 
   static value_type from_neutral(strong_value<neutral_unit> self)
   {
-    const auto x = self.value.value[0];
-    const auto y = self.value.value[1];
-    const auto z = self.value.value[2];
+    const auto x = self.dataspace_value[0];
+    const auto y = self.dataspace_value[1];
+    const auto z = self.dataspace_value[2];
 
-    return std::array<double, 3>{
-          std::pow(x * x + y * y, 0.5),
-          std::atan2(x, y) * rad_to_deg,
+    return {
+          (float)(ossia::norm(x, y)),
+          (float)(std::atan2(x, y) * rad_to_deg),
           z
         };
   }

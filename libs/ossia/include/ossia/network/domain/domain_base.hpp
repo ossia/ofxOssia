@@ -1,14 +1,12 @@
 #pragma once
-#include <ossia/detail/math.hpp>
-#include <ossia/editor/value/value.hpp>
 #include <ossia/editor/value/value_traits.hpp>
+#include <ossia/editor/value/value_conversion.hpp>
 #include <boost/container/flat_set.hpp>
 #include <boost/optional.hpp>
 #include <type_traits>
 
 namespace ossia
 {
-
 OSSIA_EXPORT ossia::value clamp(const ossia::value& val, const ossia::value& min, const ossia::value& max);
 OSSIA_EXPORT ossia::value wrap(const ossia::value& val, const ossia::value& min, const ossia::value& max);
 OSSIA_EXPORT ossia::value fold(const ossia::value& val, const ossia::value& min, const ossia::value& max);
@@ -31,224 +29,168 @@ struct OSSIA_EXPORT domain_base
   boost::optional<value_type> max;
   boost::container::flat_set<value_type> values;
 
-  domain_base() = default;
-  domain_base(value_type min_v, value_type max_v) : min{min_v}, max{max_v}
+  domain_base() noexcept { }
+  domain_base(const domain_base&) = default;
+  domain_base(domain_base&& other) noexcept :
+    min{std::move(other.min)},
+    max{std::move(other.max)},
+    values{std::move(other.values)} { }
+  domain_base& operator=(const domain_base&) = default;
+  domain_base& operator=(domain_base&& other) noexcept
   {
+    min = std::move(other.min);
+    max = std::move(other.max);
+    values= std::move(other.values);
+    return *this;
   }
 
-  template<typename U>
-  value clamp(bounding_mode b, U&& val) const
-  {
-    if (b == bounding_mode::FREE)
-      return std::forward<U>(val);
-
-    if (values.empty())
-    {
-      bool has_min = bool(min);
-      bool has_max = bool(max);
-      if (has_min && has_max)
-      {
-        switch (b)
-        {
-          case bounding_mode::CLIP:
-            return T(ossia::clamp(std::forward<U>(val).value, *min, *max));
-          case bounding_mode::WRAP:
-            return T(ossia::wrap(std::forward<U>(val).value, *min, *max));
-          case bounding_mode::FOLD:
-            return T(ossia::fold(std::forward<U>(val).value, *min, *max));
-          case bounding_mode::LOW:
-            return T(ossia::clamp_min(std::forward<U>(val).value, *min));
-          case bounding_mode::HIGH:
-            return T(ossia::clamp_max(std::forward<U>(val).value, *max));
-          default:
-            return std::forward<U>(val);
-        }
-      }
-      else if (has_min)
-      {
-        switch(b)
-        {
-          case bounding_mode::CLIP:
-          case bounding_mode::LOW:
-            return T(ossia::clamp_min(std::forward<U>(val).value, *min));
-          default:
-            return std::forward<U>(val);
-        }
-      }
-      else if (has_max)
-      {
-        switch(b)
-        {
-          case bounding_mode::CLIP:
-          case bounding_mode::HIGH:
-            return T(ossia::clamp_max(val.value, *max));
-          default:
-            return std::forward<U>(val);
-        }
-      }
-      else
-      {
-        return std::forward<U>(val);
-      }
-    }
-    else
-    {
-      // Return a valid value only if it is in the given values
-      auto it = values.find(val.value);
-      if (it != values.end())
-      {
-        return T(*it);
-      }
-      else
-      {
-        return ossia::value{};
-      }
-
-      /* Alternative : return the closest element to value
-      auto it = values.lower_bound(val.value);
-      if(it != values.end())
-      {
-          if(it == values.begin())
-          {
-              // The closest is the first element
-              return T(it);
-          }
-          else
-          {
-              // Find the closest element between this one and the previous.
-              auto prev = it - 1;
-              auto prev_diff = std::abs(val.value - *prev);
-              auto cur_diff = std::abs(val.value - *it);
-              return prev_diff > cur_diff ? *it : *prev;
-          }
-      }
-      else if(it == values.end())
-      {
-          // Closest element is the latest
-          return T(*values.rbegin());
-      }
-      */
-    }
-  }
+  domain_base(value_type v1, value_type v2): min{v1}, max{v2} { }
 };
 
 template <>
 struct OSSIA_EXPORT domain_base<Impulse>
 {
-  value clamp(bounding_mode b, Impulse val) const
-  {
-    return val;
-  }
-};
-
-template <>
-struct OSSIA_EXPORT domain_base<Behavior>
-{
-  value clamp(bounding_mode b, const Behavior& val) const
-  {
-    return val;
-  }
-};
-
-template <>
-struct OSSIA_EXPORT domain_base<Destination>
-{
-  value clamp(bounding_mode b, const Destination& val) const
-  {
-    return val;
-  }
 };
 
 template <>
 struct OSSIA_EXPORT domain_base<String>
 {
-  domain_base() = default;
-
   boost::container::flat_set<std::string> values;
-  value clamp(bounding_mode b, const String& val) const;
 };
 
 template <>
 struct OSSIA_EXPORT domain_base<Tuple>
 {
-  boost::optional<ossia::value> min;
-  boost::optional<ossia::value> max;
+  using value_type = Tuple;
+  boost::optional<value_type> min;
+  boost::optional<value_type> max;
+  boost::container::flat_set<value_type> values;
 
-  value clamp(bounding_mode b, const Tuple& val) const;
-  value clamp(bounding_mode b, Tuple&& val) const;
+  domain_base<value_type>() noexcept { }
+  domain_base<value_type>(const domain_base<value_type>&) = default;
+  domain_base<value_type>(domain_base<value_type>&&) noexcept = default;
+  domain_base<value_type>& operator=(const domain_base<value_type>&) = default;
+  domain_base<value_type>& operator=(domain_base<value_type>&&) noexcept = default;
+
+  domain_base<value_type>(const value_type& v1, const value_type& v2): min{v1}, max{v2} { }
+  domain_base<value_type>(value_type&& v1, value_type&& v2): min{std::move(v1)}, max{std::move(v2)} { }
 };
 
 template <std::size_t N>
 struct OSSIA_EXPORT domain_base<Vec<float, N>>
 {
-  value clamp(bounding_mode b, const Vec<float, N>& val) const
-  {
-    // TODO
-    return val;
-  }
+  using value_type = Vec<float, N>;
+  boost::optional<Vec<float, N>> min;
+  boost::optional<Vec<float, N>> max;
+  boost::container::flat_set<Vec<float, N>> values;
+
+  domain_base<value_type>() noexcept { }
+  domain_base<value_type>(const domain_base<value_type>&) = default;
+  domain_base<value_type>(domain_base<value_type>&&) noexcept = default;
+  domain_base<value_type>& operator=(const domain_base<value_type>&) = default;
+  domain_base<value_type>& operator=(domain_base<value_type>&&) noexcept = default;
+
+  domain_base<value_type>(const value_type& v1, const value_type& v2): min{v1}, max{v2} { }
 };
 
-
-template<typename T>
-struct domain_min_max
+template <>
+struct OSSIA_EXPORT domain_base<ossia::value>
 {
-  domain_min_max(const domain_base<T>& dom):
-    min{dom.min},
-    max{dom.max}
-  {
+  using value_type = ossia::value;
+  boost::optional<value_type> min;
+  boost::optional<value_type> max;
+  boost::container::flat_set<value_type> values;
 
-  }
+  domain_base<value_type>() noexcept { }
+  domain_base<value_type>(const domain_base<value_type>&) = default;
+  domain_base<value_type>(domain_base<value_type>&&) noexcept = default;
+  domain_base<value_type>& operator=(const domain_base<value_type>&) = default;
+  domain_base<value_type>& operator=(domain_base<value_type>&&) noexcept = default;
 
-  decltype(domain_base<T>::min) min;
-  decltype(domain_base<T>::max) max;
+  domain_base<value_type>(const value_type& v1, const value_type& v2): min{v1}, max{v2} { }
+  domain_base<value_type>(value_type&& v1, value_type&& v2): min{std::move(v1)}, max{std::move(v2)} { }
 };
 
-
-template<>
-struct OSSIA_EXPORT domain_min_max<Impulse>
-{
-  domain_min_max(const domain_base<Impulse>& dom) { }
-};
-
-template<>
-struct OSSIA_EXPORT domain_min_max<String>
-{
-  domain_min_max(const domain_base<String>& dom) { }
-};
-
-template<>
-struct OSSIA_EXPORT domain_min_max<Destination>
-{
-  domain_min_max(const domain_base<Destination>& dom) { }
-};
-
-template<>
-struct OSSIA_EXPORT domain_min_max<Behavior>
-{
-  domain_min_max(const domain_base<Behavior>& dom) { }
-};
 /**
  * \typedef domain A domain of values
  *
  * The practical domain may be different according to the value type.
  * For instance, \ref domain_base<Impulse> has no min nor max.
  *
- * Domains for Int, Bool, Float, Char have a min, a max and a set of values.
+ * Domains for most types have a min, a max and a set of values.
  * Domain for String has a set of values.
- * Other domains are not implemented yet.
- *
- * A domain_base should implement the following method :
- * \code
- * ossia::value clamp(bounding_mode, const T&) const
- * \endcode
  *
  * It is used to restrict a value to the domain if available.
  */
-using domain
-    = eggs::variant<domain_base<Impulse>, domain_base<Bool>, domain_base<Int>,
+using domain_base_variant = eggs::variant<domain_base<Impulse>, domain_base<Bool>, domain_base<Int>,
                     domain_base<Float>, domain_base<Char>, domain_base<String>,
                     domain_base<Tuple>, domain_base<Vec2f>, domain_base<Vec3f>,
-                    domain_base<Vec4f>, domain_base<Destination>,
-                    domain_base<Behavior>>;
+                    domain_base<Vec4f>, domain_base<ossia::value>>;
+
+struct OSSIA_EXPORT domain final : public domain_base_variant
+{
+  OSSIA_DECL_RELAXED_CONSTEXPR domain() noexcept = default;
+
+#if defined(_MSC_VER)
+  template<typename T>
+  domain(const T& arg): domain_base_variant(arg) { }
+  domain(const domain& d) : domain_base_variant{ (const domain_base_variant&)d } { }
+  domain(domain&& d) : domain_base_variant{ std::move((domain_base_variant&)d) } { }
+  domain& operator=(const domain& d) { ((domain_base_variant&)(*this)) = (const domain_base_variant&)d; return *this; }
+  domain& operator=(domain&& d) { ((domain_base_variant&)(*this)) = std::move((domain_base_variant&)d); return *this; }
+  ~domain() { }
+#else
+  using domain_base_variant::domain_base_variant;
+  domain(const domain&) = default;
+  domain(domain&&) noexcept = default;
+  domain& operator=(const domain&) = default;
+  domain& operator=(domain&&) noexcept = default;
+#endif
+
+  value get_min() const;
+  value get_max() const;
+
+  template<typename T>
+  OSSIA_INLINE T get_min() const { return get_min().get<T>(); }
+  template<typename T>
+  OSSIA_INLINE T get_max() const { return get_max().get<T>(); }
+
+  template<typename T>
+  boost::optional<T> maybe_min() const
+  {
+    auto v = get_min();
+    auto u = v.target<T>();
+    if(u)
+      return *u;
+    else
+      return {};
+  }
+
+  template<typename T>
+  boost::optional<T> maybe_max() const
+  {
+    auto v = get_max();
+    auto u = v.target<T>();
+    if(u)
+      return *u;
+    else
+      return {};
+  }
+
+  template<typename T>
+  OSSIA_INLINE T convert_min() const { return ossia::convert<T>(get_min()); }
+  template<typename T>
+  OSSIA_INLINE T convert_max() const { return ossia::convert<T>(get_max()); }
+
+  void set_min(const ossia::value& val);
+  void set_max(const ossia::value& val);
+
+  value apply(
+      bounding_mode b,
+      const ossia::value& val) const;
+  value apply(
+      bounding_mode b,
+      ossia::value&& val) const;
+};
 }
 }

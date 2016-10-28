@@ -114,7 +114,6 @@ public:
   }
 
   ossia::value operator()(const Destination& t) { return t; }
-  ossia::value operator()(const Behavior& t) { return t; }
   ossia::value operator()() const { return {}; }
 
 };
@@ -144,8 +143,7 @@ public:
     Vec2f, //! \see ossia::Vec2f
     Vec3f, //! \see ossia::Vec3f
     Vec4f, //! \see ossia::Vec4f
-    Destination, //! \see ossia::Destination
-    Behavior,    //! \see ossia::Behavior
+    Destination //! \see ossia::Destination
   };
 
   enum class access_mode
@@ -278,28 +276,28 @@ struct js_value_outbound_visitor
   {
     QJSValue v;
     v.setProperty("type", to_enum(qml_context::val_type::Int));
-    v.setProperty("value", val.value);
+    v.setProperty("value", int32_t(val));
     return v;
   }
   QJSValue operator()(Float val) const
   {
     QJSValue v;
     v.setProperty("type", to_enum(qml_context::val_type::Float));
-    v.setProperty("value", val.value);
+    v.setProperty("value", val);
     return v;
   }
   QJSValue operator()(Bool val) const
   {
     QJSValue v;
     v.setProperty("type", to_enum(qml_context::val_type::Bool));
-    v.setProperty("value", val.value);
+    v.setProperty("value", val);
     return v;
   }
   QJSValue operator()(Char val) const
   {
     QJSValue v;
     v.setProperty("type", to_enum(qml_context::val_type::Char));
-    v.setProperty("value", val.value);
+    v.setProperty("value", val);
     return v;
   }
 
@@ -307,7 +305,7 @@ struct js_value_outbound_visitor
   {
     QJSValue v;
     v.setProperty("type", to_enum(qml_context::val_type::String));
-    v.setProperty("value", QString::fromStdString(val.value));
+    v.setProperty("value", QString::fromStdString(val));
     return v;
   }
 
@@ -328,7 +326,7 @@ struct js_value_outbound_visitor
   {
     QJSValue v;
     v.setProperty("type", to_enum(qml_context::val_type::Tuple));
-    v.setProperty("value", make_tuple(val.value));
+    v.setProperty("value", make_tuple(val));
     return v;
   }
 
@@ -350,26 +348,25 @@ struct js_value_outbound_visitor
   {
     QJSValue v;
     v.setProperty("type", to_enum(qml_context::val_type::Vec2f));
-    v.setProperty("value", make_array(val.value));
+    v.setProperty("value", make_array(val));
     return v;
   }
   QJSValue operator()(Vec3f val) const
   {
     QJSValue v;
     v.setProperty("type", to_enum(qml_context::val_type::Vec3f));
-    v.setProperty("value", make_array(val.value));
+    v.setProperty("value", make_array(val));
     return v;
   }
   QJSValue operator()(Vec4f val) const
   {
     QJSValue v;
     v.setProperty("type", to_enum(qml_context::val_type::Vec4f));
-    v.setProperty("value", make_array(val.value));
+    v.setProperty("value", make_array(val));
     return v;
   }
 
   QJSValue operator()(const Destination& t) { return {}; }
-  QJSValue operator()(const Behavior& t) { return {}; }
   QJSValue operator()() const { return {}; }
 
 };
@@ -390,38 +387,38 @@ struct js_string_outbound_visitor
 
   QString operator()(Int val) const
   {
-    return QString::number(val.value);
+    return QString::number(int32_t(val));
   }
 
   QString operator()(Float val) const
   {
-    return QString::number(val.value);
+    return QString::number(val);
   }
   QString operator()(Bool val) const
   {
-    return val.value ? QStringLiteral("true") : QStringLiteral("false");
+    return val ? QStringLiteral("true") : QStringLiteral("false");
   }
   QString operator()(Char val) const
   {
-    return "\"" % QString{val.value} % "\"";
+    return "\"" % QString{val} % "\"";
   }
 
   QString operator()(const String& val) const
   {
-    return "\"" % QString::fromStdString(val.value) % "\"";
+    return "\"" % QString::fromStdString(val) % "\"";
   }
 
   QString operator()(const Tuple& val) const
   {
     QString s = "[";
 
-    std::size_t n = val.value.size();
+    std::size_t n = val.size();
     if(n != 0)
     {
-      s += value_to_js_string(val.value[0]);
+      s += value_to_js_string(val[0]);
       for(std::size_t i = 1; i < n; i++)
       {
-        s += ", " % value_to_js_string(val.value[i]);
+        s += ", " % value_to_js_string(val[i]);
       }
     }
 
@@ -446,19 +443,18 @@ struct js_string_outbound_visitor
 
   QString operator()(Vec2f val) const
   {
-    return make_array(val.value);
+    return make_array(val);
   }
   QString operator()(Vec3f val) const
   {
-    return make_array(val.value);
+    return make_array(val);
   }
   QString operator()(Vec4f val) const
   {
-    return make_array(val.value);
+    return make_array(val);
   }
 
   QString operator()(const Destination& t) { return (*this)(Impulse{}); }
-  QString operator()(const Behavior& t) { return (*this)(Impulse{}); }
   QString operator()() const { return (*this)(Impulse{}); }
 
 };

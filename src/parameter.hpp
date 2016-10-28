@@ -26,7 +26,7 @@ struct GenericMatchingType
 
     static ofx_type convertFromOssia(const ossia::value& v)
     {
-        return v.get<ossia_type>().value;
+        return v.get<ossia_type>();
     }
 
     static ossia_type convert(ofx_type f)
@@ -68,7 +68,7 @@ template<> struct MatchingType<double> {
 
     static ofx_type convertFromOssia(const ossia::value& v)
     {
-        return v.get<ossia_type>().value;
+        return v.get<ossia_type>();
     }
 
     static ossia_type convert(ofx_type f)
@@ -86,7 +86,7 @@ template<> struct MatchingType<ofVec2f> {
     static ofx_type convertFromOssia(const ossia::value& v)
     {
         const auto& t = v.get<ossia_type>();
-        return ofx_type(t.value[0], t.value[1]);
+        return ofx_type(t[0], t[1]);
     }
 
     static ossia_type convert(ofx_type f)
@@ -104,7 +104,7 @@ template<> struct MatchingType<ofVec3f> {
     static ofx_type convertFromOssia(const ossia::value& v)
     {
         const auto& t = v.get<ossia_type>();
-        return ofx_type(t.value[0], t.value[1], t.value[2]);
+        return ofx_type(t[0], t[1], t[2]);
     }
 
     static ossia_type convert(ofx_type f)
@@ -122,7 +122,7 @@ template<> struct MatchingType<ofColor> {
     static ofx_type convertFromOssia(const ossia::value& v)
     {
         const auto& t = v.get<ossia_type>();
-        return ofx_type(t.value[0] * 255., t.value[1] * 255., t.value[2] * 255., t.value[3] * 255.);
+        return ofx_type(t[0] * 255., t[1] * 255., t[2] * 255., t[3] * 255.);
     }
 
     static ossia_type convert(ofx_type f)
@@ -185,7 +185,7 @@ private:
         try
         {
             auto val = this->getAddress()->fetchValue();
-            if(val.template try_get<value_type>())
+            if(val.template target<value_type>())
                 return ossia_type::convertFromOssia(val);
             else
                 std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<<(int) val.getType()  << " " << (int) ossia_type::val << "\n" ;
@@ -212,7 +212,7 @@ private:
         this->getAddress()->add_callback([&](const ossia::value& val)
         {
             using value_type = const typename ossia_type::ossia_type;
-            if(val.try_get<value_type>())
+            if(val.target<value_type>())
             {
                 DataValue data = ossia_type::convertFromOssia(val);
                 if(data != this->get())

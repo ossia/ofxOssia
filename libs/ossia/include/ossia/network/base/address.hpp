@@ -3,7 +3,9 @@
 #include <ossia/detail/destination_index.hpp>
 #include <ossia/network/common/address_properties.hpp>
 #include <ossia/network/domain/domain_fwd.hpp>
-#include <ossia/editor/dataspace/dataspace.hpp>
+#include <ossia/editor/dataspace/dataspace_fwd.hpp>
+#include <ossia/editor/value/tuple.hpp>
+#include <ossia/editor/value/destination.hpp>
 #include <functional>
 #include <vector>
 #include <memory>
@@ -65,7 +67,18 @@ public:
    */
   virtual address_base& pushValue() = 0;
 
-  virtual value cloneValue(destination_index = {}) const = 0;
+  virtual value cloneValue() const = 0;
+
+  /**
+   * @brief cloneValueAtIndex Returns the sub-value at the index given by destination_index
+   */
+  value cloneValue(ossia::destination_index) const;
+
+  /**
+   * @brief cloneValueAtIndex Returns a tuple of sub-values matching the indexes
+   */
+  Tuple cloneValue(const std::vector<ossia::destination_index>&) const;
+
   virtual address_base& setValue(const value&) = 0;
 
   value fetchValue();

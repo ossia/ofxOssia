@@ -1,6 +1,5 @@
 #pragma once
 #include <ossia/network/domain/domain.hpp>
-#include <ossia/network/domain/detail/domain_visitors.hpp>
 
 namespace ossia
 {
@@ -11,7 +10,7 @@ struct domain_conversion
 {
 
   template <typename T>
-  domain operator()(const T&)
+  OSSIA_INLINE domain operator()(const T&)
   {
     return U{};
   }
@@ -20,9 +19,9 @@ struct domain_conversion
   {
     U f;
     if (t.min)
-      f.min = *t.min;
+      f.min = t.min.get();
     if (t.max)
-      f.max = *t.max;
+      f.max = t.max.get();
     if (!t.values.empty())
       for (auto val : t.values)
         f.values.insert(val);
@@ -33,9 +32,9 @@ struct domain_conversion
   {
     U f;
     if (t.min)
-      f.min = *t.min;
+      f.min = t.min.get();
     if (t.max)
-      f.max = *t.max;
+      f.max = t.max.get();
     if (!t.values.empty())
       for (auto val : t.values)
         f.values.insert(val);
@@ -46,9 +45,9 @@ struct domain_conversion
   {
     U f;
     if (t.min)
-      f.min = *t.min;
+      f.min = t.min.get();
     if (t.max)
-      f.max = *t.max;
+      f.max = t.max.get();
     if (!t.values.empty())
       for (auto val : t.values)
         f.values.insert(val);
@@ -59,9 +58,9 @@ struct domain_conversion
   {
     U f;
     if (t.min)
-      f.min = *t.min;
+      f.min = t.min.get();
     if (t.max)
-      f.max = *t.max;
+      f.max = t.max.get();
     if (!t.values.empty())
       for (auto val : t.values)
         f.values.insert(val);
@@ -73,86 +72,101 @@ template <>
 struct domain_conversion<domain_base<Impulse>>
 {
   template <typename T>
-  domain operator()(const T&)
+  OSSIA_INLINE domain operator()(const T&)
   {
     return domain_base<Impulse>{};
   }
 };
 
 template <>
-struct domain_conversion<domain_base<Destination>>
-{
-  domain operator()(const domain_base<Destination>& src)
-  {
-    return src;
-  }
-
-  template <typename T>
-  domain operator()(const T&)
-  {
-    return domain_base<Destination>{};
-  }
-};
-
-template <>
-struct domain_conversion<domain_base<Behavior>>
-{
-  domain operator()(const domain_base<Behavior>& src)
-  {
-    return src;
-  }
-
-  template <typename T>
-  domain operator()(const T&)
-  {
-    return domain_base<Behavior>{};
-  }
-};
-
-template <>
 struct domain_conversion<domain_base<Tuple>>
 {
-  domain operator()(const domain_base<Tuple>& src)
+  OSSIA_INLINE domain operator()(const domain_base<Tuple>& src)
   {
     return src;
   }
 
   template <typename T>
-  domain operator()(const T&)
+  OSSIA_INLINE domain operator()(const T&)
   {
-    return domain_base<Tuple>{};
+    return domain_base<Tuple>();
   }
 };
 
 template <std::size_t N>
 struct domain_conversion<domain_base<Vec<float, N>>>
 {
-  domain operator()(const domain_base<Vec<float, N>>& src)
+  OSSIA_INLINE domain operator()(const domain_base<Vec<float, N>>& src)
   {
     return src;
   }
+  domain_base<Vec<float, N>> tuple_func(const domain_base<Tuple>& t)
+  {
+      auto to_vec = [] (const Tuple& sub)
+      {
+          Vec<float, N> vec;
+          for (std::size_t i = 0; i < N; i++)
+              vec[i] = ossia::convert<float>(sub[i]);
+          return vec;
+      };
+
+      domain_base<Vec<float, N>> dom;
+      if(t.min)
+      {
+          const Tuple& min = t.min.get();
+          if(min.size() == N)
+          {
+              dom.min = to_vec(min);
+          }
+      }
+      if(t.max)
+      {
+          const Tuple& max = t.max.get();
+          if(max.size() == N)
+          {
+              dom.max = to_vec(max);
+          }
+      }
+
+      for(auto& val : t.values)
+      {
+          if(val.size() == N)
+          {
+              dom.values.insert(to_vec(val));
+          }
+      }
+
+      return dom;
+  }
+
+  OSSIA_INLINE domain operator()(const domain_base<Tuple>& t)
+  {
+      return tuple_func(t);
+  }
 
   template <typename T>
-  domain operator()(const T&)
+  OSSIA_INLINE domain operator()(const T&)
   {
-    return domain_base<Vec<float, N>>{};
+    return domain_base<Vec<float, N>>();
   }
 };
 
 template <>
 struct domain_conversion<domain_base<String>>
 {
-  domain operator()(const domain_base<String>& src)
+  OSSIA_INLINE domain operator()(const domain_base<String>& src)
   {
     return src;
   }
 
   template <typename T>
-  domain operator()(const T&)
+  OSSIA_INLINE domain operator()(const T&)
   {
     return domain_base<String>();
   }
 };
+
+// TODO handle the ossia::value case
 
 inline domain convert_domain(const domain& dom, ossia::val_type newtype)
 {
@@ -189,11 +203,6 @@ inline domain convert_domain(const domain& dom, ossia::val_type newtype)
       return eggs::variants::apply(
           domain_conversion<domain_base<Vec4f>>{}, dom);
     case val_type::DESTINATION:
-      return eggs::variants::apply(
-          domain_conversion<domain_base<Destination>>{}, dom);
-    case val_type::BEHAVIOR:
-      return eggs::variants::apply(
-          domain_conversion<domain_base<Behavior>>{}, dom);
     default:
       return domain{};
   }

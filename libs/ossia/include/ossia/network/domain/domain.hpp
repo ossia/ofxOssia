@@ -6,41 +6,42 @@ namespace ossia
 namespace net
 {
 
-OSSIA_EXPORT value clamp(const domain& dom, bounding_mode b, ossia::value&& val);
-OSSIA_EXPORT value clamp(const domain& dom, bounding_mode b, const ossia::value& val);
-/*
-template<typename T>
-OSSIA_EXPORT domain_min_max<T> min_and_max(const domain& dom);
-template<>
-OSSIA_EXPORT domain_min_max<Int> min_and_max(const domain& dom);
-template<>
-OSSIA_EXPORT domain_min_max<Float> min_and_max(const domain& dom);
-template<>
-OSSIA_EXPORT domain_min_max<Char> min_and_max(const domain& dom);
-template<>
-OSSIA_EXPORT domain_min_max<Bool> min_and_max(const domain& dom);
-template<>
-OSSIA_EXPORT domain_min_max<Tuple> min_and_max(const domain& dom);
-*/
-OSSIA_EXPORT value min(const domain& dom);
-OSSIA_EXPORT value max(const domain& dom);
+OSSIA_EXPORT value apply_domain(
+    const domain& dom,
+    bounding_mode b,
+    const ossia::value& val);
+OSSIA_EXPORT value apply_domain(
+    const domain& dom,
+    bounding_mode b,
+    ossia::value&& val);
+
+OSSIA_EXPORT value get_min(const domain& dom);
+OSSIA_EXPORT value get_max(const domain& dom);
 OSSIA_EXPORT void set_min(domain& dom, const ossia::value& val);
 OSSIA_EXPORT void set_max(domain& dom, const ossia::value& val);
 
-OSSIA_EXPORT domain make_domain(const ossia::value& min, const ossia::value& max);
-OSSIA_EXPORT domain init_domain(ossia::val_type type);
+OSSIA_EXPORT domain make_domain(
+    const ossia::value& min,
+    const ossia::value& max);
 
+OSSIA_EXPORT domain make_domain(
+    const boost::container::small_vector<ossia::value, 2>& val,
+    const ossia::value& cur);
+
+OSSIA_EXPORT domain init_domain(
+    ossia::val_type type);
+
+OSSIA_EXPORT bool operator==(const domain_base<Impulse>& lhs, const domain_base<Impulse>& rhs);
 OSSIA_EXPORT bool operator==(const domain_base<String>& lhs, const domain_base<String>& rhs);
 OSSIA_EXPORT bool operator==(const domain_base<Char>& lhs, const domain_base<Char>& rhs);
 OSSIA_EXPORT bool operator==(const domain_base<Bool>& lhs, const domain_base<Bool>& rhs);
 OSSIA_EXPORT bool operator==(const domain_base<Float>& lhs, const domain_base<Float>& rhs);
 OSSIA_EXPORT bool operator==(const domain_base<Int>& lhs, const domain_base<Int>& rhs);
-
-template <typename T>
-bool operator==(const domain_base<T>& lhs, const domain_base<T>& rhs)
-{
-  return true;
-}
+OSSIA_EXPORT bool operator==(const domain_base<Tuple>& lhs, const domain_base<Tuple>& rhs);
+OSSIA_EXPORT bool operator==(const domain_base<Vec2f>& lhs, const domain_base<Vec2f>& rhs);
+OSSIA_EXPORT bool operator==(const domain_base<Vec3f>& lhs, const domain_base<Vec3f>& rhs);
+OSSIA_EXPORT bool operator==(const domain_base<Vec4f>& lhs, const domain_base<Vec4f>& rhs);
+OSSIA_EXPORT bool operator==(const domain_base<ossia::value>& lhs, const domain_base<ossia::value>& rhs);
 
 template <typename T>
 bool operator!=(const domain_base<T>& lhs, const domain_base<T>& rhs)
@@ -48,5 +49,20 @@ bool operator!=(const domain_base<T>& lhs, const domain_base<T>& rhs)
   return !(lhs == rhs);
 }
 
+
+inline value domain::get_min() const
+{ return net::get_min(*this); }
+inline value domain::get_max() const
+{ return net::get_max(*this); }
+
+inline void domain::set_min(const ossia::value& val)
+{ return net::set_min(*this, val); }
+inline void domain::set_max(const ossia::value& val)
+{ return net::set_max(*this, val); }
+
+inline value domain::apply(bounding_mode b, const ossia::value& val) const
+{ return net::apply_domain(*this, b, val); }
+inline value domain::apply(bounding_mode b, ossia::value&& val) const
+{ return net::apply_domain(*this, b, std::move(val)); }
 }
 }
