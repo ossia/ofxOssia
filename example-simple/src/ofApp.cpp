@@ -1,11 +1,5 @@
 #include "ofApp.h"
-//--------------------------------------------------------------
-ofApp::ofApp():
-     _network("ofExample","i-score","127.0.0.1",13579, 9998)
-   // initialized network with local device 'ofExample' and remote device 'i-score' at localhost
-{
 
-}
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -26,15 +20,15 @@ ofSetCircleResolution(100);
             ofVec2f(ofGetWidth() / 2, ofGetHeight() / 2), 
             ofVec2f(0., 0.), // Min
             ofVec2f(ofGetWidth(), ofGetHeight()))); // Max
-            
+
      
     _gui.add(
         _color.setup(
             _network.getSceneNode(),
             "color", 
-            ofColor(123, 255, 17), 
-            ofColor(0., 0., 0.),
-            ofColor(255., 255., 255.)));
+            ofColor(123., 255., 17., 255.),
+            ofColor(0., 0., 0., 0.),
+            ofColor(255., 255., 255., 255.)));
         
     _gui.add(_fill.setup(_network.getSceneNode(),"fill",false));
 }
