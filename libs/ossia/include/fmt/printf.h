@@ -13,7 +13,7 @@
 #include <algorithm>  // std::fill_n
 #include <limits>     // std::numeric_limits
 
-#include "fmt/ostream.h"
+#include "ostream.h"
 
 namespace fmt {
 namespace internal {
@@ -207,8 +207,8 @@ class BasicPrintfArgFormatter : public internal::ArgFormatterBase<Impl, Char> {
     specifier information for standard argument types.
     \endrst
    */
-  BasicPrintfArgFormatter(BasicWriter<Char> &writer, FormatSpec &spec)
-  : internal::ArgFormatterBase<Impl, Char>(writer, spec) {}
+  BasicPrintfArgFormatter(BasicWriter<Char> &w, FormatSpec &s)
+  : internal::ArgFormatterBase<Impl, Char>(w, s) {}
 
   /** Formats an argument of type ``bool``. */
   void visit_bool(bool value) {
@@ -304,8 +304,8 @@ class PrintfFormatter : private internal::FormatterBase {
    appropriate lifetimes.
    \endrst
    */
-  explicit PrintfFormatter(const ArgList &args, BasicWriter<Char> &w)
-    : FormatterBase(args), writer_(w) {}
+  explicit PrintfFormatter(const ArgList &al, BasicWriter<Char> &w)
+    : FormatterBase(al), writer_(w) {}
 
   /** Formats stored arguments and writes the output to the writer. */
   FMT_API void format(BasicCStringRef<Char> format_str);
@@ -341,7 +341,7 @@ template <typename Char, typename AF>
 internal::Arg PrintfFormatter<Char, AF>::get_arg(const Char *s,
                                                  unsigned arg_index) {
   (void)s;
-  const char *error = 0;
+  const char *error = FMT_NULL;
   internal::Arg arg = arg_index == std::numeric_limits<unsigned>::max() ?
     next_arg(error) : FormatterBase::get_arg(arg_index - 1, error);
   if (error)
@@ -554,5 +554,9 @@ inline int fprintf(std::ostream &os, CStringRef format_str, ArgList args) {
 }
 FMT_VARIADIC(int, fprintf, std::ostream &, CStringRef)
 }  // namespace fmt
+
+#ifdef FMT_HEADER_ONLY
+# include "printf.cc"
+#endif
 
 #endif  // FMT_PRINTF_H_

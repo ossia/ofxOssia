@@ -28,23 +28,23 @@ struct osc_outbound_visitor
     void operator()(ossia::Impulse) const
     {
     }
-    void operator()(ossia::Int i) const
+    void operator()(int32_t i) const
     {
       p << int32_t(i);
     }
-    void operator()(ossia::Float f) const
+    void operator()(float f) const
     {
       p << float(f);
     }
-    void operator()(ossia::Bool b) const
+    void operator()(bool b) const
     {
       p << int32_t(b);
     }
-    void operator()(ossia::Char c) const
+    void operator()(char c) const
     {
       p << int32_t(c);
     }
-    void operator()(const ossia::String& str) const
+    void operator()(const std::string& str) const
     {
       p << (boost::string_view)str;
     }
@@ -63,7 +63,7 @@ struct osc_outbound_visitor
     void operator()(const ossia::Destination& d) const
     {
     }
-    void operator()(const ossia::Tuple& t) const
+    void operator()(const std::vector<ossia::value>& t) const
     {
       for (const auto& val : t)
       {
@@ -74,6 +74,169 @@ struct osc_outbound_visitor
     void operator()() const
     {
     }
+};
+
+struct osc_utilities
+{
+  static float get_float(oscpack::ReceivedMessageArgumentIterator it, float f)
+  {
+      try {
+        switch (it->TypeTag())
+        {
+          case oscpack::INT32_TYPE_TAG:
+            return it->AsInt32Unchecked();
+          case oscpack::INT64_TYPE_TAG:
+            return it->AsInt64Unchecked();
+          case oscpack::FLOAT_TYPE_TAG:
+            return it->AsFloatUnchecked();
+          case oscpack::DOUBLE_TYPE_TAG:
+            return it->AsDoubleUnchecked();
+          case oscpack::CHAR_TYPE_TAG:
+            return it->AsCharUnchecked();
+          case oscpack::TRUE_TYPE_TAG:
+            return 1.f;
+          case oscpack::FALSE_TYPE_TAG:
+            return 0.f;
+          case oscpack::STRING_TYPE_TAG:
+            return boost::lexical_cast<float>(it->AsStringUnchecked());
+          case oscpack::SYMBOL_TYPE_TAG:
+            return boost::lexical_cast<float>(it->AsSymbolUnchecked());
+          default:
+            return f;
+        }
+      } catch(const boost::bad_lexical_cast &) {
+        return f;
+      }
+  }
+
+  static int get_int(oscpack::ReceivedMessageArgumentIterator it, int i)
+  {
+    try {
+      switch (it->TypeTag())
+      {
+        case oscpack::INT32_TYPE_TAG:
+          return it->AsInt32Unchecked();
+        case oscpack::INT64_TYPE_TAG:
+          return int32_t(it->AsInt64Unchecked());
+        case oscpack::FLOAT_TYPE_TAG:
+          return int32_t(it->AsFloatUnchecked());
+        case oscpack::DOUBLE_TYPE_TAG:
+          return int32_t(it->AsDoubleUnchecked());
+        case oscpack::CHAR_TYPE_TAG:
+          return int32_t(it->AsCharUnchecked());
+        case oscpack::TRUE_TYPE_TAG:
+          return 1;
+        case oscpack::FALSE_TYPE_TAG:
+          return 0;
+        case oscpack::STRING_TYPE_TAG:
+          return boost::lexical_cast<int>(it->AsStringUnchecked());
+        case oscpack::SYMBOL_TYPE_TAG:
+          return boost::lexical_cast<int>(it->AsSymbolUnchecked());
+        default:
+          return i;
+      }
+    } catch(const boost::bad_lexical_cast &) {
+      return i;
+    }
+  }
+
+  static bool get_bool(oscpack::ReceivedMessageArgumentIterator it, bool b)
+  {
+    try {
+      switch (it->TypeTag())
+      {
+        case oscpack::INT32_TYPE_TAG:
+          return it->AsInt32Unchecked();
+        case oscpack::INT64_TYPE_TAG:
+          return it->AsInt64Unchecked();
+        case oscpack::FLOAT_TYPE_TAG:
+          return it->AsFloatUnchecked();
+        case oscpack::DOUBLE_TYPE_TAG:
+          return it->AsDoubleUnchecked();
+        case oscpack::CHAR_TYPE_TAG:
+          return it->AsCharUnchecked();
+        case oscpack::TRUE_TYPE_TAG:
+          return true;
+        case oscpack::FALSE_TYPE_TAG:
+          return false;
+        case oscpack::STRING_TYPE_TAG:
+          return boost::lexical_cast<bool>(it->AsStringUnchecked());
+        case oscpack::SYMBOL_TYPE_TAG:
+          return boost::lexical_cast<bool>(it->AsSymbolUnchecked());
+        default:
+          return b;
+      }
+    } catch(const boost::bad_lexical_cast &) {
+      return b;
+    }
+  }
+
+  static char get_char(oscpack::ReceivedMessageArgumentIterator it, char c)
+  {
+    switch (it->TypeTag())
+    {
+      case oscpack::INT32_TYPE_TAG:
+        return char{char(it->AsInt32Unchecked())};
+      case oscpack::INT64_TYPE_TAG:
+        return char{char(it->AsInt64Unchecked())};
+      case oscpack::FLOAT_TYPE_TAG:
+        return char{char(it->AsFloatUnchecked())};
+      case oscpack::DOUBLE_TYPE_TAG:
+        return char{char(it->AsDoubleUnchecked())};
+      case oscpack::CHAR_TYPE_TAG:
+        return char{char(it->AsCharUnchecked())};
+      case oscpack::TRUE_TYPE_TAG:
+        return char{'T'};
+      case oscpack::FALSE_TYPE_TAG:
+        return char{'F'};
+      case oscpack::STRING_TYPE_TAG:
+        return char{it->AsStringUnchecked()[0]};
+      case oscpack::SYMBOL_TYPE_TAG:
+        return char{it->AsSymbolUnchecked()[0]};
+      default:
+        return c;
+    }
+  }
+
+  static ossia::value create_value(oscpack::ReceivedMessageArgumentIterator it)
+  {
+    switch (it->TypeTag())
+    {
+      case oscpack::INT32_TYPE_TAG:
+        return int32_t{it->AsInt32Unchecked()};
+      case oscpack::INT64_TYPE_TAG:
+        return int32_t{(int)it->AsInt64Unchecked()};
+      case oscpack::FLOAT_TYPE_TAG:
+        return float{it->AsFloatUnchecked()};
+      case oscpack::DOUBLE_TYPE_TAG:
+        return float{(float)it->AsDoubleUnchecked()};
+      case oscpack::CHAR_TYPE_TAG:
+        return char{it->AsCharUnchecked()};
+      case oscpack::TRUE_TYPE_TAG:
+        return bool{true};
+      case oscpack::FALSE_TYPE_TAG:
+        return bool{false};
+      case oscpack::STRING_TYPE_TAG:
+        return std::string{it->AsStringUnchecked()};
+      case oscpack::SYMBOL_TYPE_TAG:
+        return std::string{it->AsSymbolUnchecked()};
+      default:
+        return ossia::Impulse{};
+    }
+  }
+
+  static std::vector<ossia::value> create_tuple(
+      oscpack::ReceivedMessageArgumentIterator cur_it, int numArguments)
+  {
+    std::vector<ossia::value> t;
+    for(int i = 0; i < numArguments; ++i)
+    {
+      t.push_back(osc_utilities::create_value(cur_it));
+      ++cur_it;
+    }
+    return t;
+  }
+
 };
 
 struct osc_inbound_visitor
@@ -93,152 +256,49 @@ struct osc_inbound_visitor
     {
       return imp;
     }
-    ossia::value operator()(ossia::Int i) const
+
+    ossia::value operator()(int32_t i) const
     {
-      try {
-        switch (cur_it->TypeTag())
-        {
-          case oscpack::INT32_TYPE_TAG:
-            return ossia::Int{cur_it->AsInt32Unchecked()};
-          case oscpack::INT64_TYPE_TAG:
-            return ossia::Int{int32_t(cur_it->AsInt64Unchecked())};
-          case oscpack::FLOAT_TYPE_TAG:
-            return ossia::Int{int32_t(cur_it->AsFloatUnchecked())};
-          case oscpack::DOUBLE_TYPE_TAG:
-            return ossia::Int{int32_t(cur_it->AsDoubleUnchecked())};
-          case oscpack::CHAR_TYPE_TAG:
-            return ossia::Int{int32_t(cur_it->AsCharUnchecked())};
-          case oscpack::TRUE_TYPE_TAG:
-            return ossia::Int{1};
-          case oscpack::FALSE_TYPE_TAG:
-            return ossia::Int{0};
-          case oscpack::STRING_TYPE_TAG:
-            return ossia::Int{boost::lexical_cast<int>(cur_it->AsStringUnchecked())};
-          case oscpack::SYMBOL_TYPE_TAG:
-            return ossia::Int{boost::lexical_cast<int>(cur_it->AsSymbolUnchecked())};
-          default:
-            return i;
-        }
-      } catch(const boost::bad_lexical_cast &) {
-        return i;
-      }
+      return osc_utilities::get_int(cur_it, i);
     }
 
-    float get_float(oscpack::ReceivedMessageArgumentIterator it, float f) const
+    ossia::value operator()(float f) const
     {
-        try {
-          switch (it->TypeTag())
-          {
-            case oscpack::INT32_TYPE_TAG:
-              return it->AsInt32Unchecked();
-            case oscpack::INT64_TYPE_TAG:
-              return it->AsInt64Unchecked();
-            case oscpack::FLOAT_TYPE_TAG:
-              return it->AsFloatUnchecked();
-            case oscpack::DOUBLE_TYPE_TAG:
-              return it->AsDoubleUnchecked();
-            case oscpack::CHAR_TYPE_TAG:
-              return it->AsCharUnchecked();
-            case oscpack::TRUE_TYPE_TAG:
-              return 1.f;
-            case oscpack::FALSE_TYPE_TAG:
-              return 0.f;
-            case oscpack::STRING_TYPE_TAG:
-              return boost::lexical_cast<float>(it->AsStringUnchecked());
-            case oscpack::SYMBOL_TYPE_TAG:
-              return boost::lexical_cast<float>(it->AsSymbolUnchecked());
-            default:
-              return f;
-          }
-        } catch(const boost::bad_lexical_cast &) {
-          return f;
-        }
+      return osc_utilities::get_float(cur_it, f);
     }
 
-    ossia::value operator()(ossia::Float f) const
+    ossia::value operator()(bool b) const
     {
-        return get_float(cur_it, f);
+      return osc_utilities::get_bool(cur_it, b);
     }
 
-    ossia::value operator()(ossia::Bool b) const
+    ossia::value operator()(char c) const
     {
-      try {
-        switch (cur_it->TypeTag())
-        {
-          case oscpack::INT32_TYPE_TAG:
-            return ossia::Bool{bool(cur_it->AsInt32Unchecked())};
-          case oscpack::INT64_TYPE_TAG:
-            return ossia::Bool{bool(cur_it->AsInt64Unchecked())};
-          case oscpack::FLOAT_TYPE_TAG:
-            return ossia::Bool{bool(cur_it->AsFloatUnchecked())};
-          case oscpack::DOUBLE_TYPE_TAG:
-            return ossia::Bool{bool(cur_it->AsDoubleUnchecked())};
-          case oscpack::CHAR_TYPE_TAG:
-            return ossia::Bool{bool(cur_it->AsCharUnchecked())};
-          case oscpack::TRUE_TYPE_TAG:
-            return ossia::Bool{true};
-          case oscpack::FALSE_TYPE_TAG:
-            return ossia::Bool{false};
-          case oscpack::STRING_TYPE_TAG:
-            return ossia::Bool{boost::lexical_cast<bool>(cur_it->AsStringUnchecked())};
-          case oscpack::SYMBOL_TYPE_TAG:
-            return ossia::Bool{boost::lexical_cast<bool>(cur_it->AsSymbolUnchecked())};
-          default:
-            return b;
-        }
-      } catch(const boost::bad_lexical_cast &) {
-        return b;
-      }
+      return osc_utilities::get_char(cur_it, c);
     }
-    ossia::value operator()(ossia::Char c) const
+
+    ossia::value operator()(const std::string& str) const
     {
       switch (cur_it->TypeTag())
       {
         case oscpack::INT32_TYPE_TAG:
-          return ossia::Char{char(cur_it->AsInt32Unchecked())};
+          return std::string{std::to_string(cur_it->AsInt32Unchecked())};
         case oscpack::INT64_TYPE_TAG:
-          return ossia::Char{char(cur_it->AsInt64Unchecked())};
+          return std::string{std::to_string(cur_it->AsInt64Unchecked())};
         case oscpack::FLOAT_TYPE_TAG:
-          return ossia::Char{char(cur_it->AsFloatUnchecked())};
+          return std::string{std::to_string(cur_it->AsFloatUnchecked())};
         case oscpack::DOUBLE_TYPE_TAG:
-          return ossia::Char{char(cur_it->AsDoubleUnchecked())};
+          return std::string{std::to_string(cur_it->AsDoubleUnchecked())};
         case oscpack::CHAR_TYPE_TAG:
-          return ossia::Char{char(cur_it->AsCharUnchecked())};
+          return std::string{std::to_string(cur_it->AsCharUnchecked())};
         case oscpack::TRUE_TYPE_TAG:
-          return ossia::Char{'T'};
+          return std::string{"true"};
         case oscpack::FALSE_TYPE_TAG:
-          return ossia::Char{'F'};
+          return std::string{"false"};
         case oscpack::STRING_TYPE_TAG:
-          return ossia::Char{cur_it->AsStringUnchecked()[0]};
+          return std::string{cur_it->AsStringUnchecked()};
         case oscpack::SYMBOL_TYPE_TAG:
-          return ossia::Char{cur_it->AsSymbolUnchecked()[0]};
-        default:
-          return c;
-      }
-    }
-
-    ossia::value operator()(const ossia::String& str) const
-    {
-      switch (cur_it->TypeTag())
-      {
-        case oscpack::INT32_TYPE_TAG:
-          return ossia::String{std::to_string(cur_it->AsInt32Unchecked())};
-        case oscpack::INT64_TYPE_TAG:
-          return ossia::String{std::to_string(cur_it->AsInt64Unchecked())};
-        case oscpack::FLOAT_TYPE_TAG:
-          return ossia::String{std::to_string(cur_it->AsFloatUnchecked())};
-        case oscpack::DOUBLE_TYPE_TAG:
-          return ossia::String{std::to_string(cur_it->AsDoubleUnchecked())};
-        case oscpack::CHAR_TYPE_TAG:
-          return ossia::String{std::to_string(cur_it->AsCharUnchecked())};
-        case oscpack::TRUE_TYPE_TAG:
-          return ossia::String{"true"};
-        case oscpack::FALSE_TYPE_TAG:
-          return ossia::String{"false"};
-        case oscpack::STRING_TYPE_TAG:
-          return ossia::String{cur_it->AsStringUnchecked()};
-        case oscpack::SYMBOL_TYPE_TAG:
-          return ossia::String{cur_it->AsSymbolUnchecked()};
+          return std::string{cur_it->AsSymbolUnchecked()};
         default:
           return str;
       }
@@ -246,17 +306,17 @@ struct osc_inbound_visitor
 
 
     template <std::size_t N>
-    ossia::value operator()(ossia::Vec<float, N> vec) const
+    ossia::value operator()(std::array<float, N> vec) const
     {
       if (numArguments == N)
       {
-        ossia::Vec<float, N> ret;
-        int i = 0;
+        std::array<float, N> ret;
+        std::size_t i = 0;
         auto vec_it = beg_it;
         auto vec_end = end_it;
         for (; vec_it != vec_end; ++vec_it)
         {
-          ret[i] = get_float(vec_it, 0.);
+          ret[i] = osc_utilities::get_float(vec_it, vec[i]);
           i++;
         }
         return ret;
@@ -272,34 +332,8 @@ struct osc_inbound_visitor
       return d;
     }
 
-    ossia::value create_value(oscpack::ReceivedMessageArgumentIterator it)
-    {
-      switch (it->TypeTag())
-      {
-        case oscpack::INT32_TYPE_TAG:
-          return ossia::Int{it->AsInt32Unchecked()};
-        case oscpack::INT64_TYPE_TAG:
-          return ossia::Int{(int)it->AsInt64Unchecked()};
-        case oscpack::FLOAT_TYPE_TAG:
-          return ossia::Float{it->AsFloatUnchecked()};
-        case oscpack::DOUBLE_TYPE_TAG:
-          return ossia::Float{(float)it->AsDoubleUnchecked()};
-        case oscpack::CHAR_TYPE_TAG:
-          return ossia::Char{it->AsCharUnchecked()};
-        case oscpack::TRUE_TYPE_TAG:
-          return ossia::Bool{true};
-        case oscpack::FALSE_TYPE_TAG:
-          return ossia::Bool{false};
-        case oscpack::STRING_TYPE_TAG:
-          return ossia::String{it->AsStringUnchecked()};
-        case oscpack::SYMBOL_TYPE_TAG:
-          return ossia::String{it->AsSymbolUnchecked()};
-        default:
-          return ossia::Impulse{};
-      }
-    }
 
-    ossia::value operator()(const ossia::Tuple&)
+    ossia::value operator()(const std::vector<ossia::value>&)
     {
       /* This code preserves type info, this is not what we want.
     int n = t.size();
@@ -313,13 +347,7 @@ struct osc_inbound_visitor
       }
     }
     */
-      ossia::Tuple t;
-      for(int i = 0; i < numArguments; ++i)
-      {
-        t.push_back(create_value(cur_it));
-        ++cur_it;
-      }
-      return t;
+      return osc_utilities::create_tuple(cur_it, numArguments);
     }
 
     ossia::value operator()() const
@@ -327,6 +355,69 @@ struct osc_inbound_visitor
       return {};
     }
 };
+
+struct osc_inbound_numeric_visitor
+{
+    osc_inbound_numeric_visitor(oscpack::ReceivedMessageArgumentIterator cur):
+      cur_it{cur}
+    {
+
+    }
+
+    oscpack::ReceivedMessageArgumentIterator cur_it;
+    ossia::value operator()(ossia::Impulse imp) const
+    {
+      return imp;
+    }
+
+    ossia::value operator()(int32_t i) const
+    {
+      return osc_utilities::get_int(cur_it, i);
+    }
+
+    ossia::value operator()(float f) const
+    {
+      return osc_utilities::get_float(cur_it, f);
+    }
+
+    ossia::value operator()(bool b) const
+    {
+      return osc_utilities::get_bool(cur_it, b);
+    }
+
+    ossia::value operator()(char c) const
+    {
+      return osc_utilities::get_char(cur_it, c);
+    }
+
+    ossia::value operator()(const std::string& str) const
+    {
+      return str;
+    }
+
+    template <std::size_t N>
+    ossia::value operator()(std::array<float, N> vec) const
+    {
+      return osc_utilities::get_float(cur_it, vec[0]);
+    }
+
+    ossia::value operator()(const ossia::Destination& d) const
+    {
+      return d;
+    }
+
+    ossia::value operator()(const std::vector<ossia::value>& t)
+    {
+      return osc_utilities::get_float(cur_it, !t.empty() ? ossia::convert<float>(t[0]) : 0.f);
+    }
+
+    ossia::value operator()() const
+    {
+      return {};
+    }
+};
+
+
 
 struct osc_inbound_impulse_visitor
 {
@@ -396,6 +487,19 @@ inline ossia::value to_value(
     return current.apply(osc_inbound_impulse_visitor{});
 }
 
+// Used for domains :
+inline ossia::value to_numeric_value(
+    const ossia::value& current,
+    oscpack::ReceivedMessageArgumentIterator beg_it,
+    oscpack::ReceivedMessageArgumentIterator end_it)
+{
+  if(beg_it != end_it)
+    return current.apply(osc_inbound_numeric_visitor{beg_it});
+  else
+    return current.apply(osc_inbound_impulse_visitor{});
+}
+
+
 inline bool update_value(
     ossia::net::address_base& addr,
     oscpack::ReceivedMessageArgumentIterator beg_it,
@@ -420,6 +524,92 @@ inline bool update_value(
   return update_value(
         addr, mess.ArgumentsBegin(), mess.ArgumentsEnd(), mess.ArgumentCount());
 }
+
+inline bool update_value_quiet(
+    ossia::net::generic_address& addr,
+    oscpack::ReceivedMessageArgumentIterator beg_it,
+    oscpack::ReceivedMessageArgumentIterator end_it, int N)
+{
+  auto res = filter_value(
+               addr.getDomain(),
+               ossia::net::to_value(addr.cloneValue(), beg_it, end_it, N),
+               addr.getBoundingMode());
+
+  if (res.valid())
+  {
+    addr.setValueQuiet(std::move(res));
+    return true;
+  }
+  return false;
+}
+
+inline bool update_value_quiet(
+    ossia::net::generic_address& addr,
+    const oscpack::ReceivedMessage& mess)
+{
+  return update_value_quiet(
+        addr, mess.ArgumentsBegin(), mess.ArgumentsEnd(), mess.ArgumentCount());
+}
+
+struct osc_write_domain_visitor
+{
+  ossia::net::osc_outbound_visitor vis;
+  template<typename T>
+  void operator()(const T& dom)
+  {
+    if(dom.min && dom.max)
+    {
+      vis(dom.min.get());
+      vis(dom.max.get());
+    }
+  }
+
+  template<std::size_t N>
+  void operator()(const domain_base<std::array<float, N>>& dom)
+  {
+    if(dom.min && dom.max)
+    {
+      vis(dom.min.get()[0]);
+      vis(dom.max.get()[0]);
+    }
+  }
+
+  void operator()(const domain_base<std::vector<ossia::value>>& dom)
+  {
+    if(dom.min && dom.max)
+    {
+      const std::vector<ossia::value>& min = dom.min.get();
+      const std::vector<ossia::value>& max = dom.max.get();
+      if(!min.empty() && !max.empty())
+      {
+        vis(ossia::convert<float>(min[0]));
+        vis(ossia::convert<float>(max[0]));
+      }
+    }
+  }
+
+  void operator()(const domain_base<ossia::value>& dom)
+  {
+    if(dom.min && dom.max)
+    {
+      vis(ossia::convert<float>(dom.min.get()));
+      vis(ossia::convert<float>(dom.max.get()));
+    }
+  }
+
+  void operator()(const domain_base<ossia::Impulse>& dom)
+  {
+  }
+
+  void operator()(const domain_base<std::string>& dom)
+  {
+  }
+
+  void operator()()
+  {
+  }
+};
+
 }
 }
 
@@ -432,13 +622,11 @@ operator<<(oscpack::OutboundPacketStream& p, const ossia::value& val)
   return p;
 }
 
+
 inline oscpack::OutboundPacketStream&
 operator<<(oscpack::OutboundPacketStream& p, const ossia::net::domain& dom)
 {
-  auto dom_min = dom.get_min();
-  auto dom_max = dom.get_max();
-  if (bool(dom_min.v) && bool(dom_max.v))
-    p << dom_min << dom_max;
+  ossia::apply(ossia::net::osc_write_domain_visitor{p}, dom);
 
   return p;
 }

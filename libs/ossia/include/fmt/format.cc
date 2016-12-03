@@ -25,8 +25,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fmt/format.h"
-#include "fmt/printf.h"
+#include "format.h"
 
 #include <string.h>
 
@@ -81,9 +80,9 @@ static inline fmt::internal::Null<> strerror_s(char *, std::size_t, ...) {
 
 namespace fmt {
 
-FMT_FUNC internal::RuntimeError::~RuntimeError() throw() {}
-FMT_FUNC FormatError::~FormatError() throw() {}
-FMT_FUNC SystemError::~SystemError() throw() {}
+FMT_FUNC internal::RuntimeError::~RuntimeError() FMT_DTOR_NOEXCEPT {}
+FMT_FUNC FormatError::~FormatError() FMT_DTOR_NOEXCEPT {}
+FMT_FUNC SystemError::~SystemError() FMT_DTOR_NOEXCEPT {}
 
 namespace {
 
@@ -171,7 +170,8 @@ int safe_strerror(
       : error_code_(err_code), buffer_(buf), buffer_size_(buf_size) {}
 
     int run() {
-      strerror_r(0, 0, "");  // Suppress a warning about unused strerror_r.
+      // Suppress a warning about unused strerror_r.
+      strerror_r(0, FMT_NULL, "");
       return handle(strerror_r(error_code_, buffer_, buffer_size_));
     }
   };
@@ -312,7 +312,7 @@ FMT_FUNC internal::UTF8ToUTF16::UTF8ToUTF16(StringRef s) {
     FMT_THROW(WindowsError(ERROR_INVALID_PARAMETER, ERROR_MSG));
   int s_size = static_cast<int>(s.size());
   int length = MultiByteToWideChar(
-      CP_UTF8, MB_ERR_INVALID_CHARS, s.data(), s_size, 0, 0);
+      CP_UTF8, MB_ERR_INVALID_CHARS, s.data(), s_size, FMT_NULL, 0);
   if (length == 0)
     FMT_THROW(WindowsError(GetLastError(), ERROR_MSG));
   buffer_.resize(length + 1);
@@ -334,12 +334,13 @@ FMT_FUNC int internal::UTF16ToUTF8::convert(WStringRef s) {
   if (s.size() > INT_MAX)
     return ERROR_INVALID_PARAMETER;
   int s_size = static_cast<int>(s.size());
-  int length = WideCharToMultiByte(CP_UTF8, 0, s.data(), s_size, 0, 0, 0, 0);
+  int length = WideCharToMultiByte(
+    CP_UTF8, 0, s.data(), s_size, FMT_NULL, 0, FMT_NULL, FMT_NULL);
   if (length == 0)
     return GetLastError();
   buffer_.resize(length + 1);
   length = WideCharToMultiByte(
-    CP_UTF8, 0, s.data(), s_size, &buffer_[0], length, 0, 0);
+    CP_UTF8, 0, s.data(), s_size, &buffer_[0], length, FMT_NULL, FMT_NULL);
   if (length == 0)
     return GetLastError();
   buffer_[length] = 0;
@@ -362,9 +363,10 @@ FMT_FUNC void internal::format_windows_error(
     buffer.resize(INLINE_BUFFER_SIZE);
     for (;;) {
       wchar_t *system_message = &buffer[0];
-      int result = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                                  0, error_code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                                  system_message, static_cast<uint32_t>(buffer.size()), 0);
+      int result = FormatMessageW(
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        FMT_NULL, error_code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        system_message, static_cast<uint32_t>(buffer.size()), FMT_NULL);
       if (result != 0) {
         UTF16ToUTF8 utf8_message;
         if (utf8_message.convert(system_message) == ERROR_SUCCESS) {
@@ -408,7 +410,7 @@ void internal::ArgMap<Char>::init(const ArgList &args) {
   if (!map_.empty())
     return;
   typedef internal::NamedArg<Char> NamedArg;
-  const NamedArg *named_arg = 0;
+  const NamedArg *named_arg = FMT_NULL;
   bool use_values =
       args.type(ArgList::MAX_PACKED_ARGS - 1) == internal::Arg::NONE;
   if (use_values) {
@@ -501,16 +503,6 @@ FMT_FUNC void print_colored(Color c, CStringRef format, ArgList args) {
   std::fputs(RESET_COLOR, stdout);
 }
 
-template <typename Char>
-void printf(BasicWriter<Char> &w, BasicCStringRef<Char> format, ArgList args);
-
-FMT_FUNC int fprintf(std::FILE *f, CStringRef format, ArgList args) {
-  MemoryWriter w;
-  printf(w, format, args);
-  std::size_t size = w.size();
-  return std::fwrite(w.data(), 1, size, f) < size ? -1 : static_cast<int>(size);
-}
-
 #ifndef FMT_HEADER_ONLY
 
 template struct internal::BasicData<void>;
@@ -520,8 +512,6 @@ template struct internal::BasicData<void>;
 template void internal::FixedBuffer<char>::grow(std::size_t);
 
 template void internal::ArgMap<char>::init(const ArgList &args);
-
-template void PrintfFormatter<char>::format(CStringRef format);
 
 template int internal::CharTraits<char>::format_float(
     char *buffer, std::size_t size, const char *format,
@@ -536,8 +526,6 @@ template int internal::CharTraits<char>::format_float(
 template void internal::FixedBuffer<wchar_t>::grow(std::size_t);
 
 template void internal::ArgMap<wchar_t>::init(const ArgList &args);
-
-template void PrintfFormatter<wchar_t>::format(WCStringRef format);
 
 template int internal::CharTraits<wchar_t>::format_float(
     wchar_t *buffer, std::size_t size, const wchar_t *format,

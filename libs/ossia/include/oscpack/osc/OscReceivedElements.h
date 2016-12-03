@@ -40,7 +40,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring> // size_t
-
+#include <vector>
 #include "OscTypes.h"
 #include "OscException.h"
 #include "OscUtilities.h"
@@ -900,16 +900,15 @@ class ReceivedMessage{
     }
   public:
     explicit ReceivedMessage( const ReceivedPacket& packet )
-      : addressPattern_( packet.Contents() )
+      : addressPattern_( packet.Contents() ), size_{packet.Size()}
     {
       Init( packet.Contents(), packet.Size() );
     }
     explicit ReceivedMessage( const ReceivedBundleElement& bundleElement )
-      : addressPattern_( bundleElement.Contents() )
+      : addressPattern_( bundleElement.Contents() ), size_{bundleElement.Size()}
     {
       Init( bundleElement.Contents(), bundleElement.Size() );
     }
-
     const char *AddressPattern() const { return addressPattern_; }
 
     // Support for non-standard SuperCollider integer address patterns:
@@ -944,13 +943,51 @@ class ReceivedMessage{
       return ReceivedMessageArgumentStream( ArgumentsBegin(), ArgumentsEnd() );
     }
 
+    const osc_bundle_element_size_t size() const { return size_; }
+
   private:
+    friend class OwnedMessage;
+
+    explicit ReceivedMessage(
+            const char *addressPattern,
+            const char *typeTagsBegin,
+            const char *typeTagsEnd,
+            const char *arguments,
+            const osc_bundle_element_size_t size):
+        addressPattern_{addressPattern},
+        typeTagsBegin_{typeTagsBegin},
+        typeTagsEnd_{typeTagsEnd},
+        arguments_{arguments},
+        size_{size}
+    {
+
+    }
+
     const char *addressPattern_;
     const char *typeTagsBegin_;
     const char *typeTagsEnd_;
     const char *arguments_;
+    const osc_bundle_element_size_t size_;
 };
 
+class OwnedMessage
+{
+    explicit OwnedMessage(const ReceivedMessage& other):
+        buffer_(other.AddressPattern(), other.AddressPattern() + other.size()),
+        message_(buffer_.data(),
+                (other.typeTagsBegin_ ? buffer_.data() + (other.typeTagsBegin_ - other.addressPattern_) : (const char*)nullptr),
+                (other.typeTagsEnd_   ? buffer_.data() + (other.typeTagsEnd_   - other.addressPattern_) : (const char*)nullptr),
+                (other.arguments_     ? buffer_.data() + (other.arguments_     - other.addressPattern_) : (const char*)nullptr),
+                other.size())
+    {
+
+    }
+
+    operator const ReceivedMessage&() { return message_; }
+  private:
+    std::vector<char> buffer_;
+    ReceivedMessage message_;
+};
 
 class ReceivedBundle{
     void Init( const char *bundle, osc_bundle_element_size_t size )

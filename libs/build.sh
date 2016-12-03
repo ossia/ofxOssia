@@ -10,6 +10,10 @@ make -j8
 make install
 rm -rf ../ossia/include
 mv ossia/include ../ossia/include
-mv ossia/lib/libossia.so* ../ossia/lib/linux64/
+if [[ -d "/proc" ]] ; then
+  mv ossia/lib/libossia.so* ../ossia/lib/linux64/
+else
+  mv ossia/lib/libossia.*dylib* ../ossia/lib/osx/
+fi
 )
 rm -rf API build

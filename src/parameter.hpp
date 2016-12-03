@@ -36,34 +36,34 @@ struct GenericMatchingType
 };
 
 template<> struct MatchingType<float> final :
-        public GenericMatchingType<float, ossia::Float, ossia::val_type::FLOAT>
+        public GenericMatchingType<float, float, ossia::val_type::FLOAT>
 {
 };
 
 template<> struct MatchingType<int> final :
-        public GenericMatchingType<int, ossia::Int, ossia::val_type::INT>
+        public GenericMatchingType<int, int, ossia::val_type::INT>
 {
 };
 
 template<> struct MatchingType<bool> final :
-        public GenericMatchingType<bool, ossia::Bool, ossia::val_type::BOOL>
+        public GenericMatchingType<bool, bool, ossia::val_type::BOOL>
 {
 };
 
 template<> struct MatchingType<char> final :
-        public GenericMatchingType<char, ossia::Char, ossia::val_type::CHAR>
+        public GenericMatchingType<char, char, ossia::val_type::CHAR>
 {
 };
 
 template<> struct MatchingType<std::string> final :
-        public GenericMatchingType<std::string, ossia::String, ossia::val_type::STRING>
+        public GenericMatchingType<std::string, std::string, ossia::val_type::STRING>
 {
 };
 
 template<> struct MatchingType<double> {
     using ofx_type = double;
     static constexpr const auto val = ossia::val_type::FLOAT;
-    using ossia_type = ossia::Float;
+    using ossia_type = float;
     using ossia_unit = ossia::unit_t;
 
     static ofx_type convertFromOssia(const ossia::value& v)
@@ -80,7 +80,7 @@ template<> struct MatchingType<double> {
 template<> struct MatchingType<ofVec2f> {
     using ofx_type = ofVec2f;
     static constexpr const auto val = ossia::val_type::VEC2F;
-    using ossia_type = ossia::Vec2f;
+    using ossia_type = std::array<float, 2>;
     using ossia_unit = ossia::unit_t;
 
     static ofx_type convertFromOssia(const ossia::value& v)
@@ -98,7 +98,7 @@ template<> struct MatchingType<ofVec2f> {
 template<> struct MatchingType<ofVec3f> {
     using ofx_type = ofVec3f;
     static constexpr const auto val = ossia::val_type::VEC3F;
-    using ossia_type = ossia::Vec3f;
+    using ossia_type = std::array<float, 3>;
     using ossia_unit = ossia::unit_t;
 
     static ofx_type convertFromOssia(const ossia::value& v)
@@ -116,7 +116,7 @@ template<> struct MatchingType<ofVec3f> {
 template<> struct MatchingType<ofColor> {
     using ofx_type = ofColor;
     static constexpr const auto val = ossia::val_type::VEC4F;
-    using ossia_type = ossia::Vec4f;
+    using ossia_type = std::array<float, 4>;
     using ossia_unit = ossia::rgba_u;
 
     static ofx_type convertFromOssia(const ossia::value& v)

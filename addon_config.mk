@@ -63,11 +63,8 @@ common:
 	
 	# when parsing the file system looking for sources exclude this for all or
 	# a specific platform
-	ADDON_SOURCES_EXCLUDE += libs/ossia/include/spdlog/fmt/bundled/format.cc
-	ADDON_SOURCES_EXCLUDE += libs/ossia/include/spdlog/fmt/bundled/ostream.cc
-	ADDON_SOURCES_EXCLUDE += libs/ossia/include/fmt/format.cc
-	ADDON_SOURCES_EXCLUDE += libs/ossia/include/fmt/ostream.cc
-	ADDON_SOURCES_EXCLUDE += libs/ossia/include/fmt/posix.cc
+	ADDON_SOURCES_EXCLUDE += libs/ossia/include/spdlog/fmt/bundled/%.cc
+	ADDON_SOURCES_EXCLUDE += libs/ossia/include/fmt/%.cc
     ADDON_SOURCES_EXCLUDE += libs/API
     ADDON_SOURCES_EXCLUDE += libs/build
 	
@@ -77,13 +74,15 @@ common:
 	
 linux64:
 	ADDON_LIBS += libs/ossia/lib/linux64/libossia.so
-	
+	ADDON_CFLAGS += -std=c++14
 linux:
+	ADDON_CFLAGS += -std=c++14
 	
 msys2:
 	ADDON_CFLAGS += NOMINMAX
 	ADDON_CFLAGS += _CRT_SECURE_NO_WARNINGS
 	ADDON_CFLAGS += WIN32_LEAN_AND_MEAN
+	ADDON_CFLAGS += -std=c++14
 	
 	ADDON_LIBS += Ws2_32
 	ADDON_LIBS += winmm	
@@ -109,10 +108,12 @@ osx:
 	ADDON_FRAMEWORKS += CoreMIDI
 	ADDON_FRAMEWORKS += CoreAudio
 	ADDON_FRAMEWORKS += CoreFoundation
+	ADDON_CFLAGS += -std=c++14
     
 ios:
 	ADDON_FRAMEWORKS += CoreMIDI
 	ADDON_FRAMEWORKS += CoreAudio
 	ADDON_FRAMEWORKS += CoreFoundation
+	ADDON_CFLAGS += -std=c++14
 
 

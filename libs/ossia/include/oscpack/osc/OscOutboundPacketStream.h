@@ -663,8 +663,8 @@ private:
         throw OutOfBufferMemoryException();
     }
 
-    char *data_;
-    char *end_;
+    char * const data_;
+    char * const end_;
 
     char *typeTagsCurrent_; // stored in reverse order
     char *messageCursor_;

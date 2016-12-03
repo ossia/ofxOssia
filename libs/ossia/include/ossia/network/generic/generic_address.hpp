@@ -68,7 +68,7 @@ protected:
   tags_t mTags;
   unit_t mUnit;
 
-  ossia::net::value_callback mCallback;
+  ossia::value_callback mCallback;
 
 public:
   ossia::value PreviousValue;
@@ -83,6 +83,8 @@ public:
   const ossia::net::node_base& getNode() const final override;
 
   void pullValue() final override;
+  std::future<void> pullValueAsync() final override;
+  void requestValue() final override;
 
   ossia::net::generic_address& pushValue(const ossia::value&) final override;
   ossia::net::generic_address& pushValue() final override;
@@ -90,6 +92,9 @@ public:
   const ossia::value& getValue() const;
   ossia::value cloneValue() const final override;
   generic_address& setValue(const ossia::value&) final override;
+
+  /** Set a value without sending notifications **/
+  ossia::value setValueQuiet(const ossia::value&);
 
   ossia::val_type getValueType() const final override;
   ossia::net::generic_address& setValueType(ossia::val_type) final override;

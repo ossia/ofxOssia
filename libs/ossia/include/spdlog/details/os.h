@@ -216,11 +216,11 @@ inline size_t filesize(FILE *f)
 #if !defined(__FreeBSD__) && !defined(__APPLE__) && (defined(__x86_64__) || defined(__ppc64__))
     struct stat64 st;
     if (fstat64(fd, &st) == 0)
-        return st.st_size;
+        return static_cast<size_t>(st.st_size);
 #else // unix 32 bits or osx
     struct stat st;
     if (fstat(fd, &st) == 0)
-        return st.st_size;
+        return static_cast<size_t>(st.st_size);
 #endif
 #endif
     throw spdlog_ex("Failed getting file size from fd", errno);
@@ -343,8 +343,8 @@ inline std::string errno_str(int err_num)
     else
         return "Unkown error";
 
-#elif defined(__FreeBSD__) || defined(__APPLE__) || defined(ANDROID) || \
-      ((_POSIX_C_SOURCE >= 200112L) && ! _GNU_SOURCE) // posix version
+#elif defined(__FreeBSD__) || defined(__APPLE__) || defined(ANDROID) || defined(__SUNPRO_CC) || \
+      ((_POSIX_C_SOURCE >= 200112L) && ! defined(_GNU_SOURCE)) // posix version
 
     if (strerror_r(err_num, buf, buf_size) == 0)
         return std::string(buf);

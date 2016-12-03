@@ -40,6 +40,9 @@
 #include <vector>
 #include <utility>
 
+// The fmt library version in the form major * 10000 + minor * 100 + patch.
+#define FMT_VERSION 30002
+
 #ifdef _SECURE_SCL
 # define FMT_SECURE_SCL _SECURE_SCL
 #else
@@ -180,22 +183,32 @@ typedef __int64          intmax_t;
 # define FMT_USE_NOEXCEPT 0
 #endif
 
-#ifndef FMT_NOEXCEPT
-# if FMT_EXCEPTIONS
-#  if FMT_USE_NOEXCEPT || FMT_HAS_FEATURE(cxx_noexcept) || \
+#if FMT_USE_NOEXCEPT || FMT_HAS_FEATURE(cxx_noexcept) || \
     (FMT_GCC_VERSION >= 408 && FMT_HAS_GXX_CXX11) || \
     FMT_MSC_VER >= 1900
-#   define FMT_NOEXCEPT noexcept
-#  else
-#   define FMT_NOEXCEPT throw()
-#  endif
+# define FMT_DETECTED_NOEXCEPT noexcept
+#else
+# define FMT_DETECTED_NOEXCEPT throw()
+#endif
+
+#ifndef FMT_NOEXCEPT
+# if FMT_EXCEPTIONS
+#  define FMT_NOEXCEPT FMT_DETECTED_NOEXCEPT
 # else
 #  define FMT_NOEXCEPT
 # endif
 #endif
 
+// This is needed because GCC still uses throw() in its headers when exceptions
+// are disabled.
+#if FMT_GCC_VERSION
+# define FMT_DTOR_NOEXCEPT FMT_DETECTED_NOEXCEPT
+#else
+# define FMT_DTOR_NOEXCEPT FMT_NOEXCEPT
+#endif
+
 #ifndef FMT_OVERRIDE
-# if FMT_USE_OVERRIDE || FMT_HAS_FEATURE(cxx_override) || \
+# if (defined(FMT_USE_OVERRIDE) && FMT_USE_OVERRIDE) || FMT_HAS_FEATURE(cxx_override) || \
    (FMT_GCC_VERSION >= 408 && FMT_HAS_GXX_CXX11) || \
    FMT_MSC_VER >= 1900
 #  define FMT_OVERRIDE override
@@ -204,6 +217,15 @@ typedef __int64          intmax_t;
 # endif
 #endif
 
+#ifndef FMT_NULL
+# if FMT_HAS_FEATURE(cxx_nullptr) || \
+   (FMT_GCC_VERSION >= 408 && FMT_HAS_GXX_CXX11) || \
+   FMT_MSC_VER >= 1600
+#  define FMT_NULL nullptr
+# else
+#  define FMT_NULL NULL
+# endif
+#endif
 
 // A macro to disallow the copy constructor and operator= functions
 // This should be used in the private: declarations for a class
@@ -234,6 +256,21 @@ typedef __int64          intmax_t;
    (FMT_HAS_FEATURE(cxx_user_literals) || \
      (FMT_GCC_VERSION >= 407 && FMT_HAS_GXX_CXX11) || FMT_MSC_VER >= 1900) && \
    (!defined(FMT_ICC_VERSION) || FMT_ICC_VERSION >= 1500)
+#endif
+
+#ifndef FMT_USE_EXTERN_TEMPLATES
+// Clang doesn't have a feature check for extern templates so we check
+// for variadic templates which were introduced in the same version.
+// For GCC according to cppreference.com they were introduced in 3.3.
+# define FMT_USE_EXTERN_TEMPLATES \
+    ((__clang__ && FMT_USE_VARIADIC_TEMPLATES) || \
+     (FMT_GCC_VERSION >= 303 && FMT_HAS_GXX_CXX11))
+#endif
+
+#ifdef FMT_HEADER_ONLY
+// If header only do not use extern templates.
+# undef FMT_USE_EXTERN_TEMPLATES
+# define FMT_USE_EXTERN_TEMPLATES 0
 #endif
 
 #ifndef FMT_ASSERT
@@ -360,8 +397,10 @@ class numeric_limits<fmt::internal::DummyInt> :
   // Portable version of signbit.
   static bool isnegative(double x) {
     using namespace fmt::internal;
-    if (const_check(sizeof(signbit(x)) == sizeof(int)))
+    if (const_check(sizeof(signbit(x)) == sizeof(bool) ||
+                    sizeof(signbit(x)) == sizeof(int))) {
       return signbit(x) != 0;
+    }
     if (x < 0) return true;
     if (!isnotanumber(x)) return false;
     int dec = 0, sign = 0;
@@ -550,7 +589,8 @@ class FormatError : public std::runtime_error {
  public:
   explicit FormatError(CStringRef message)
   : std::runtime_error(message.c_str()) {}
-  ~FormatError() throw();
+  FormatError(const FormatError &ferr) : std::runtime_error(ferr) {}
+  ~FormatError() FMT_DTOR_NOEXCEPT;
 };
 
 namespace internal {
@@ -608,7 +648,7 @@ class Buffer {
   std::size_t size_;
   std::size_t capacity_;
 
-  Buffer(T *ptr = 0, std::size_t capacity = 0)
+  Buffer(T *ptr = FMT_NULL, std::size_t capacity = 0)
     : ptr_(ptr), size_(0), capacity_(capacity) {}
 
   /**
@@ -738,7 +778,7 @@ void MemoryBuffer<T, SIZE, Allocator>::grow(std::size_t size) {
   std::size_t new_capacity = this->capacity_ + this->capacity_ / 2;
   if (size > new_capacity)
       new_capacity = size;
-  T *new_ptr = this->allocate(new_capacity);
+  T *new_ptr = this->allocate(new_capacity, FMT_NULL);
   // The following code doesn't throw, so the raw pointer above doesn't leak.
   std::uninitialized_copy(this->ptr_, this->ptr_ + this->size_,
                           make_ptr(new_ptr, new_capacity));
@@ -760,7 +800,7 @@ class FixedBuffer : public fmt::Buffer<Char> {
   FixedBuffer(Char *array, std::size_t size) : fmt::Buffer<Char>(array, size) {}
 
  protected:
-  FMT_API void grow(std::size_t size);
+  FMT_API void grow(std::size_t size) FMT_OVERRIDE;
 };
 
 template <typename Char>
@@ -792,6 +832,15 @@ class CharTraits<char> : public BasicCharTraits<char> {
       const char *format, unsigned width, int precision, T value);
 };
 
+#if FMT_USE_EXTERN_TEMPLATES
+extern template int CharTraits<char>::format_float<double>
+        (char *buffer, std::size_t size,
+         const char* format, unsigned width, int precision, double value);
+extern template int CharTraits<char>::format_float<long double>
+        (char *buffer, std::size_t size,
+         const char* format, unsigned width, int precision, long double value);
+#endif
+
 template <>
 class CharTraits<wchar_t> : public BasicCharTraits<wchar_t> {
  public:
@@ -802,6 +851,15 @@ class CharTraits<wchar_t> : public BasicCharTraits<wchar_t> {
   FMT_API static int format_float(wchar_t *buffer, std::size_t size,
       const wchar_t *format, unsigned width, int precision, T value);
 };
+
+#if FMT_USE_EXTERN_TEMPLATES
+extern template int CharTraits<wchar_t>::format_float<double>
+        (wchar_t *buffer, std::size_t size,
+         const wchar_t* format, unsigned width, int precision, double value);
+extern template int CharTraits<wchar_t>::format_float<long double>
+        (wchar_t *buffer, std::size_t size,
+         const wchar_t* format, unsigned width, int precision, long double value);
+#endif
 
 // Checks if a number is negative - used to avoid warnings.
 template <bool IsSigned>
@@ -849,13 +907,7 @@ struct FMT_API BasicData {
   static const char DIGITS[];
 };
 
-#ifndef FMT_USE_EXTERN_TEMPLATES
-// Clang doesn't have a feature check for extern templates so we check
-// for variadic templates which were introduced in the same version.
-# define FMT_USE_EXTERN_TEMPLATES (__clang__ && FMT_USE_VARIADIC_TEMPLATES)
-#endif
-
-#if FMT_USE_EXTERN_TEMPLATES && !defined(FMT_HEADER_ONLY)
+#if FMT_USE_EXTERN_TEMPLATES
 extern template struct BasicData<void>;
 #endif
 
@@ -953,7 +1005,8 @@ inline void format_decimal(Char *buffer, UInt value, unsigned num_digits,
 
 template <typename UInt, typename Char>
 inline void format_decimal(Char *buffer, UInt value, unsigned num_digits) {
-  return format_decimal(buffer, value, num_digits, NoThousandsSep());
+  format_decimal(buffer, value, num_digits, NoThousandsSep());
+  return;
 }
 
 #ifndef _WIN32
@@ -1102,7 +1155,9 @@ struct ConvertToIntImpl2<T, true> {
 
 template<typename T>
 struct ConvertToInt {
-  enum { enable_conversion = sizeof(convert(get<T>())) == sizeof(Yes) };
+  enum {
+    enable_conversion = sizeof(fmt::internal::convert(get<T>())) == sizeof(Yes)
+  };
   enum { value = ConvertToIntImpl2<T, enable_conversion>::value };
 };
 
@@ -1154,7 +1209,7 @@ inline fmt::StringRef thousands_sep(...) { return ""; }
 
 #define FMT_CONCAT(a, b) a##b
 
-#if FMT_GCC_VERSION >= 407
+#if FMT_GCC_VERSION >= 303
 # define FMT_UNUSED __attribute__((unused))
 #else
 # define FMT_UNUSED
@@ -1376,7 +1431,8 @@ struct NamedArgWithType : NamedArg<Char> {
 class RuntimeError : public std::runtime_error {
  protected:
   RuntimeError() : std::runtime_error("") {}
-  ~RuntimeError() throw();
+  RuntimeError(const RuntimeError &rerr) : std::runtime_error(rerr) {}
+  ~RuntimeError() FMT_DTOR_NOEXCEPT;
 };
 
 template <typename Char>
@@ -1849,14 +1905,14 @@ class ArgMap {
  public:
   FMT_API void init(const ArgList &args);
 
-  const internal::Arg* find(const fmt::BasicStringRef<Char> &name) const {
+  const internal::Arg *find(const fmt::BasicStringRef<Char> &name) const {
     // The list is unsorted, so just return the first matching name.
     for (typename MapType::const_iterator it = map_.begin(), end = map_.end();
          it != end; ++it) {
       if (it->first == name)
         return &it->second;
     }
-    return 0;
+    return FMT_NULL;
   }
 };
 
@@ -1885,7 +1941,7 @@ class ArgFormatterBase : public ArgVisitor<Impl, void> {
   }
 
   void write(const char *value) {
-    Arg::StringValue<char> str = {value, value != 0 ? std::strlen(value) : 0};
+    Arg::StringValue<char> str = {value, value ? std::strlen(value) : 0};
     writer_.write_str(str, spec_);
   }
 
@@ -1900,8 +1956,10 @@ class ArgFormatterBase : public ArgVisitor<Impl, void> {
   void visit_any_double(T value) { writer_.write_double(value, spec_); }
 
   void visit_bool(bool value) {
-    if (spec_.type_)
-      return visit_any_int(value);
+    if (spec_.type_) {
+      visit_any_int(value);
+      return;
+    }
     write(value);
   }
 
@@ -1916,21 +1974,21 @@ class ArgFormatterBase : public ArgVisitor<Impl, void> {
     typedef typename BasicWriter<Char>::CharPtr CharPtr;
     Char fill = internal::CharTraits<Char>::cast(spec_.fill());
     CharPtr out = CharPtr();
-    const unsigned CHAR_WIDTH = 1;
-    if (spec_.width_ > CHAR_WIDTH) {
+    const unsigned CHAR_SIZE = 1;
+    if (spec_.width_ > CHAR_SIZE) {
       out = writer_.grow_buffer(spec_.width_);
       if (spec_.align_ == ALIGN_RIGHT) {
-        std::uninitialized_fill_n(out, spec_.width_ - CHAR_WIDTH, fill);
-        out += spec_.width_ - CHAR_WIDTH;
+        std::uninitialized_fill_n(out, spec_.width_ - CHAR_SIZE, fill);
+        out += spec_.width_ - CHAR_SIZE;
       } else if (spec_.align_ == ALIGN_CENTER) {
         out = writer_.fill_padding(out, spec_.width_,
-                                   internal::const_check(CHAR_WIDTH), fill);
+                                   internal::const_check(CHAR_SIZE), fill);
       } else {
-        std::uninitialized_fill_n(out + CHAR_WIDTH,
-                                  spec_.width_ - CHAR_WIDTH, fill);
+        std::uninitialized_fill_n(out + CHAR_SIZE,
+                                  spec_.width_ - CHAR_SIZE, fill);
       }
     } else {
-      out = writer_.grow_buffer(CHAR_WIDTH);
+      out = writer_.grow_buffer(CHAR_SIZE);
     }
     *out = internal::CharTraits<Char>::cast(value);
   }
@@ -2325,7 +2383,7 @@ class SystemError : public internal::RuntimeError {
   }
   FMT_VARIADIC_CTOR(SystemError, init, int, CStringRef)
 
-  ~SystemError() throw();
+  ~SystemError() FMT_DTOR_NOEXCEPT;
 
   int error_code() const { return error_code_; }
 };
@@ -2961,7 +3019,7 @@ void BasicWriter<Char>::write_double(T value, const FormatSpec &spec) {
   // Format using snprintf.
   Char fill = internal::CharTraits<Char>::cast(spec.fill());
   unsigned n = 0;
-  Char *start = 0;
+  Char *start = FMT_NULL;
   for (;;) {
     std::size_t buffer_size = buffer_.capacity() - offset;
 #if FMT_MSC_VER
@@ -3567,7 +3625,7 @@ inline internal::Arg BasicFormatter<Char, AF>::get_arg(
 
 template <typename Char, typename AF>
 inline internal::Arg BasicFormatter<Char, AF>::parse_arg_index(const Char *&s) {
-  const char *error = 0;
+  const char *error = FMT_NULL;
   internal::Arg arg = *s < '0' || *s > '9' ?
         next_arg(error) : get_arg(internal::parse_nonnegative_int(s), error);
   if (error) {
@@ -3585,7 +3643,7 @@ inline internal::Arg BasicFormatter<Char, AF>::parse_arg_name(const Char *&s) {
   do {
     c = *++s;
   } while (internal::is_name_start(c) || ('0' <= c && c <= '9'));
-  const char *error = 0;
+  const char *error = FMT_NULL;
   internal::Arg arg = get_arg(BasicStringRef<Char>(start, s - start), error);
   if (error)
     FMT_THROW(FormatError(error));
