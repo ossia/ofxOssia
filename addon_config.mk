@@ -65,12 +65,12 @@ common:
 	# a specific platform
 	ADDON_SOURCES_EXCLUDE += libs/ossia/include/spdlog/fmt/bundled/%.cc
 	ADDON_SOURCES_EXCLUDE += libs/ossia/include/fmt/%.cc
-    ADDON_SOURCES_EXCLUDE += libs/API
-    ADDON_SOURCES_EXCLUDE += libs/build
+	ADDON_SOURCES_EXCLUDE += libs/API/%
+	ADDON_SOURCES_EXCLUDE += libs/build/%
 	
 	# when parsing the file system looking for include paths exclude this for all or
 	# a specific platform
-    ADDON_INCLUDES_EXCLUDE += libs/ossia/include/fmt
+	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/fmt
 	
 linux64:
 	ADDON_LIBS += libs/ossia/lib/linux64/libossia.so
