@@ -1,4 +1,9 @@
 libs/API
 libs/build
+*/*.dylib
+*/*.so
+*/*.dll
+*/*.a
+
 */bin
 */obj
