@@ -67,6 +67,8 @@ common:
 	ADDON_SOURCES_EXCLUDE += libs/ossia/include/fmt/%.cc
 	ADDON_SOURCES_EXCLUDE += libs/API/%
 	ADDON_SOURCES_EXCLUDE += libs/build/%
+	ADDON_INCLUDES_EXCLUDE += libs/API/%
+	ADDON_INCLUDES_EXCLUDE += libs/build/%
 	
 	# when parsing the file system looking for include paths exclude this for all or
 	# a specific platform
@@ -109,6 +111,9 @@ osx:
 	ADDON_FRAMEWORKS += CoreAudio
 	ADDON_FRAMEWORKS += CoreFoundation
 	ADDON_CFLAGS += -std=c++14
+	ADDON_LIBS += /usr/local/lib/libboost_filesystem.a
+	ADDON_LIBS += /usr/local/lib/libboost_system.a
+	ADDON_LIBS += libs/ossia/osx/libossia.a
     
 ios:
 	ADDON_FRAMEWORKS += CoreMIDI
