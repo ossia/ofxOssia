@@ -114,6 +114,8 @@ osx:
 	ADDON_LIBS += /usr/local/lib/libboost_filesystem.a
 	ADDON_LIBS += /usr/local/lib/libboost_system.a
 	ADDON_LIBS += libs/ossia/osx/libossia.a
+	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/boost/%
+	ADDON_SOURCES_EXCLUDE += libs/ossia/include/boost/%
     
 ios:
 	ADDON_FRAMEWORKS += CoreMIDI
