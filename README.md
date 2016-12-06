@@ -15,6 +15,7 @@ This openFrameworks addon is a wrapper for the OSSIA API https://github.com/OSSI
 * Include the header file `ofxOssia.hpp` to use the addon
 
 * For OSX : after compiling, do the folowing
+
 	$ cp bin/libossia.dylib bin/kaleidoSound.app/Contents/MacOS
 	$ install_name_tool -change "libossia.dylib" "@executable_path/libossia.dylib" bin/kaleidoSound.app/Contents/MacOS/kaleidoSound
 
