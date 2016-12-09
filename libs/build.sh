@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [[ ! -d "API" ]]; then
-  git clone --recursive -j4 https://github.com/OSSIA/API
+  git clone --recursive https://github.com/OSSIA/API
 fi
 
 mkdir build
@@ -18,7 +18,7 @@ else
 fi
 
 cmake ../API -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=ossia-inst -DOSSIA_TESTING=0 -DOSSIA_STATIC=1 -DOSSIA_NO_SONAME=1 -DOSSIA_PD=0 -DBOOST_ROOT=$(pwd)/boost_1_58_0
-make -j$(nproc)
+make -j8
 make install
 rm -rf ../ossia/include
 mkdir -p ../ossia
