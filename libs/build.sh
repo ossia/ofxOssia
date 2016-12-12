@@ -46,8 +46,9 @@ else
 
   # Changing OFX config : 
   OFX_MAKE_CONFIG=$(find ../../../.. -name config.osx.default.mk)
-  sed -i mk 's/c++11/c++14/' "$OFX_MAKE_CONFIG"
-  sed -i mk 's/10.7/10.10/' "$OFX_MAKE_CONFIG"
+  OFX_XCODE_CONFIG=$(find ../../../.. -name CoreOF.xcconfig)
+  sed -i mk 's/c++11/c++14/' "$OFX_MAKE_CONFIG" "$OFX_XCODE_CONFIG"
+  sed -i mk 's/10.7/10.10/' "$OFX_MAKE_CONFIG" "$OFX_XCODE_CONFIG"
   
 fi
 
