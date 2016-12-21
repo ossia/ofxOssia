@@ -54,7 +54,7 @@ else
   
 fi
 
-cmake ../API -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=ossia-inst -DOSSIA_TESTING=0 -DOSSIA_STATIC=1 -DOSSIA_NO_SONAME=1 -DOSSIA_PD=0 -DBOOST_ROOT=$(pwd)/boost_1_58_0
+cmake ../API -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=ossia-inst -DOSSIA_TESTING=0 -DOSSIA_STATIC=1 -DOSSIA_NO_SONAME=1 -DOSSIA_PD=0 -DBOOST_ROOT=$(pwd)/boost_1_58_0 -DOSSIA_NO_QT=1
 make -j8
 make install
 rm -rf ../ossia/include
@@ -62,7 +62,7 @@ mkdir -p ../ossia
 mv ossia-inst/include ../ossia/include
 if [[ "$OS_IS_LINUX" -eq "1" ]] ; then
   mkdir -p ../ossia/lib/linux64
-  mv ossia-inst/lib/libossia.so* ../ossia/lib/linux64/
+  mv ossia-inst/lib/static/libossia.a ../ossia/lib/linux64/
 else
   mkdir -p ../ossia/lib/osx
   mv ossia-inst/lib/static/libossia.a ../ossia/lib/osx/
