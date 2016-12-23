@@ -13,7 +13,7 @@ inheriting the openFrameworks' class `ofParameter` can be controlled both via th
 ## Installation (OS X, Linux) 
 
 * Compile the OSSIA library: go to the folder `libs/` and run the script `build.sh`
-* Copy the dynamic library (libossia) created in `libs/ossia/libs/(OS_name)` to your app's `bin/` folder
+* **Copy the dynamic library** (libossia) created in `libs/ossia/libs/(OS_name)` to your app's `bin/` folder
 * Include the header file `ofxOssia.hpp` to use the addon
 
 * For OSX : after compiling, do the following.
@@ -26,9 +26,11 @@ inheriting the openFrameworks' class `ofParameter` can be controlled both via th
 ## Installation (Windows)
 
 * The simplest way is to use one of the releases.
-* Do not forget to copy the relevant DLL from the libs/ossia/bin folder, to your executable folder.
+* The OSSIA API require some boost libs not available in OpenFrameworks. To handle this :
+    * Download http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.zip
+    * Extract the content of the `boost/` folder, in `of_v0.9.8_vs_release\libs\boost\include\boost\`.
+* Once your application is built, do not forget to **copy the relevant DLL** from the libs/ossia/bin folder, to your executable folder.
 * For compiling the OSSIA API by hand, refer to the [OSSIA API wiki](https://github.com/OSSIA/API/wiki).
-
 ## Troubleshooting
 
 In case of the following error : `execvp: /bin/sh: Argument list too long`: check that you do not have a boost folder in your example folder.
