@@ -17,10 +17,11 @@ inheriting the openFrameworks' class `ofParameter` can be controlled both via th
 * Include the header file `ofxOssia.hpp` to use the addon
 
 * For OSX : after compiling, do the following.
-
-    cp bin/libossia.dylib bin/myApp.app/Contents/MacOS
+```
+    cp bin/libossia.dylib bin/myApp.app/Contents/MacOS
     
     install_name_tool -change "libossia.dylib" "@executable_path/libossia.dylib" bin/myApp.app/Contents/MacOS/myApp
+```
 
 ## Installation (Windows)
 
