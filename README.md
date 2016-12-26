@@ -10,6 +10,10 @@ inheriting the openFrameworks' class `ofParameter` can be controlled both via th
 
 * Tested on Linux (Debian/stretch, Antergos), macOS, Windows
 
+* The OSSIA API require some boost libs not available in OpenFrameworks. To handle this :
+    * Download http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.zip
+    * Extract the content of the `boost/` folder, in `of_v0.9.8_release/libs/boost/include/boost/`.
+    
 ## Installation (OS X, Linux) 
 
 * Compile the OSSIA library: go to the folder `libs/` and run the script `build.sh`
@@ -26,9 +30,6 @@ inheriting the openFrameworks' class `ofParameter` can be controlled both via th
 ## Installation (Windows)
 
 * The simplest way is to use one of the releases.
-* The OSSIA API require some boost libs not available in OpenFrameworks. To handle this :
-    * Download http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.zip
-    * Extract the content of the `boost/` folder, in `of_v0.9.8_vs_release\libs\boost\include\boost\`.
 * Once your application is built, do not forget to **copy the relevant DLL** from the libs/ossia/bin folder, to your executable folder.
 * For compiling the OSSIA API by hand, refer to the [OSSIA API wiki](https://github.com/OSSIA/API/wiki).
 ## Troubleshooting
