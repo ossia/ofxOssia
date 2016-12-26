@@ -13,6 +13,7 @@ inheriting the openFrameworks' class `ofParameter` can be controlled both via th
 * The OSSIA API require some boost libs not available in OpenFrameworks. To handle this :
     * Download http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.zip
     * Extract the content of the `boost/` folder, in `of_v0.9.8_release/libs/boost/include/boost/`.
+    * If done correctly you should have file replacement warnings for various `.hpp` files. Replace them all.
     
 ## Installation (OS X, Linux) 
 
