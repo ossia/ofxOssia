@@ -21,6 +21,7 @@ inheriting the openFrameworks' class `ofParameter` can be controlled both via th
 * **Copy the dynamic library** (libossia) created in `libs/ossia/libs/(OS_name)` to your app's `bin/` folder
 * Include the header file `ofxOssia.hpp` to use the addon
 
+* compilation of the project under OSX has to be made with the project makefile and not xcode.
 * For OSX : after compiling, do the following.
 ```
     cp bin/libossia.dylib bin/myApp.app/Contents/MacOS
