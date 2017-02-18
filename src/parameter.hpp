@@ -318,6 +318,37 @@ public:
         this->set(data);
     }
 };
+    
+class ParameterGroup : public ofParameterGroup
+{
+private:
+    ossia::net::node_base* _parentNode{};
+    ossia::net::node_base* _currentNode{};
+    
+    void createNode (const std::string& name)
+    {
+        _currentNode = _parentNode->createChild(name);
+    }
+    
+public:
+    ParameterGroup() = default;
+    
+    ~ParameterGroup() = default;
+    
+    ParameterGroup & setup(ossia::net::node_base& parentNode,
+                      const std::string& name)
+    {
+        _parentNode = &parentNode;
+        createNode(name);
+        this->setName(name);
+       
+        return *this;
+    }
+    
+    ossia::net::node_base& getNode(){
+        return *_currentNode;
+    }
+};
 
 }
 #endif // PARAMETER_H
