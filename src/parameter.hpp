@@ -130,6 +130,24 @@ template<> struct MatchingType<ofColor> {
         return ossia::make_vec(f.r / 255., f.g / 255., f.b / 255., f.a / 255.);
     }
 };
+    
+    template<> struct MatchingType<ofFloatColor> {
+        using ofx_type = ofFloatColor;
+        static constexpr const auto val = ossia::val_type::VEC4F;
+        using ossia_type = std::array<float, 4>;
+        using ossia_unit = ossia::rgba_u;
+        
+        static ofx_type convertFromOssia(const ossia::value& v)
+        {
+            const auto& t = v.get<ossia_type>();
+            return ofx_type(t[0], t[1], t[2], t[3]);
+        }
+        
+        static ossia_type convert(ofx_type f)
+        {
+            return ossia::make_vec(f.r, f.g, f.b, f.a);
+        }
+    };
 
 /*
  * Class inheriting from ofParameter
