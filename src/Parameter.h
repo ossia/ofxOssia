@@ -173,7 +173,7 @@ namespace ossia
         {
             _parentNode = &parentNode;
             createNode(name);
-            this->setName(name);
+            this->setName(_currentNode->getName());
             
             return *this;
         }
@@ -184,7 +184,9 @@ namespace ossia
         {
             _parentNode = &parentNode.getNode();
             createNode(name);
-            this->setName(name);
+            this->setName(_currentNode->getName());
+            
+            parentNode.add(*this);
             
             return *this;
         }
@@ -207,6 +209,7 @@ namespace ossia
     private:
         using ossia_type = MatchingType<DataValue>;
         ossia::net::node_base* _parentNode{};
+        ossia::net::node_base* _currentNode{};
         mutable ossia::net::address_base*  _address{};
 
         /*
@@ -216,10 +219,10 @@ namespace ossia
         void createNode(const std::string& name, DataValue data)
         {
             //creates node
-            auto node = _parentNode->createChild(name);
+            _currentNode = _parentNode->createChild(name);
 
             //set value
-            _address = node->createAddress(ossia_type::val);
+            _address = _currentNode->createAddress(ossia_type::val);
             _address->pushValue(ossia_type::convert(data));
          }
         
@@ -325,6 +328,7 @@ namespace ossia
         {
             _parentNode = &parentNode.getNode();
             createNode(name,data);
+//            this->set(_currentNode->getName(),data);
             this->set(name,data);
             enableLocalUpdate();
             enableRemoteUpdate();
@@ -340,6 +344,7 @@ namespace ossia
         {
             _parentNode = &parentNode.getNode();
             createNode(name,data,min,max);
+//            this->set(_currentNode->getName(),data,min,max);
             this->set(name,data,min,max);
             enableLocalUpdate();
             enableRemoteUpdate();

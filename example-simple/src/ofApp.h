@@ -1,8 +1,10 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxOssia.hpp"
+#include "ofxOssia.h"
 #include "ofxGui.h"
+
+#include "InteractiveCircle.h"
 
 class ofApp : public ofBaseApp{
 
@@ -24,12 +26,11 @@ public:
     void gotMessage(ofMessage msg);
 
 private:
-    //ofxOSSIA class
-    Network _network;
-    ossia::Parameter<float> _radius;
-    ossia::Parameter<ofVec2f> _position;
-    ossia::Parameter<bool> _fill;
-    ossia::Parameter<ofColor> _color;
+    
+    ofxOssia ossia;
+    
+    InteractiveCircle c;
+    vector<InteractiveCircle> circles;
 
     //ofxGui
     ofxPanel            _gui;

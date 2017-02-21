@@ -1,3 +1,5 @@
+#pragma once
+
 #include <ossia/ossia.hpp>
 #include "Parameter.h"
 
@@ -19,8 +21,6 @@ public:
     ossia::ParameterGroup & getRootNode(){return _root_node;};
     
 private:
-    
-    void setupRoot();
     
     ossia::ParameterGroup _root_node;
     ossia::net::generic_device _device;
