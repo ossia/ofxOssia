@@ -71,7 +71,18 @@ common:
 	ADDON_INCLUDES_EXCLUDE += libs/API/%
 	ADDON_INCLUDES_EXCLUDE += libs/build/%
 	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/boost/%
+	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/asio/%
+	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/ossia/%
+	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/brigand/%
+	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/websocketpp/%
+	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/oscpack/%
+	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/chobo/%
+	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/eggs/%
+	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/spdlog/%
+	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/fmt/%
+	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/gsl/%
 	ADDON_INCLUDES_EXCLUDE += libs/boost_1_58_0/%
+	ADDON_INCLUDES_EXCLUDE += ../../libs/boost/include/boost/%
 	
 	# when parsing the file system looking for include paths exclude this for all or
 	# a specific platform

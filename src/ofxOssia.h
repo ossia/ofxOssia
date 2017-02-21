@@ -4,6 +4,8 @@
 class ofxOssia {
 
 public:
+    ofxOssia():_device{std::make_unique<ossia::net::local_protocol>(), "ossia"}{};
+    
     void setup();
     void setup(const std::string& type,
                const std::string& localname,

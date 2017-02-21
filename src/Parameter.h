@@ -168,6 +168,17 @@ namespace ossia
         
         ~ParameterGroup() = default;
         
+        ParameterGroup & setup(ossia::net::node_base & parentNode,
+                               const std::string& name)
+        {
+            _parentNode = &parentNode;
+            createNode(name);
+            this->setName(name);
+            
+            return *this;
+        }
+
+        
         ParameterGroup & setup(ossia::ParameterGroup & parentNode,
                                const std::string& name)
         {
@@ -211,6 +222,7 @@ namespace ossia
             _address = node->createAddress(ossia_type::val);
             _address->pushValue(ossia_type::convert(data));
          }
+        
         // Creates the node setting domain
         void createNode(const std::string& name, DataValue data, DataValue min, DataValue max)
         {
@@ -311,11 +323,12 @@ namespace ossia
                 const std::string& name,
                 DataValue data)
         {
-            _parentNode = &parentNode;
+            _parentNode = &parentNode.getNode();
             createNode(name,data);
             this->set(name,data);
             enableLocalUpdate();
             enableRemoteUpdate();
+            parentNode.add(*this);
             return *this;
         }
 
@@ -325,11 +338,12 @@ namespace ossia
                 const std::string& name,
                 DataValue data, DataValue min, DataValue max)
         {
-            _parentNode = &parentNode;
+            _parentNode = &parentNode.getNode();
             createNode(name,data,min,max);
             this->set(name,data,min,max);
             enableLocalUpdate();
             enableRemoteUpdate();
+            parentNode.add(*this);
             return *this;
         }
 
@@ -339,7 +353,7 @@ namespace ossia
                 const std::string& name,
                 DataValue data, DataValue min, DataValue max)
         {
-            _parentNode = &parentNode;
+            _parentNode = &parentNode.getNode();
             this->set(name,data,min,max);
         }
 
