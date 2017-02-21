@@ -65,6 +65,7 @@ common:
 	# a specific platform
 	ADDON_SOURCES_EXCLUDE += libs/ossia/include/spdlog/fmt/bundled/%.cc
 	ADDON_SOURCES_EXCLUDE += libs/ossia/include/fmt/%.cc
+	ADDON_SOURCES_EXCLUDE += libs/ossia/include/asio/%.cpp
 	ADDON_SOURCES_EXCLUDE += libs/API/%
 	ADDON_SOURCES_EXCLUDE += libs/build/%
 	ADDON_INCLUDES_EXCLUDE += libs/API/%
