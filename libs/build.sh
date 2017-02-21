@@ -68,6 +68,8 @@ else
   mv ossia-inst/lib/static/libossia.a ../ossia/lib/osx/
 #  cp -rf boost_1_58_0/boost/* "$OFX_BOOST_FOLDER/"
 #  rm -rf boost_1_58_0
+  rm -rf "$OFX_BOOST_FOLDER/asio.hpp"
+  rm -rf "$OFX_BOOST_FOLDER/asio"
 fi
 )
 rm -rf API build
