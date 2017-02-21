@@ -185,7 +185,7 @@ private:
         //set value
         _address = node->createAddress(ossia_type::val);
         _address->pushValue(ossia_type::convert(data));
-        _address->setDomain(ossia::net::make_domain(ossia_type::convert(min),
+        _address->setDomain(ossia::make_domain(ossia_type::convert(min),
                                                     ossia_type::convert(max)));
         _address->setUnit(typename ossia_type::ossia_unit{});
     }
