@@ -81,6 +81,7 @@ common:
 	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/spdlog/%
 	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/fmt/%
 	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/gsl/%
+	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/rapidjson/%
 	ADDON_INCLUDES_EXCLUDE += libs/boost_1_58_0/%
 	ADDON_INCLUDES_EXCLUDE += ../../libs/boost/include/boost/%
 	
