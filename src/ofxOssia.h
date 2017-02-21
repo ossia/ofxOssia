@@ -1,12 +1,26 @@
-#include "parameter.hpp"
+#include <ossia/ossia.hpp>
+#include "Parameter.h"
 
 class ofxOssia {
 
 public:
     void setup();
-    void update(){};
+    void setup(const std::string& type,
+               const std::string& localname,
+               int localportOSC, int localPortWS);
+    void setup(const std::string& type,
+               const std::string& localname,
+               const std::string& remotename,
+               const std::string& remoteip,
+               int localport, int remoteport);
+    
+    ossia::ParameterGroup & getRootNode(){return _root_node;};
     
 private:
     
+    void setupRoot();
+    
+    ossia::ParameterGroup _root_node;
+    ossia::net::generic_device _device;
     
 };
