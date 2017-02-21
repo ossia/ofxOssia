@@ -272,7 +272,7 @@ public:
 
     // creates node and sets the name, the data
     Parameter & setup(
-            ossia::net::node_base& parentNode,
+            ossia::ParameterGroup & parentNode,
             const std::string& name,
             DataValue data)
     {
@@ -286,7 +286,7 @@ public:
 
     // creates node and sets the name, the data, the minimum and maximum value (for the gui)
     Parameter & setup(
-            ossia::net::node_base& parentNode,
+            ossia::ParameterGroup & parentNode,
             const std::string& name,
             DataValue data, DataValue min, DataValue max)
     {
@@ -300,7 +300,7 @@ public:
 
     // set without creating node (suppose that a node was created previously)
     Parameter & setupNoPublish(
-            ossia::net::node_base& parentNode,
+            ossia::ParameterGroup & parentNode,
             const std::string& name,
             DataValue data, DataValue min, DataValue max)
     {
@@ -364,8 +364,9 @@ public:
     }
     
     ossia::net::node_base& getNode(){
-        return *_currentNode;
+        return * _currentNode;
     }
+
 };
 
 }
