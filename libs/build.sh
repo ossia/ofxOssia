@@ -48,7 +48,7 @@ else
   SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
   OFX_MAKE_CONFIG=$(find $SCRIPT_DIR/../../../.. -name config.osx.default.mk)
   OFX_XCODE_CONFIG=$(find $SCRIPT_DIR/../../../.. -name CoreOF.xcconfig)
-  OFX_BOOST_FOLDER="$SCRIPT_DIR/../../../libs/boost/include/boost"
+  OFX_BOOST_FOLDER="$SCRIPT_DIR/../../../../libs/boost/include/boost"
   sed -i mk 's/c++11/c++14/' "$OFX_MAKE_CONFIG" "$OFX_XCODE_CONFIG"
   sed -i mk 's/10.7/10.10/' "$OFX_MAKE_CONFIG" "$OFX_XCODE_CONFIG"
   
