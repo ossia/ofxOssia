@@ -31,6 +31,8 @@ public:
     
     ossia::ParameterGroup & getRootNode(){return _root_node;};
     
+    
+    
 private:
     
     ossia::ParameterGroup _root_node;

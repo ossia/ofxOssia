@@ -167,13 +167,16 @@ namespace ossia
         ParameterGroup() = default;
         
         ~ParameterGroup() = default;
+//        ~ParameterGroup() {
+//            clearChild();
+//        }
         
         ParameterGroup & setup(ossia::net::node_base & parentNode,
                                const std::string& name)
         {
             _parentNode = &parentNode;
-            createNode(name);
-            this->setName(_currentNode->getName());
+            _currentNode = _parentNode;
+            this->setName(name);
             
             return *this;
         }
@@ -193,6 +196,13 @@ namespace ossia
         
         ossia::net::node_base& getNode(){
             return * _currentNode;
+        }
+        
+        void clearChild(){
+            if (_currentNode != NULL){
+                _currentNode->clearChildren();
+            }
+            this->clear();
         }
         
     };
