@@ -1,7 +1,12 @@
 #pragma once
 
 #include "ofMain.h"
-
+#undef Status
+#undef Bool
+#undef bool
+#undef False
+#undef status
+#undef None
 namespace ossia
 {
 

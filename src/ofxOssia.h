@@ -1,5 +1,10 @@
 #pragma once
-
+#undef Status
+#undef Bool
+#undef bool
+#undef False
+#undef status
+#undef None
 #include <ossia/ossia.hpp>
 #include "Parameter.h"
 
