@@ -92,8 +92,11 @@ common:
 linux64:
 	ADDON_LIBS += libs/ossia/lib/linux64/libossia.so
 	ADDON_CPPFLAGS += -std=c++14
+	ADDON_LIBS += avahi-client
+
 linux:
 	ADDON_CPPFLAGS += -std=c++14
+	ADDON_LIBS += avahi-client
 	
 msys2:
 	ADDON_CPPFLAGS += NOMINMAX
