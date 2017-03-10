@@ -129,6 +129,7 @@ osx:
 	ADDON_LIBS += libs/ossia/osx/libossia.a
 	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/boost/%
 	ADDON_SOURCES_EXCLUDE += libs/ossia/include/boost/%
+	ADDON_CPPFLAGS += -std=c++14
     
 ios:
 	ADDON_FRAMEWORKS += CoreMIDI

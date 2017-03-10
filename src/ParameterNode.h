@@ -38,7 +38,7 @@ namespace ossia {
             std::cout<<" before test "<<endl;
             if (_currentNode != nullptr){
                 std::cout<<"clear child for param "<<_currentNode->getName()<<endl;
-                _currentNode->clearChildren();
+//                _currentNode->clearChildren();
                 if (_parentNode != nullptr){
                     std::cout<<"remove this child from parent "<<_parentNode->getName()<<endl;
                     _parentNode->removeChild(*_currentNode);

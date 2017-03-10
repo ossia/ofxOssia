@@ -112,6 +112,25 @@ namespace ossia
         }
     };
 
+//    template<> struct MatchingType<ofPoint> {
+//        using ofx_type = ofVec3f;
+//        static constexpr const auto val = ossia::val_type::VEC3F;
+//        using ossia_type = std::array<float, 3>;
+//        using ossia_unit = ossia::cartesian_3d_u;
+//        
+//        static ofx_type convertFromOssia(const ossia::value& v)
+//        {
+//            const auto& t = v.get<ossia_type>();
+//            return ofx_type(t[0], t[1], t[2]);
+//        }
+//        
+//        static ossia_type convert(ofx_type f)
+//        {
+//            return ossia::make_vec(f.x, f.y, f.z);
+//        }
+//    };
+
+    
     template<> struct MatchingType<ofColor> {
         using ofx_type = ofColor;
         static constexpr const auto val = ossia::val_type::VEC4F;

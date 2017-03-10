@@ -1,7 +1,7 @@
 #!/bin/bash -eux
  export PATH=$PATH:/usr/local/bin
 if [[ ! -d "API" ]]; then
-  git clone --recursive https://github.com/OSSIA/API
+  git clone --recursive https://github.com/OSSIA/libossia
 else
   (
   cd API

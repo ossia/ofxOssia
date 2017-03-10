@@ -16,6 +16,7 @@ inheriting the openFrameworks' class `ofParameter` can be controlled both via th
 
 * Compile the OSSIA library: go to the folder `libs/` and run the script `build.sh`
 * Include the header file `ofxOssia.hpp` to use the addon
+* compilation of your project must been made threw Terminal / make and not threw xcode.
 
 ## Installation (Windows)
 
