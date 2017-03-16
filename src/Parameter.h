@@ -1,7 +1,12 @@
 #pragma once
 
 #include "ofMain.h"
-
+#undef Status
+#undef Bool
+#undef bool
+#undef False
+#undef status
+#undef None
 namespace ossia
 {
 
@@ -168,31 +173,61 @@ namespace ossia
         };
 
     /*
+     * Class encapsulating node_base* to avoid segfault
+     * */
+    
+    class ParamNode {
+    public:
+        ossia::net::node_base* _parentNode{};
+        ossia::net::node_base* _currentNode{};
+        mutable ossia::net::address_base*  _address{};
+
+        
+        ParamNode () = default;
+        ~ParamNode () {
+            std::cout<<"delete param node"<<endl;
+            if (_currentNode != nullptr)
+                _currentNode->clearChildren();
+            if (_parentNode != nullptr)
+                _parentNode->removeChild(*_currentNode);
+            if (_currentNode != nullptr)
+                delete _currentNode;
+            if (_address != nullptr)
+                delete _address;
+        }
+        
+        
+    };
+    
+    /*
      * Class inheriting from ofParameterGroup
+     * create ossia node + parameterGroup
      * */
     
     class ParameterGroup : public ofParameterGroup
     {
     private:
-        ossia::net::node_base* _parentNode{};
-        ossia::net::node_base* _currentNode{};
+        
+        std::shared_ptr <ParamNode> nodes;
         
         void createNode (const std::string& name)
         {
-            _currentNode = _parentNode->createChild(name);
+            nodes->_currentNode = nodes->_parentNode->createChild(name);
         }
         
     public:
-        ParameterGroup() = default;
+        ParameterGroup() {
+            nodes = std::make_shared<ParamNode> ();
+        }
         
         ~ParameterGroup() = default;
-        
+
         ParameterGroup & setup(ossia::net::node_base & parentNode,
                                const std::string& name)
         {
-            _parentNode = &parentNode;
-            createNode(name);
-            this->setName(_currentNode->getName());
+            nodes->_parentNode = &parentNode;
+            nodes->_currentNode = nodes->_parentNode;
+            this->setName(name);
             
             return *this;
         }
@@ -201,9 +236,9 @@ namespace ossia
         ParameterGroup & setup(ossia::ParameterGroup & parentNode,
                                const std::string& name)
         {
-            _parentNode = &parentNode.getNode();
+            nodes->_parentNode = &parentNode.getNode();
             createNode(name);
-            this->setName(_currentNode->getName());
+            this->setName(nodes->_currentNode->getName());
             
             parentNode.add(*this);
             
@@ -211,7 +246,7 @@ namespace ossia
         }
         
         ossia::net::node_base& getNode(){
-            return * _currentNode;
+            return * nodes->_currentNode;
         }
         
     };
@@ -226,10 +261,12 @@ namespace ossia
     class Parameter : public ofParameter<DataValue>
     {
     private:
+        std::shared_ptr <ParamNode> nodes;
+        
         using ossia_type = MatchingType<DataValue>;
-        ossia::net::node_base* _parentNode{};
-        ossia::net::node_base* _currentNode{};
-        mutable ossia::net::address_base*  _address{};
+//        ossia::net::node_base* _parentNode{};
+//        ossia::net::node_base* _currentNode{};
+//        mutable ossia::net::address_base*  _address{};
 
         /*
          * Methods to communicate via OSSIA to i-score
@@ -238,30 +275,30 @@ namespace ossia
         void createNode(const std::string& name, DataValue data)
         {
             //creates node
-            _currentNode = _parentNode->createChild(name);
+            nodes->_currentNode = nodes->_parentNode->createChild(name);
 
             //set value
-            _address = _currentNode->createAddress(ossia_type::val);
-            _address->pushValue(ossia_type::convert(data));
+            nodes->_address = nodes->_currentNode->createAddress(ossia_type::val);
+            nodes->_address->pushValue(ossia_type::convert(data));
          }
         
         // Creates the node setting domain
         void createNode(const std::string& name, DataValue data, DataValue min, DataValue max)
         {
             //creates node
-            auto node = _parentNode->createChild(name);
+            auto node = nodes->_parentNode->createChild(name);
 
             //set value
-            _address = node->createAddress(ossia_type::val);
-            _address->pushValue(ossia_type::convert(data));
-            _address->setDomain(ossia::make_domain(ossia_type::convert(min),
+            nodes->_address = node->createAddress(ossia_type::val);
+            nodes->_address->pushValue(ossia_type::convert(data));
+            nodes->_address->setDomain(ossia::make_domain(ossia_type::convert(min),
                                                         ossia_type::convert(max)));
-            _address->setUnit(typename ossia_type::ossia_unit{});
+            nodes->_address->setUnit(typename ossia_type::ossia_unit{});
         }
         // Publishes value to the node
         void publishValue(DataValue other)
         {
-            _address->pushValue(ossia_type::convert(other));
+            nodes->_address->pushValue(ossia_type::convert(other));
         }
 
         // Pulls the node value
@@ -332,7 +369,10 @@ namespace ossia
         }
 
     public:
-        Parameter() = default;
+        Parameter() {
+            nodes = std::make_shared<ParamNode> ();
+        }
+
 
         ~Parameter()
         {
@@ -345,7 +385,7 @@ namespace ossia
                 const std::string& name,
                 DataValue data)
         {
-            _parentNode = &parentNode.getNode();
+            nodes->_parentNode = &parentNode.getNode();
             createNode(name,data);
 //            this->set(_currentNode->getName(),data);
             this->set(name,data);
@@ -361,7 +401,7 @@ namespace ossia
                 const std::string& name,
                 DataValue data, DataValue min, DataValue max)
         {
-            _parentNode = &parentNode.getNode();
+            nodes->_parentNode = &parentNode.getNode();
             createNode(name,data,min,max);
 //            this->set(_currentNode->getName(),data,min,max);
             this->set(name,data,min,max);
@@ -377,24 +417,24 @@ namespace ossia
                 const std::string& name,
                 DataValue data, DataValue min, DataValue max)
         {
-            _parentNode = &parentNode.getNode();
+            nodes->_parentNode = &parentNode.getNode();
             this->set(name,data,min,max);
         }
 
         // Get the address of the node
         ossia::net::address_base* getAddress() const
         {
-            if(_address != nullptr)
+            if(nodes->_address != nullptr)
             {
-                return _address;
+                return nodes->_address;
             }
 
-            for(const auto & child : _parentNode->children())
+            for(const auto & child : nodes->_parentNode->children())
             {
                 if (child->getName().compare(this->getName()) == 0)
                 {
-                    _address = child->getAddress();
-                    return _address;
+                    nodes->_address = child->getAddress();
+                    return nodes->_address;
                 }
             }
             return nullptr;
