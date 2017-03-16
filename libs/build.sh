@@ -72,4 +72,4 @@ else
   rm -rf "$OFX_BOOST_FOLDER/asio"
 fi
 )
-rm -rf API build
+rm -rf libossia build
