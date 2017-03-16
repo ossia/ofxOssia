@@ -8,6 +8,6 @@
 
 #include "Parameter.h"
 
-namespace ossia {
-    HasNode::~HasNode() {}
-}
+//namespace ossia {
+//    HasNode::~HasNode() {}
+//}

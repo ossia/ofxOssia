@@ -29,7 +29,9 @@ namespace ossia {
             nodes = std::make_shared<ParamNode> ();
         }
         
-        ~ParameterGroup() {}
+        ~ParameterGroup() {
+//            clearNode();
+        }
         
         ParameterGroup & setup(ossia::net::node_base & parentNode, const std::string& name);
         ParameterGroup & setup(ossia::ParameterGroup & parentNode, const std::string& name);

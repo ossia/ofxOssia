@@ -28,11 +28,19 @@ namespace ossia {
         }
         
         void clearNode(){
-            std::cout<<"paramNode destructor"<<endl;
+            std::cout<<"clearNode()"<<endl;
+            
+            if (_currentNode != nullptr)
+                std::cout<<"paramNode "<<_currentNode->getName()<<" destructor"<<endl;
+            else
+                std::cout<<"paramNode of unknow nodes destructor"<<endl;
+            
+            
             
             if (_address != nullptr){
                 std::cout<<"clear address " <<endl;
                 delete _address;
+                _address = nullptr;
             }
             
             std::cout<<" before test "<<endl;
@@ -42,6 +50,7 @@ namespace ossia {
                 if (_parentNode != nullptr){
                     std::cout<<"remove this child from parent "<<_parentNode->getName()<<endl;
                     _parentNode->removeChild(*_currentNode);
+                    delete _currentNode;
                     _currentNode = nullptr;
                 }
             }

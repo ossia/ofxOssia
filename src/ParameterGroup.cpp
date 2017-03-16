@@ -37,17 +37,21 @@ namespace ossia {
     }
 
     void ParameterGroup::clearNode(){
-        for (int i = 0 ; i < this->size() ; i++){
-            ofAbstractParameter * ap = &(*this)[i];
+        while (this->size()>0){
+            ofAbstractParameter * ap = &(this->back());
             ossia::ParameterGroup * p = dynamic_cast<ossia::ParameterGroup *> (ap);
             if (p != nullptr){
                 p->clearNode();
             }
             else {
-                ossia::HasNode * pp = dynamic_cast<ossia::HasNode *> (ap);
-                if (pp != nullptr){
-                    pp->clearNode();
-                }
+
+                // comment clearer parameter simple?
+                // encaps dans HasNode?
+                
+//                ossia::Parameter * pp = dynamic_cast<ossia::Parameter *> (ap);
+//                if (pp != nullptr){
+//                    pp->clearNode();
+//                }
             }
         }
         nodes->clearNode();
