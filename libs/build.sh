@@ -1,10 +1,10 @@
 #!/bin/bash -eux
  export PATH=$PATH:/usr/local/bin
-if [[ ! -d "API" ]]; then
+if [[ ! -d "libossia" ]]; then
   git clone --recursive https://github.com/OSSIA/libossia
 else
   (
-  cd API
+  cd libossia
   git pull
   git submodule update --init --recursive
   )
@@ -54,7 +54,7 @@ else
   
 fi
 
-cmake ../API -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=ossia-inst -DOSSIA_NO_QT=1 -DOSSIA_TESTING=0 -DOSSIA_STATIC=1 -DOSSIA_NO_SONAME=1 -DOSSIA_PD=0 -DBOOST_ROOT=$(pwd)/boost_1_58_0 -DOSSIA_NO_QT=1
+cmake ../libossia -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=ossia-inst -DOSSIA_NO_QT=1 -DOSSIA_TESTING=0 -DOSSIA_STATIC=1 -DOSSIA_NO_SONAME=1 -DOSSIA_PD=0 -DBOOST_ROOT=$(pwd)/boost_1_58_0 -DOSSIA_NO_QT=1
 make -j8
 make install
 rm -rf ../ossia/include
