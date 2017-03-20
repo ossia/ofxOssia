@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This openFrameworks addon is a wrapper for the [OSSIA API](https://github.com/OSSIA/API) , 
+This openFrameworks addon is a wrapper for the [OSSIA library](https://github.com/OSSIA/libossia) , 
 allowing you to share parameters with i-score: the class `ossia::Parameter` 
 inheriting the openFrameworks' class `ofParameter` can be controlled both via the UI and [i-score](http://www.i-score.org).
 
@@ -10,7 +10,7 @@ inheriting the openFrameworks' class `ofParameter` can be controlled both via th
 
 * Tested on Linux (Debian/stretch, Antergos), macOS, Windows
 
-* The OSSIA API require some boost libs not available in OpenFrameworks. They are installed by the build script.
+* The OSSIA library (libossia) require some boost libs not available in OpenFrameworks. They are installed by the build script.
     
 ## Installation (OS X, Linux) 
 
