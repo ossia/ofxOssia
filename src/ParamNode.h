@@ -75,7 +75,7 @@ public:
   DataValue pullNodeValue()
   {
     using ossia_type = MatchingType<DataValue>;
-    using value_type = const typename ossia_type::ossia_type;
+    using value_type = typename ossia_type::ossia_type;
 
     try
     {
@@ -101,14 +101,35 @@ public:
     }
   }
 
-  // Listener for the GUI (but called also when i-score sends value)
+
+  // Pulls the node value
   template<typename DataValue>
-  void listen(DataValue &data)
+  DataValue cloneNodeValue()
   {
-    // check if the value to be published is not already published
-    if(pullNodeValue<DataValue>() != data)
-    {// i-score->GUI OK
-      publishValue(data);
+    using ossia_type = MatchingType<DataValue>;
+    using value_type = typename ossia_type::ossia_type;
+
+    try
+    {
+      auto val = _address->cloneValue();
+      if(val.template target<value_type>())
+        return ossia_type::convertFromOssia(val);
+      else
+        std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<<(int) val.getType()  << " " << (int) ossia_type::val << "\n" ;
+      return {};
+    }
+    catch(std::exception& e)
+    {
+      std::cerr <<  "error [ofxOssia::pullNodeValue()] : " << e.what() << "\n" ;
+      return {};
+
+    }
+
+    catch(...)
+    {
+      auto val = _address->cloneValue();
+      std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<< ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ;
+      return {};
     }
   }
 

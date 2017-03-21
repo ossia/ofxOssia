@@ -1,8 +1,9 @@
 #pragma once
 #include "ParamNode.h"
 #include "ParameterGroup.h"
+#include <ossia/detail/optional.hpp>
 #include <types/ofParameter.h>
-
+#include <iostream>
 
 namespace ossia
 {
@@ -18,24 +19,35 @@ class Parameter : public ofParameter<DataValue>
 {
 private:
   std::shared_ptr<ParamNode> _impl;
-  optional<ossia::net::address_base::iterator> _callbackIt;
+  ossia::optional<ossia::net::address_base::iterator> _callbackIt;
 
   using ossia_type = MatchingType<DataValue>;
+
+  // Listener for the GUI (but called also when i-score sends value)
+  void listen(DataValue &data)
+  {
+    // check if the value to be published is not already published
+    if(_impl->cloneNodeValue<DataValue>() != data)
+    { // i-score->GUI OK
+      _impl->publishValue(data);
+    }
+  }
 
   // listen to of update (GUI)
   void enableLocalUpdate()
   {
-    this->addListener(_impl.get(), &ParamNode::listen<DataValue>);
+    this->addListener(this, &Parameter::listen);
   }
 
   void cleanup()
   {
     if(_impl)
     {
-      this->removeListener(_impl.get(), &ParamNode::listen<DataValue>);
+      this->removeListener(this, &Parameter::listen);
       if(_impl->_address && _callbackIt)
       {
         _impl->_address->remove_callback(*_callbackIt);
+        _callbackIt = ossia::none;
       }
     }
   }
@@ -44,6 +56,7 @@ private:
   void enableRemoteUpdate()
   {
     if(_impl->_address)
+    {
       _callbackIt = _impl->_address->add_callback([=](const ossia::value& val)
       {
           using value_type = const typename ossia_type::ossia_type;
@@ -61,10 +74,12 @@ private:
               return;
           }
       });
+    }
   }
 
 public:
-  Parameter() {
+  Parameter()
+  {
     _impl = std::make_shared<ParamNode> ();
   }
 
@@ -84,11 +99,13 @@ public:
   }
 
   Parameter(Parameter&& other):
-    ofParameter<DataValue>{other} {
+    ofParameter<DataValue>{other}
+  {
     cloneFrom(other);
   }
 
-  Parameter& operator=(const Parameter& other) {
+  Parameter& operator=(const Parameter& other)
+  {
     static_cast<ofParameter<DataValue>&>(*this) = other;
 
     cleanup();
@@ -96,7 +113,8 @@ public:
     return *this;
   }
 
-  Parameter& operator=(Parameter&& other) {
+  Parameter& operator=(Parameter&& other)
+  {
     static_cast<ofParameter<DataValue>&>(*this) = other;
 
     cleanup();
@@ -106,7 +124,6 @@ public:
 
   ~Parameter()
   {
-    ofLog() << "Parameter deleted";
     cleanup();
   }
 

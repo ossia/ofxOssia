@@ -1,5 +1,8 @@
 #pragma once
-#include <ofMain.h>
+#include <types/ofBaseTypes.h>
+#include <math/ofVectorMath.h>
+#include <string>
+#include <array>
 
 #undef Status
 #undef Bool
@@ -153,5 +156,4 @@ template<> struct MatchingType<ofFloatColor> {
     return ossia::make_vec(f.r, f.g, f.b, f.a);
   }
 };
-
 }
