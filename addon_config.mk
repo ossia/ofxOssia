@@ -70,6 +70,7 @@ common:
 	ADDON_SOURCES_EXCLUDE += libs/build/%
 	ADDON_INCLUDES_EXCLUDE += libs/API/%
 	ADDON_INCLUDES_EXCLUDE += libs/build/%
+	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/%
 	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/boost/%
 	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/asio/%
 	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/ossia/%
