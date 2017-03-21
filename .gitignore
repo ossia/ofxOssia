@@ -1,3 +1,4 @@
+ex-simple*
 libs/API
 libs/build
 */*.dylib
@@ -7,3 +8,4 @@ libs/build
 *libs/ossia/*
 */bin
 */obj
+*/Makefile.user

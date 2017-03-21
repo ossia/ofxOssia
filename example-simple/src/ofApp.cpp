@@ -13,15 +13,15 @@ ofSetCircleResolution(100);
 
     // setup ofxOSSIA parameters to be add on the Gui
     ossia.setup();
-    
+
     c.setup(ossia.getRootNode());
-    
+
     for (int i=0 ; i<10 ; i++){
         InteractiveCircle c;
         c.setup(ossia.getRootNode());
         circles.push_back(c);
     }
-    
+
     _gui.add (ossia.getRootNode());
     _gui.minimizeAll();
 
@@ -34,14 +34,14 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    
+
     c.draw();
-    
+
     for (int i=0 ; i<circles.size() ; i++){
         circles[i].draw();
     }
 
-    
+
     //draw gui
     _gui.draw();
 }
@@ -97,6 +97,6 @@ void ofApp::gotMessage(ofMessage msg){
 }
 
 //--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
+void ofApp::dragEvent(ofDragInfo dragInfo){
 
 }
