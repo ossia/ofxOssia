@@ -6,7 +6,8 @@ void ofApp::setup(){
     ofBackground(0);
     ofSetFrameRate(60);
     ofSetVerticalSync(true);
-ofSetCircleResolution(100);
+    ofSetCircleResolution(100);
+
     // setup gui from ofxGui
     _gui.setup("Gui");
     _gui.setPosition(ofGetWidth()/2 , 0);
@@ -37,7 +38,7 @@ void ofApp::draw(){
 
     c.draw();
 
-    for (int i=0 ; i<circles.size() ; i++){
+    for (std::size_t i = 0U ; i < circles.size() ; i++) {
         circles[i].draw();
     }
 

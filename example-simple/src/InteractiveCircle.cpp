@@ -21,8 +21,6 @@ void InteractiveCircle::setup(ossia::ParameterGroup& _parent_node){
                     ofVec2f(0., 0.), // Min
                     ofVec2f(ofGetWidth(), ofGetHeight())); // Max
 
-    ofLog() << this << " -> " <<  _position.get() << " ; " << _radius.get();
-
     _color.setup(_colorParams,
                  "color",
                  ofColor(123., 255., 17., 255.),
@@ -32,12 +30,11 @@ void InteractiveCircle::setup(ossia::ParameterGroup& _parent_node){
 
 }
 
-void InteractiveCircle::update(){
+void InteractiveCircle::update() {
 
 }
 
-void InteractiveCircle::draw(){
-
+void InteractiveCircle::draw() {
     if(!_fill)
         ofNoFill();
     else
