@@ -26,11 +26,12 @@ public:
     void gotMessage(ofMessage msg);
 
 private:
-
+    
     ofxOssia ossia;
-
+    
     InteractiveCircle c;
-    std::vector<InteractiveCircle> circles;
+    vector<InteractiveCircle> circles;
+
 
     //ofxGui
     ofxPanel            _gui;
