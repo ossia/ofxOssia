@@ -19,6 +19,14 @@ public:
     void setup();
 
     /**
+     * @brief setup make an OSCQuery client
+     * @param serverName the server address
+     * @param serverPortWS the server listening port
+     * @param localPortOSC the local listening port
+     */
+    void setup(const std::string& serverName, int serverPortWS, int localPortOSC);
+
+    /**
      * run with type == "oscquery" then specify name and specific port
      **/
     void setup(const std::string& type,
