@@ -14,17 +14,17 @@ void ofApp::setup(){
     // setup ofxOSSIA parameters to be add on the Gui
     ossia.setup();
     
-    ossia.getRootNode();
+    ossia.get_root_node();
     
-    c.setup(ossia.getRootNode());
+    c.setup(ossia.get_root_node());
     
     for (int i=0 ; i<10 ; i++){
         InteractiveCircle c;
-        c.setup(ossia.getRootNode());
+        c.setup(ossia.get_root_node());
         circles.push_back(c);
     }
     
-    _gui.add (ossia.getRootNode());
+    _gui.add (ossia.get_root_node());
     _gui.minimizeAll();
 
 }
@@ -53,7 +53,7 @@ void ofApp::keyPressed(int key){
     if (key == '+'){
         for (int i=0 ; i<10 ; i++){
             InteractiveCircle c;
-            c.setup(ossia.getRootNode());
+            c.setup(ossia.get_root_node());
             circles.push_back(c);
         }
     }

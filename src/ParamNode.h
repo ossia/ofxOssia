@@ -30,8 +30,8 @@ public:
 
   void createNode (const std::string& name)
   {
-    _currentNode = _parentNode->createChild(name);
-    _currentNode->aboutToBeDeleted.connect<ParamNode, &ParamNode::cleanup>(this);
+    _currentNode = _parentNode->create_child(name);
+    _currentNode->about_to_be_deleted.connect<ParamNode, &ParamNode::cleanup>(this);
   }
 
   template<typename DataValue>
@@ -43,8 +43,8 @@ public:
     this->createNode(name);
 
     //set value
-    _address = _currentNode->createAddress(ossia_type::val);
-    _address->pushValue(ossia_type::convert(data));
+    _address = _currentNode->create_address(ossia_type::val);
+    _address->push_value(ossia_type::convert(data));
   }
 
   // Creates the node setting domain
@@ -57,11 +57,11 @@ public:
     this->createNode(name);
 
     //set value
-    _address = _currentNode->createAddress(ossia_type::val);
-    _address->pushValue(ossia_type::convert(data));
-    _address->setDomain(ossia::make_domain(ossia_type::convert(min),
+    _address = _currentNode->create_address(ossia_type::val);
+    _address->push_value(ossia_type::convert(data));
+    _address->set_domain(ossia::make_domain(ossia_type::convert(min),
                                            ossia_type::convert(max)));
-    _address->setUnit(typename ossia_type::ossia_unit{});
+    _address->set_unit(typename ossia_type::ossia_unit{});
   }
 
   // Publishes value to the node
@@ -69,7 +69,7 @@ public:
   void publishValue(DataValue other)
   {
     using ossia_type = MatchingType<DataValue>;
-    _address->pushValue(ossia_type::convert(other));
+    _address->push_value(ossia_type::convert(other));
   }
 
   // Pulls the node value
@@ -81,7 +81,7 @@ public:
 
     try
     {
-      auto val = _address->fetchValue();
+      auto val = _address->fetch_value();
       if(val.template target<value_type>())
         return ossia_type::convertFromOssia(val);
       else
@@ -97,7 +97,7 @@ public:
 
     catch(...)
     {
-      auto val = _address->cloneValue();
+      auto val = _address->value();
       std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<< ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ;
       return {};
     }
@@ -113,7 +113,7 @@ public:
 
     try
     {
-      auto val = _address->cloneValue();
+      auto val = _address->value();
       if(val.template target<value_type>())
         return ossia_type::convertFromOssia(val);
       else
@@ -129,7 +129,7 @@ public:
 
     catch(...)
     {
-      auto val = _address->cloneValue();
+      auto val = _address->value();
       std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<< ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ;
       return {};
     }
@@ -140,8 +140,8 @@ public:
   {
     if (_currentNode && _parentNode)
     {
-      _currentNode->clearChildren();
-      _parentNode->removeChild(*_currentNode);
+      _currentNode->clear_children();
+      _parentNode->remove_child(*_currentNode);
     }
   }
 };

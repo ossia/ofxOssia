@@ -12,7 +12,7 @@ class ofxOssia {
 
 public:
     ofxOssia():_device{std::make_unique<ossia::net::local_protocol>(), "ossia"}{
-        _root_node.setup (_device.getRootNode(), "ossia");
+        _root_node.setup (_device.get_root_node(), "ossia");
     };
 
     /**
@@ -36,7 +36,7 @@ public:
                const std::string& remoteip,
                int localport, int remoteport);
 
-    ossia::ParameterGroup & getRootNode(){return _root_node;};
+    ossia::ParameterGroup & get_root_node(){return _root_node;};
 
 //    ossia::ParameterGroup & getNode(std::string & name);
 //    ossia::Parameter & getNode(std::string & name);

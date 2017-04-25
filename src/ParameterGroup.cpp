@@ -11,7 +11,7 @@
 
 namespace ossia {
 //    void ParameterGroup::createNode(const std::string& name){
-//        nodes->_currentNode = nodes->_parentNode->createChild(name);
+//        nodes->_currentNode = nodes->_parentNode->create_child(name);
 //    }
 
     ParameterGroup & ParameterGroup::setup(ossia::net::node_base & parentNode,
@@ -31,7 +31,7 @@ namespace ossia {
     {
         _impl->_parentNode = &parentNode.getNode();
         _impl->createNode(name);
-        this->setName(_impl->_currentNode->getName());
+        this->setName(_impl->_currentNode->get_name());
         
         parentNode.add(*this);
         

@@ -16,12 +16,12 @@ void ofxOssia::setup(){
 void ofxOssia::setup(const std::string& type,
                      const std::string& localname,
                      int localportOSC, int localPortWS){
-    auto& local_proto = static_cast<ossia::net::local_protocol&>(_device.getProtocol());
+    auto& local_proto = static_cast<ossia::net::local_protocol&>(_device.get_protocol());
     
     // declare a distant program as a Minuit device
-    local_proto.exposeTo (std::make_unique<ossia::oscquery::oscquery_server_protocol> (localportOSC, localPortWS));
+    local_proto.expose_to (std::make_unique<ossia::oscquery::oscquery_server_protocol> (localportOSC, localPortWS));
     
-    _root_node.setup (_device.getRootNode(), "ossia");
+    _root_node.setup (_device.get_root_node(), "ossia");
 }
 
 void ofxOssia::setup(const std::string& type,
@@ -30,11 +30,11 @@ void ofxOssia::setup(const std::string& type,
                      const std::string& remoteip,
                      int localport, int remoteport){
     
-    auto& local_proto = static_cast<ossia::net::local_protocol&>(_device.getProtocol());
+    auto& local_proto = static_cast<ossia::net::local_protocol&>(_device.get_protocol());
     
     // declare a distant program as a Minuit device
-    local_proto.exposeTo(std::make_unique<ossia::net::minuit_protocol>(localname, remoteip, localport, remoteport));
+    local_proto.expose_to(std::make_unique<ossia::net::minuit_protocol>(localname, remoteip, localport, remoteport));
     
-    _root_node.setup(_device.getRootNode(), "ossia");
+    _root_node.setup(_device.get_root_node(), "ossia");
 }
 
