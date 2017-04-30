@@ -35,6 +35,8 @@ In case of the following error : `execvp: /bin/sh: Argument list too long`: chec
 
 ## Usage
 
-* Define an attribute of class `Network` in your app source header (e.g. `ofApp.h`)
-* N.B. if the constructor for the attribute is not called explicitly, the attribute `Network` will be initialized with the default values (e.g. "newDevice", "i-score", "127.0.0.1", 13579, 9998)
-* The `ossia::Parameter` is initialized using the method `setup` similar to `ofParameter::setup`. The only difference is the first value which is the base node obtained calling the method `getSceneNode()` on the `Network` instance
+* Define an attribute of class `ofxOssia` in your app source header (e.g. `ofApp.h`)
+* If the constructor for the attribute is not called explicitly, the attribute `ofxOssia` will be initialized with the default values (e.g. "OSCQuery", "ofxOssiaDevice", 3456, 5678)
+* The base node is obtained by calling the method `get_root_node()` on the `ofxOssia` instance
+* The `ossia::Parameter` is initialized using the method `setup` similar to `ofParameter::setup`. The only difference is the first value which is the parent node of type `ossia::Parameter`
+* The same goes for  `ossia::ParameterGroup` (which is similar to `ofParameterGroup`)
