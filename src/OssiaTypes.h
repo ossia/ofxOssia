@@ -69,6 +69,23 @@ template<> struct MatchingType<std::string> final :
 {
 };
 
+template<> struct MatchingType<long> {
+  using ofx_type = long;
+  static constexpr const auto val = ossia::val_type::INT;
+  using ossia_type = int;
+  using ossia_unit = ossia::unit_t;
+
+  static ofx_type convertFromOssia(const ossia::value& v)
+  {
+    return v.get<ossia_type>();
+  }
+
+  static ossia_type convert(ofx_type f)
+  {
+    return int(f);
+  }
+};
+
 template<> struct MatchingType<double> {
   using ofx_type = double;
   static constexpr const auto val = ossia::val_type::FLOAT;
@@ -112,22 +129,50 @@ template<> struct MatchingType<std::vector<string> > {
   static ofx_type convertFromOssia(const ossia::value& v)
   {
     const ossia_type& t = v.get<ossia_type>();
-    ofx_type _return{};
-    _return.reserve(t.size());
-    for_each(t.begin(), t.end(), [&_return](const ossia::value& value){
-    _return.push_back(value.get<std::string>());
+    ofx_type ofxValue{};
+    ofxValue.reserve(t.size());
+    ossia::transform(t, std::back_inserter(ofxValue), [](const ossia::value& value){
+        return value.get<std::string>();
     });
-    return _return;
+    return ofxValue;
   }
 
   static ossia_type convert(ofx_type f)
   {
-      ossia_type _return{};
-      _return.reserve(f.size());
-      for_each(f.begin(), f.end(), [&_return](std::string& v){
-	  _return.push_back(ossia::value(v));
+      ossia_type ossiaValue{};
+      ossiaValue.reserve(f.size());
+      for_each(f.begin(), f.end(), [&ossiaValue](std::string& v){
+	  ossiaValue.push_back(ossia::value(v));
       });
-      return _return;
+      return ossiaValue;
+  }
+};
+
+template<> struct MatchingType<std::vector<int> > {
+  using ofx_type = std::vector<int>;
+  static constexpr const auto val = ossia::val_type::TUPLE;
+  using ossia_type = std::vector<ossia::value>;
+  using ossia_unit = ossia::unit_t;
+
+  static ofx_type convertFromOssia(const ossia::value& v)
+  {
+    const ossia_type& t = v.get<ossia_type>();
+    ofx_type ofxValue{};
+    ofxValue.reserve(t.size());
+    ossia::transform(t, std::back_inserter(ofxValue), [](const ossia::value& value){
+        return value.get<int>();
+    });
+    return ofxValue;
+  }
+
+  static ossia_type convert(ofx_type f)
+  {
+      ossia_type ossiaValue{};
+      ossiaValue.reserve(f.size());
+      for_each(f.begin(), f.end(), [&ossiaValue](int& v){
+	  ossiaValue.push_back(ossia::value(v));
+      });
+      return ossiaValue;
   }
 };
 

@@ -11,7 +11,8 @@
 class ofxOssia {
 
 public:
-    ofxOssia():_device{std::make_unique<ossia::net::local_protocol>(), "ossia"}{};
+    ofxOssia():_device{std::make_unique<ossia::net::local_protocol>(), "ossia"},
+		_local_proto(_device.getProtocol()){};
 
     /**
      * default setup for ofxOssia. Create a root node with oscquery protocol on port 3456 for OSC and 5678 for WS
@@ -52,5 +53,6 @@ private:
 
     ossia::ParameterGroup _root_node;
     ossia::net::generic_device _device;
+    ossia::net::protocol_base& _local_proto;
 
 };
