@@ -1,6 +1,7 @@
 #pragma once
 #include <types/ofBaseTypes.h>
 #include <math/ofVectorMath.h>
+#include <ossia/editor/value/impulse.hpp>
 #include <string>
 #include <array>
 
@@ -68,6 +69,23 @@ template<> struct MatchingType<std::string> final :
 {
 };
 
+template<> struct MatchingType<long> {
+  using ofx_type = long;
+  static constexpr const auto val = ossia::val_type::INT;
+  using ossia_type = int;
+  using ossia_unit = ossia::unit_t;
+
+  static ofx_type convertFromOssia(const ossia::value& v)
+  {
+    return v.get<ossia_type>();
+  }
+
+  static ossia_type convert(ofx_type f)
+  {
+    return int(f);
+  }
+};
+
 template<> struct MatchingType<double> {
   using ofx_type = double;
   static constexpr const auto val = ossia::val_type::FLOAT;
@@ -82,6 +100,79 @@ template<> struct MatchingType<double> {
   static ossia_type convert(ofx_type f)
   {
     return float(f);
+  }
+};
+
+template<> struct MatchingType<ossia::impulse> {
+    using ofx_type = ossia::impulse;
+    static constexpr const auto val = ossia::val_type::IMPULSE;
+    using ossia_type = ossia::impulse;
+    using ossia_unit = ossia::unit_t;
+
+    static ofx_type convertFromOssia(const ossia::value& v)
+    {
+      return v.get<ossia_type>();
+    }
+
+    static ossia_type convert(ofx_type f)
+    {
+      return ossia::impulse();
+    }
+};
+
+template<> struct MatchingType<std::vector<string> > {
+  using ofx_type = std::vector<string>;
+  static constexpr const auto val = ossia::val_type::TUPLE;
+  using ossia_type = std::vector<ossia::value>;
+  using ossia_unit = ossia::unit_t;
+
+  static ofx_type convertFromOssia(const ossia::value& v)
+  {
+    const ossia_type& t = v.get<ossia_type>();
+    ofx_type ofxValue{};
+    ofxValue.reserve(t.size());
+    ossia::transform(t, std::back_inserter(ofxValue), [](const ossia::value& value){
+        return value.get<std::string>();
+    });
+    return ofxValue;
+  }
+
+  static ossia_type convert(ofx_type f)
+  {
+      ossia_type ossiaValue{};
+      ossiaValue.reserve(f.size());
+      for_each(f.begin(), f.end(), [&ossiaValue](std::string& v){
+	  ossiaValue.push_back(ossia::value(v));
+      });
+      return ossiaValue;
+  }
+};
+
+template<> struct MatchingType<std::vector<int> > {
+  using ofx_type = std::vector<int>;
+  static constexpr const auto val = ossia::val_type::TUPLE;
+  using ossia_type = std::vector<ossia::value>;
+  using ossia_unit = ossia::unit_t;
+
+  static ofx_type convertFromOssia(const ossia::value& v)
+  {
+    const ossia_type& t = v.get<ossia_type>();
+    ofx_type ofxValue{};
+    ofxValue.reserve(t.size());
+    ossia::transform(t, std::back_inserter(ofxValue), [](const ossia::value& value){
+        return value.get<int>();
+    });
+    return ofxValue;
+  }
+
+  static ossia_type convert(ofx_type f)
+  {
+      ossia_type ossiaValue{};
+      ossiaValue.reserve(f.size());
+      for_each(f.begin(), f.end(), [&ossiaValue](int& v){
+	  ossiaValue.push_back(ossia::value(v));
+      });
+      return ossiaValue;
   }
 };
 
