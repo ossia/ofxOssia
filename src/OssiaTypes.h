@@ -12,6 +12,7 @@
 #undef None
 
 #include <ossia/editor/value/value.hpp>
+#include <ossia/editor/dataspace/dataspace.hpp>
 
 namespace ossia
 {
