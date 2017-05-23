@@ -92,7 +92,7 @@ common:
 
 
 linux64:
-	ADDON_LIBS += libs/ossia/lib/linux64/libossia.so
+	ADDON_LIBS += libs/ossia/lib/linux64/libossia.a
 	ADDON_CPPFLAGS += -std=c++14
 	ADDON_LDFLAGS += -lavahi-client -lavahi-common
 
