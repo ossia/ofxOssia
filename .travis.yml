@@ -1,7 +1,6 @@
 language: c++
 compiler: clang
 
-osx_image: xcode8.2
 dist: trusty
 sudo: required
 
