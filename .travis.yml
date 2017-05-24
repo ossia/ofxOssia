@@ -18,6 +18,9 @@ install:
 #    sudo add-apt-repository --yes ppa:jonathonf/gcc-6.3
   - sudo apt-get update -qq
   - sudo apt-get install -qq --yes --force-yes g++-6 binutils ninja-build gcovr lcov qt58-meta-minimal libasound2-dev clang-4.0 lld-4.0 libavahi-client-dev libavahi-compat-libdnssd-dev
+  - sudo rm /usr/bin/gcc /usr/bin/g++
+  - sudo ln -s /usr/bin/gcc-6 /usr/bin/gcc
+  - sudo ln -s /usr/bin/g++-6 /usr/bin/g++
   - wget http://openframeworks.cc/versions/v0.9.8/of_v0.9.8_linux64_release.tar.gz
   - tar -xf of_v0.9.8_linux64_release.tar.gz
   - sudo of_v0.9.8_linux64_release/scripts/linux/ubuntu/install_dependencies.sh -y
