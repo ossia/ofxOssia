@@ -1,5 +1,7 @@
 # ofxOSSIA
 
+[![Build Status](https://travis-ci.org/OSSIA/ofxOSSIA.svg?branch=master)](https://travis-ci.org/OSSIA/ofxOSSIA)
+
 ## Introduction
 
 This openFrameworks addon is a wrapper for the [OSSIA library](https://github.com/OSSIA/libossia) , 
