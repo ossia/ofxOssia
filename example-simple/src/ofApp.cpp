@@ -21,7 +21,7 @@ void ofApp::setup(){
     for (int i=0 ; i<10 ; i++){
         InteractiveCircle circle;
         circle.setup(ossia.get_root_node());
-        circles.push_back(c);
+        circles.push_back(circle);
     }
 
     // then add all OSSIA elements (aka nodes) to the _gui
