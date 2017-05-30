@@ -37,6 +37,7 @@ public:
                int localport, int remoteport);
 
     ossia::ParameterGroup & get_root_node(){return _root_node;};
+    ossia::net::generic_device & get_device(){return _device;};
 
 //    ossia::ParameterGroup & getNode(std::string & name);
 //    ossia::Parameter & getNode(std::string & name);
