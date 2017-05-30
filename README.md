@@ -31,6 +31,8 @@ inheriting the openFrameworks' class `ofParameter` can be controlled both via th
 
 * If you got : `error: parse error in template argument list` this is likely due to a [GCC bug](https://gcc.gnu.org/ml/gcc-help/2016-01/msg00087.html), try update to gcc 6 or use another compiler.
 
+* It might be a clash with other addon that uses `oscpack` library like `ofxOsc`.
+
 ## Main features
 
 * Parameters of various types (int, float, bool, ofVec2f, ofVec3f, ofColor) can be shared with i-score
