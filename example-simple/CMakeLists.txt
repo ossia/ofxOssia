@@ -30,6 +30,8 @@ add_executable(
 target_link_libraries(
     ${APP}
     ${OPENFRAMEWORKS_LIBRARIES}
+    avahi-client
+    avahi-common
 )
 
 set_target_properties(
