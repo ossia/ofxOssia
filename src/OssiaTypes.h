@@ -122,6 +122,24 @@ template<> struct MatchingType<ofVec3f> {
   }
 };
 
+template<> struct MatchingType<ofVec4f> {
+  using ofx_type = ofVec4f;
+  static constexpr const auto val = ossia::val_type::VEC4F;
+  using ossia_type = std::array<float, 4>;
+  using ossia_unit = ossia::unit_t;
+
+  static ofx_type convertFromOssia(const ossia::value& v)
+  {
+    const auto& t = v.get<ossia_type>();
+    return ofx_type(t[0], t[1], t[2], t[3]);
+  }
+
+  static ossia_type convert(ofx_type f)
+  {
+    return ossia::make_vec(f.x, f.y, f.z, f.w);
+  }
+};
+
 template<> struct MatchingType<ofColor> {
   using ofx_type = ofColor;
   static constexpr const auto val = ossia::val_type::VEC4F;
