@@ -34,6 +34,7 @@ target_link_libraries(
 
 if(UNIX AND NOT APPLE)
   target_link_libraries(
+    ${APP}
     avahi-client
     avahi-common
   )
