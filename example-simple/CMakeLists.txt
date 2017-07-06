@@ -30,9 +30,14 @@ add_executable(
 target_link_libraries(
     ${APP}
     ${OPENFRAMEWORKS_LIBRARIES}
+)
+
+if(UNIX AND NOT APPLE)
+  target_link_libraries(
     avahi-client
     avahi-common
-)
+  )
+endif()
 
 set_target_properties(
     ${APP} PROPERTIES
