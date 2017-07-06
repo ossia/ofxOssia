@@ -132,7 +132,7 @@ osx:
 	ADDON_FRAMEWORKS += CoreAudio
 	ADDON_FRAMEWORKS += CoreFoundation
 
-	ADDON_LIBS += libs/ossia/osx/libossia.a
+	ADDON_LIBS += libs/ossia/lib/osx/libossia.a
 	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/boost/%
 	ADDON_SOURCES_EXCLUDE += libs/ossia/include/boost/%
 	ADDON_CPPFLAGS += -std=c++14
