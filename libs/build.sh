@@ -66,7 +66,9 @@ if [[ "$OS_IS_LINUX" -eq "1" ]] ; then
 else
   mkdir -p ../ossia/lib/osx
   mv ossia-inst/lib/static/libossia.a ../ossia/lib/osx/
-  cp -rf boost_1_58_0/boost/* "$OFX_BOOST_FOLDER/"
+  if [ -d "$OFX_BOOST_FOLDER/" ] ; then
+    cp -rf boost_1_58_0/boost/* "$OFX_BOOST_FOLDER/"
+  fi
   rm -rf boost_1_58_0
   rm -rf "$OFX_BOOST_FOLDER/asio.hpp"
   rm -rf "$OFX_BOOST_FOLDER/asio"
