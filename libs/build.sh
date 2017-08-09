@@ -6,6 +6,7 @@ else
   (
   cd libossia
   git pull
+  git submodule sync --recursive
   git submodule update --init --recursive
   )
 fi
@@ -15,6 +16,12 @@ mkdir -p build
 cd build
 export OS_IS_LINUX=0
 export OS_IS_OSX=0
+
+if [[ ! -d "boost_1_64_0" ]]; then
+  wget http://sourceforge.net/projects/boost/files/boost/1.64.0/boost_1_64_0.tar.gz
+  tar -xzf boost_1_64_0.tar.gz
+fi
+
 if [[ -d "/proc" ]]; then
   export OS_IS_LINUX=1
 else
@@ -39,25 +46,28 @@ else
     brew install cmake
   fi
 
-  if [[ ! -d "boost_1_58_0" ]]; then
-    wget http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.gz
-    tar -xzf boost_1_58_0.tar.gz
-  fi
-
-  # Changing OFX config : 
+  # Changing OFX config :
   SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
   OFX_MAKE_CONFIG=$(find $SCRIPT_DIR/../../../.. -name config.osx.default.mk)
   OFX_XCODE_CONFIG=$(find $SCRIPT_DIR/../../../.. -name CoreOF.xcconfig)
   OFX_BOOST_FOLDER="$SCRIPT_DIR/../../../../libs/boost/include/boost"
-  
+
   if [[ "$OFX_MAKE_CONFIG" != "" && "$OFX_XCODE_CONFIG" != "" ]]; then
 	sed -i mk 's/c++11/c++14/' "$OFX_MAKE_CONFIG" "$OFX_XCODE_CONFIG"
 	sed -i mk 's/10.7/10.10/' "$OFX_MAKE_CONFIG" "$OFX_XCODE_CONFIG"
   fi
-  
 fi
 
-cmake ../libossia -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=ossia-inst -DOSSIA_PYTHON=0 -DOSSIA_NO_QT=1 -DOSSIA_TESTING=0 -DOSSIA_STATIC=1 -DOSSIA_NO_SONAME=1 -DOSSIA_PD=0 -DBOOST_ROOT=$(pwd)/boost_1_58_0 -DOSSIA_NO_QT=1
+cmake ../libossia -DCMAKE_BUILD_TYPE=Release \
+                  -DCMAKE_INSTALL_PREFIX=ossia-inst \
+                  -DOSSIA_PYTHON=0 \
+                  -DOSSIA_QT=0 \
+                  -DOSSIA_TESTING=0 \
+                  -DOSSIA_STATIC=1 \
+                  -DOSSIA_NO_SONAME=1 \
+                  -DOSSIA_PD=0 \
+                  -DOSSIA_MAX=0 \
+                  -DBOOST_ROOT=$(pwd)/boost_1_64_0
 make -j8
 make install
 rm -rf ../ossia/include
@@ -70,9 +80,9 @@ else
   mkdir -p ../ossia/lib/osx
   mv ossia-inst/lib/static/libossia.a ../ossia/lib/osx/
   if [ -d "$OFX_BOOST_FOLDER/" ] ; then
-    cp -rf boost_1_58_0/boost/* "$OFX_BOOST_FOLDER/"
+    cp -rf boost_1_64_0/boost/* "$OFX_BOOST_FOLDER/"
   fi
-  rm -rf boost_1_58_0
+  rm -rf boost_1_64_0
   rm -rf "$OFX_BOOST_FOLDER/asio.hpp"
   rm -rf "$OFX_BOOST_FOLDER/asio"
 fi

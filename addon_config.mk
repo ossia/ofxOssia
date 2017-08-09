@@ -17,9 +17,9 @@
 meta:
 	ADDON_NAME = ofxOssia
 	ADDON_DESCRIPTION = Addon for remote control and scoring of parameters
-	ADDON_AUTHOR = Akané Levy, Jean-Michaël Celerier, Théo de la Hogue, Clément Bossut
+	ADDON_AUTHOR = Akané Levy, Thomas Pachoud, Jean-Michaël Celerier, Théo de la Hogue, Clément Bossut
 	ADDON_TAGS = "bridge" "utilities" "networking"
-	ADDON_URL = http://github.com/aklevy/ofxOSSIA
+	ADDON_URL = http://github.com/OSSIA/ofxOSSIA
 
 common:
 	ADDON_INCLUDES += libs/ossia/include
@@ -142,5 +142,3 @@ ios:
 	ADDON_FRAMEWORKS += CoreAudio
 	ADDON_FRAMEWORKS += CoreFoundation
 	ADDON_CPPFLAGS += -std=c++14
-
-

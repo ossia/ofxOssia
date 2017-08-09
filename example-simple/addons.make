@@ -1,2 +1,2 @@
 ofxGui
-ofxOSSIA
+ofxOssia
