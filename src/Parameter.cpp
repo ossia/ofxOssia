@@ -24,9 +24,9 @@
 //        if(_impl)
 //        {
 //            this->removeListener(_impl.get(), &ParamNode::listen<DataValue>);
-//            if(_impl->_address && _callbackIt)
+//            if(_impl->_parameter && _callbackIt)
 //            {
-//                _impl->_address->remove_callback(*_callbackIt);
+//                _impl->_parameter->remove_callback(*_callbackIt);
 //            }
 //        }
 //    }
@@ -34,8 +34,8 @@
 //    // Add i-score callback
 //    void Parameter<DataValue>::enableRemoteUpdate()
 //    {
-//        if(_impl->_address)
-//            _callbackIt = _impl->_address->add_callback(
+//        if(_impl->_parameter)
+//            _callbackIt = _impl->_parameter->add_callback(
 //                [=](const ossia::value& val)
 //                {
 //                    using value_type = const typename ossia_type::ossia_type;

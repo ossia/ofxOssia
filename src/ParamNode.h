@@ -2,7 +2,7 @@
 
 #include "OssiaTypes.h"
 #include <ossia/network/base/node.hpp>
-#include <ossia/network/base/address.hpp>
+#include <ossia/network/base/parameter.hpp>
 #include <ossia/editor/value/value.hpp>
 #include <ossia/network/domain/domain.hpp>
 
@@ -16,7 +16,7 @@ class ParamNode {
 public:
   ossia::net::node_base* _parentNode{};
   ossia::net::node_base* _currentNode{};
-  mutable ossia::net::address_base* _address{};
+  mutable ossia::net::parameter_base* _parameter{};
 
   /**
    * Methods to communicate via OSSIA to i-score
@@ -25,7 +25,7 @@ public:
   void cleanup(const ossia::net::node_base&)
   {
     _currentNode = nullptr;
-    _address = nullptr;
+    _parameter = nullptr;
   }
 
   void createNode (const std::string& name)
@@ -43,8 +43,8 @@ public:
     this->createNode(name);
 
     //set value
-    _address = _currentNode->create_address(ossia_type::val);
-    _address->push_value(ossia_type::convert(data));
+    _parameter = _currentNode->create_parameter(ossia_type::val);
+    _parameter->push_value(ossia_type::convert(data));
   }
 
   // Creates the node setting domain
@@ -57,11 +57,11 @@ public:
     this->createNode(name);
 
     //set value
-    _address = _currentNode->create_address(ossia_type::val);
-    _address->push_value(ossia_type::convert(data));
-    _address->set_domain(ossia::make_domain(ossia_type::convert(min),
+    _parameter = _currentNode->create_parameter(ossia_type::val);
+    _parameter->push_value(ossia_type::convert(data));
+    _parameter->set_domain(ossia::make_domain(ossia_type::convert(min),
                                            ossia_type::convert(max)));
-    _address->set_unit(typename ossia_type::ossia_unit{});
+    _parameter->set_unit(typename ossia_type::ossia_unit{});
   }
 
   // Publishes value to the node
@@ -69,7 +69,7 @@ public:
   void publishValue(DataValue other)
   {
     using ossia_type = MatchingType<DataValue>;
-    _address->push_value(ossia_type::convert(other));
+    _parameter->push_value(ossia_type::convert(other));
   }
 
   // Pulls the node value
@@ -81,7 +81,7 @@ public:
 
     try
     {
-      auto val = _address->fetch_value();
+      auto val = _parameter->fetch_value();
       if(val.template target<value_type>())
         return ossia_type::convertFromOssia(val);
       else
@@ -97,7 +97,7 @@ public:
 
     catch(...)
     {
-      auto val = _address->value();
+      auto val = _parameter->value();
       std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<< ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ;
       return {};
     }
@@ -113,7 +113,7 @@ public:
 
     try
     {
-      auto val = _address->value();
+      auto val = _parameter->value();
       if(val.template target<value_type>())
         return ossia_type::convertFromOssia(val);
       else
@@ -129,7 +129,7 @@ public:
 
     catch(...)
     {
-      auto val = _address->value();
+      auto val = _parameter->value();
       std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<< ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ;
       return {};
     }

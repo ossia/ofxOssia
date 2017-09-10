@@ -19,7 +19,7 @@ class Parameter : public ofParameter<DataValue>
 {
 private:
   std::shared_ptr<ParamNode> _impl;
-  ossia::optional<ossia::net::address_base::iterator> _callbackIt;
+  ossia::optional<ossia::net::parameter_base::iterator> _callbackIt;
 
   using ossia_type = MatchingType<DataValue>;
 
@@ -44,9 +44,9 @@ private:
     if(_impl)
     {
       this->removeListener(this, &Parameter::listen);
-      if(_impl->_address && _callbackIt)
+      if(_impl->_parameter && _callbackIt)
       {
-        _impl->_address->remove_callback(*_callbackIt);
+        _impl->_parameter->remove_callback(*_callbackIt);
         _callbackIt = ossia::none;
       }
     }
@@ -55,9 +55,9 @@ private:
   // Add i-score callback
   void enableRemoteUpdate()
   {
-    if(_impl->_address)
+    if(_impl->_parameter)
     {
-      _callbackIt = _impl->_address->add_callback([=](const ossia::value& val)
+      _callbackIt = _impl->_parameter->add_callback([=](const ossia::value& val)
       {
           using value_type = const typename ossia_type::ossia_type;
           if(val.target<value_type>())
@@ -173,10 +173,10 @@ public:
     parentNode.add(*this);
   }
 
-  // Get the address of the node
-  ossia::net::address_base* getAddress() const
+  // Get the parameter of the node
+  ossia::net::parameter_base* getAddress() const
   {
-    return _impl->_address;
+    return _impl->_parameter;
   }
 
   // Updates value of the parameter and publish to the node
