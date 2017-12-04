@@ -1,12 +1,12 @@
 #!/bin/bash -eux
  export PATH=$PATH:/usr/local/bin
 if [[ ! -d "libossia" ]]; then
-  git clone --recursive https://github.com/OSSIA/libossia
+  git clone https://github.com/OSSIA/libossia
 else
   (
   cd libossia
   git pull
-  git submodule update --init --recursive
+  git submodule update --recursive
   )
 fi
 
@@ -44,20 +44,20 @@ else
     tar -xzf boost_1_58_0.tar.gz
   fi
 
-  # Changing OFX config : 
+  # Changing OFX config :
   SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
   OFX_MAKE_CONFIG=$(find $SCRIPT_DIR/../../../.. -name config.osx.default.mk)
   OFX_XCODE_CONFIG=$(find $SCRIPT_DIR/../../../.. -name CoreOF.xcconfig)
   OFX_BOOST_FOLDER="$SCRIPT_DIR/../../../../libs/boost/include/boost"
-  
+
   if [[ "$OFX_MAKE_CONFIG" != "" && "$OFX_XCODE_CONFIG" != "" ]]; then
 	sed -i mk 's/c++11/c++14/' "$OFX_MAKE_CONFIG" "$OFX_XCODE_CONFIG"
 	sed -i mk 's/10.7/10.10/' "$OFX_MAKE_CONFIG" "$OFX_XCODE_CONFIG"
   fi
-  
+
 fi
 
-cmake ../libossia -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=ossia-inst -DOSSIA_PYTHON=0 -DOSSIA_NO_QT=1 -DOSSIA_TESTING=0 -DOSSIA_STATIC=1 -DOSSIA_NO_SONAME=1 -DOSSIA_PD=0 -DBOOST_ROOT=$(pwd)/boost_1_58_0 -DOSSIA_NO_QT=1
+cmake ../libossia -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=ossia-inst -DOSSIA_PYTHON=0 -DOSSIA_NO_QT=1 -DOSSIA_TESTING=0 -DOSSIA_STATIC=1 -DOSSIA_NO_SONAME=1 -DOSSIA_PD=0 -DBOOST_ROOT=$(pwd)/boost_1_58_0 -DOSSIA_NO_QT=1 -DOSSIA_PROTOCOL_MIDI=Off
 make -j8
 make install
 rm -rf ../ossia/include
