@@ -6,7 +6,6 @@ else
   (
   cd libossia
   git pull
-  git submodule update --recursive
   )
 fi
 
