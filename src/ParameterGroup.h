@@ -1,8 +1,9 @@
 #pragma once
+#include <ossia-cpp/ossia-cpp98.hpp>
 #include <types/ofParameterGroup.h>
 #include "ParamNode.h"
-namespace ossia
-{
+
+// namespace ossia { // Probably not necessary any more
 
 /*
  * Class inheriting from ofParameterGroup
@@ -41,4 +42,4 @@ private:
     std::shared_ptr<ParamNode> _impl;
 
 };
-}
+// } // namespace ossia 

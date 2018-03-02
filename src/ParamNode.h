@@ -1,10 +1,9 @@
 #pragma once
 
-#include "OssiaTypes.h"
+// #include "OssiaTypes.h" // Probably not necessary any more
 #include <ossia-cpp/ossia-cpp98.hpp>
 
-namespace ossia
-{
+// namespace ossia { // Probably not necessary any more
 
 /*
  * Class encapsulating node_base* to avoid segfault
@@ -14,8 +13,7 @@ public:
   opp::node _parentNode{};
   opp::node _currentNode{};
 
-// TODO: check if that's correct, was:
-//  mutable ossia::net::parameter_base* _parameter{};
+// TODO: check if we still need it to be mutable
   mutable opp::node _parameter{};
   /**
    * Methods to communicate via OSSIA to i-score
@@ -66,7 +64,7 @@ public:
   void publishValue(DataValue other)
   {
     using ossia_type = MatchingType<DataValue>;
-    _parameter->push_value(ossia_type::convert(other));
+    _parameter.set_value(ossia_type::convert(other));
   }
 
   // Pulls the node value
@@ -78,7 +76,7 @@ public:
 
     try
     {
-      auto val = _parameter->fetch_value();
+      auto val = _parameter.fetch_value();
       if(val.template target<value_type>())
         return ossia_type::convertFromOssia(val);
       else
@@ -110,7 +108,7 @@ public:
 
     try
     {
-      auto val = _parameter->value();
+      auto val = _parameter.get_value();
       if(val.template target<value_type>())
         return ossia_type::convertFromOssia(val);
       else
@@ -126,7 +124,7 @@ public:
 
     catch(...)
     {
-      auto val = _parameter->value();
+      auto val = _parameter.get_value();
       std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<< ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ;
       return {};
     }
@@ -138,8 +136,8 @@ public:
     if (_currentNode && _parentNode)
     {
       _currentNode->clear_children();
-      _parentNode->remove_child(*_currentNode);
+      _parentNode.remove_child(*_currentNode);
     }
   }
 };
-}
+// } // namespace ossia 

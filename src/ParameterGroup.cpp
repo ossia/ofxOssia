@@ -10,13 +10,13 @@
 #include "ParameterGroup.h"
 //#include "Parameter.h"
 
-namespace ossia {
+// namespace ossia { // Probably not necessary any more
 //    void ParameterGroup::createNode(const std::string& name){
 //        nodes->_currentNode = nodes->_parentNode->create_child(name);
 //    }
 
     ParameterGroup & ParameterGroup::setup(
-                            opp::node & parentNode,
+                            opp::node parentNode,
                             const std::string& name)
     {
         //nodes->_parentNode = &parentNode;
@@ -47,4 +47,4 @@ namespace ossia {
 //        }
 //        this->clear();
 //    }
-}
+// } // namespace ossia 
