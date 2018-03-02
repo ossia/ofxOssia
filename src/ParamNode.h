@@ -14,15 +14,17 @@ namespace ossia
  * */
 class ParamNode {
 public:
-  ossia::net::node_base* _parentNode{};
-  ossia::net::node_base* _currentNode{};
-  mutable ossia::net::parameter_base* _parameter{};
+  opp::node* _parentNode{};
+  opp::node* _currentNode{};
 
+// TODO: check if that's correct, was:
+//  mutable ossia::net::parameter_base* _parameter{};
+  mutable opp::node* _parameter{};
   /**
    * Methods to communicate via OSSIA to i-score
    **/
   // Creates the node without setting domain
-  void cleanup(const ossia::net::node_base&)
+  void cleanup(const opp::node&)
   {
     _currentNode = nullptr;
     _parameter = nullptr;
@@ -31,7 +33,8 @@ public:
   void createNode (const std::string& name)
   {
     _currentNode = _parentNode->create_child(name);
-    _currentNode->about_to_be_deleted.connect<ParamNode, &ParamNode::cleanup>(this);
+    // TODO : do we still need this next one ? I assumed not
+    // _currentNode->about_to_be_deleted.connect<ParamNode, &ParamNode::cleanup>(this);
   }
 
   template<typename DataValue>
@@ -40,11 +43,9 @@ public:
     using ossia_type = MatchingType<DataValue>;
 
     //creates node
-    this->createNode(name);
-
-    //set value
-    _parameter = _currentNode->create_parameter(ossia_type::val);
-    _parameter->push_value(ossia_type::convert(data));
+    _parameter = ossia_type::create_parameter(name, _parentNode);
+    //sets value
+    _parameter.set_value(data);
   }
 
   // Creates the node setting domain
@@ -54,14 +55,13 @@ public:
     using ossia_type = MatchingType<DataValue>;
 
     //creates node
-    this->createNode(name);
+    _parameter = ossia_type::create_parameter(name, _parentNode);
+    //sets value
+    _parameter.set_value(data);
 
-    //set value
-    _parameter = _currentNode->create_parameter(ossia_type::val);
-    _parameter->push_value(ossia_type::convert(data));
-    _parameter->set_domain(ossia::make_domain(ossia_type::convert(min),
-                                           ossia_type::convert(max)));
-    _parameter->set_unit(typename ossia_type::ossia_unit{});
+    //sets domain
+    _parameter.set_min(ossia_type::convert(min));
+    _parameter.set_max(ossia_type::convert(max));
   }
 
   // Publishes value to the node

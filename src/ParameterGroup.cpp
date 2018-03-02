@@ -3,6 +3,7 @@
 //  ofxOSSIA
 //
 //  Created by Thomas Pachoud on 24/02/2017.
+//  Updated to using SafeC++ implementation by Pascal Baltazar in 03/2018
 //
 //
 
@@ -14,8 +15,9 @@ namespace ossia {
 //        nodes->_currentNode = nodes->_parentNode->create_child(name);
 //    }
 
-    ParameterGroup & ParameterGroup::setup(ossia::net::node_base & parentNode,
-                           const std::string& name)
+    ParameterGroup & ParameterGroup::setup(
+                            opp::node & parentNode,
+                            const std::string& name)
     {
         //nodes->_parentNode = &parentNode;
         // TODO this is weird
@@ -26,8 +28,9 @@ namespace ossia {
         return *this;
     }
 
-    ParameterGroup & ParameterGroup::setup(ossia::ParameterGroup & parentNode,
-                           const std::string& name)
+    ParameterGroup & ParameterGroup::setup(
+                            ossia::ParameterGroup & parentNode,
+                            const std::string& name)
     {
         _impl->_parentNode = &parentNode.getNode();
         _impl->createNode(name);

@@ -5,13 +5,14 @@
 #undef False
 #undef status
 #undef None
-#include <ossia/ossia.hpp>
+#include <ossia-cpp/ossia-cpp98.hpp>
 #include "Parameter.h"
 
 class ofxOssia {
 
 public:
-    ofxOssia():_device{std::make_unique<ossia::net::local_protocol>(), "ossia"}{
+    ofxOssia():
+        _device{"ossia", 3456, 5678}{
         _root_node.setup (_device.get_root_node(), "ossia");
     };
 
@@ -27,17 +28,9 @@ public:
                const std::string& localname,
                int localportOSC, int localPortWS);
 
-    /**
-     * run with type == "minuit" to setup with minuit protocol then specify name, ip and port
-     **/
-    void setup(const std::string& type,
-               const std::string& localname,
-               const std::string& remotename,
-               const std::string& remoteip,
-               int localport, int remoteport);
 
     ossia::ParameterGroup & get_root_node(){return _root_node;};
-    ossia::net::generic_device & get_device(){return _device;};
+    opp::oscquery_server & get_device(){return _device;};
 
 //    ossia::ParameterGroup & getNode(std::string & name);
 //    ossia::Parameter & getNode(std::string & name);
@@ -46,6 +39,6 @@ public:
 private:
 
     ossia::ParameterGroup _root_node;
-    ossia::net::generic_device _device;
+    opp::oscquery_server _device;
 
 };

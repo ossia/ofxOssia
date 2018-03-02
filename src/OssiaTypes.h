@@ -33,7 +33,9 @@ struct GenericMatchingType
   static constexpr const auto val = OssiaTypeEnum;
   using ossia_unit = ossia::unit_t;
 
-  static ofx_type convertFromOssia(const ossia::value& v)
+  virtual node create_parameter(); 
+
+  static ofx_type convertFromOssia(const opp::value& v)
   {
     return v.get<ossia_type>();
   }
@@ -44,8 +46,13 @@ struct GenericMatchingType
   }
 };
 
-template<> struct MatchingType<float> final :
+template<> struct MatchingType<float> :
         public GenericMatchingType<float, float, ossia::val_type::FLOAT>
+
+public:
+        node create_parameter(){
+
+        }
 {
 };
 
@@ -71,13 +78,17 @@ template<> struct MatchingType<std::string> final :
 
 template<> struct MatchingType<double> {
   using ofx_type = double;
-  static constexpr const auto val = ossia::val_type::FLOAT;
+  //static constexpr const auto val = ossia::val_type::FLOAT;
   using ossia_type = float;
-  using ossia_unit = ossia::unit_t;
+  //using ossia_unit = ossia::unit_t;
 
-  static ofx_type convertFromOssia(const ossia::value& v)
+  opp::node create_parameter(const std::string& name, const opp::node& n){
+    return n.create_float(name);
+  }
+
+  static ofx_type convertFromOssia(const opp::value& v)
   {
-    return v.get<ossia_type>();
+    return v.get_value();
   }
 
   static ossia_type convert(ofx_type f)
