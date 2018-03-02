@@ -1,10 +1,7 @@
 #pragma once
 
 #include "OssiaTypes.h"
-#include <ossia/network/base/node.hpp>
-#include <ossia/network/base/parameter.hpp>
-#include <ossia/editor/value/value.hpp>
-#include <ossia/network/domain/domain.hpp>
+#include <ossia-cpp/ossia-cpp98.hpp>
 
 namespace ossia
 {
@@ -14,12 +11,12 @@ namespace ossia
  * */
 class ParamNode {
 public:
-  opp::node* _parentNode{};
-  opp::node* _currentNode{};
+  opp::node _parentNode{};
+  opp::node _currentNode{};
 
 // TODO: check if that's correct, was:
 //  mutable ossia::net::parameter_base* _parameter{};
-  mutable opp::node* _parameter{};
+  mutable opp::node _parameter{};
   /**
    * Methods to communicate via OSSIA to i-score
    **/
@@ -32,7 +29,7 @@ public:
 
   void createNode (const std::string& name)
   {
-    _currentNode = _parentNode->create_child(name);
+    _currentNode = _parentNode.create_child(name);
     // TODO : do we still need this next one ? I assumed not
     // _currentNode->about_to_be_deleted.connect<ParamNode, &ParamNode::cleanup>(this);
   }
