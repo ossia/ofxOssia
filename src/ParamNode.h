@@ -19,10 +19,9 @@ public:
    * Methods to communicate via OSSIA to i-score
    **/
   // Creates the node without setting domain
-  void cleanup(const opp::node&)
+  void cleanup(const opp::node)
   {
-    _currentNode = nullptr;
-    _parameter = nullptr;
+    _currentNode.~node();
   }
 
   void createNode (const std::string& name)
@@ -76,7 +75,7 @@ public:
 
     try
     {
-      auto val = _parameter.fetch_value();
+      auto val = _parameter.get_value();
       if(val.template target<value_type>())
         return ossia_type::convertFromOssia(val);
       else
@@ -92,7 +91,7 @@ public:
 
     catch(...)
     {
-      auto val = _parameter->value();
+      auto val = _parameter.get_value();
       std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<< ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ;
       return {};
     }
@@ -133,10 +132,13 @@ public:
   ParamNode () = default;
   ~ParamNode ()
   {
-    if (_currentNode && _parentNode)
+    if (_currentNode.valid() && _parentNode.valid())
     {
-      _currentNode->clear_children();
-      _parentNode.remove_child(*_currentNode);
+      std::vector<opp::node> children_list;
+      children_list = _currentNode.get_children();
+      for (auto child : children_list)
+           _currentNode.remove_child(child.get_name());
+      _parentNode.remove_child(_currentNode.get_name());
     }
   }
 };

@@ -24,8 +24,7 @@ public:
     /**
      * run with type == "oscquery" then specify name and specific port
      **/
-    void setup(const std::string& type,
-               const std::string& localname,
+    void setup(string localname,
                int localportOSC, int localPortWS);
 
 

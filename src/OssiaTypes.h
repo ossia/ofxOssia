@@ -23,7 +23,7 @@
  */
 template<typename> struct MatchingType;
 
-template<typename OfType, typename OssiaType, auto ParamCreateType>
+template<typename OfType, typename OssiaType, std::function<OfType> ParamCreateType>
 struct GenericMatchingType
 {
   using ofx_type = OfType;
@@ -32,7 +32,7 @@ struct GenericMatchingType
 
   static ofx_type convertFromOssia(const opp::value& v)
   {
-    return v.value();
+    return v;
   }
 
   static ossia_type convert(ofx_type f)
@@ -66,18 +66,18 @@ template<> struct MatchingType<char> final :
 */
 
 template<> struct MatchingType<std::string> final :
-        public GenericMatchingType<std::string, std::string, create_string>
+        public GenericMatchingType<std::string, std::string, std::function>
 {
 };
 
 template<> struct MatchingType<double> {
   using ofx_type = double;
   using ossia_type = float;
-  static const constexpr auto create_parameter = create_float;
+  std::function<double> create_parameter = create_float;
 
   static ofx_type convertFromOssia(const opp::value& v)
   {
-    return v.get_value();
+    return v();
   }
 
   static ossia_type convert(ofx_type f)
@@ -89,7 +89,7 @@ template<> struct MatchingType<double> {
 template<> struct MatchingType<ofVec2f> {
   using ofx_type = ofVec2f;
   using ossia_type = std::array<float, 2>;
-  static const constexpr auto create_parameter = create_vec2f;
+  std::function<ofVec2f> create_parameter = create_vec2f;
 
   static ofx_type convertFromOssia(const opp::value& v)
   {
@@ -101,14 +101,14 @@ template<> struct MatchingType<ofVec2f> {
   {
     // This could probably be done otherwise, see editor/value/vec.hpp (from where this comes), 
     // but for now (and for all vec types below), it will be done this way 
-    return std::array<float, 2>{f.x, .y};
+    return std::array<float, 2>{f.x, f.y};
   }
 };
 
 template<> struct MatchingType<ofVec3f> {
   using ofx_type = ofVec3f;
   using ossia_type = std::array<float, 3>;
-  static const constexpr auto create_parameter = create_vec3f;
+  std::function<ofVec3f>  create_parameter = create_vec3f;
 
   static ofx_type convertFromOssia(const opp::value& v)
   {
@@ -118,14 +118,14 @@ template<> struct MatchingType<ofVec3f> {
 
   static ossia_type convert(ofx_type f)
   {
-    return std::array<float, 3>(f.x, f.y, f.z);
+      return std::array<float, 3>{{f.x, f.y, f.z}};
   }
 };
 
 template<> struct MatchingType<ofVec4f> {
   using ofx_type = ofVec4f;
   using ossia_type = std::array<float, 4>;
-  static const constexpr auto create_parameter = create_vec4f;
+  std::function<ofVec2f>  create_parameter = create_vec4f;
 
   static ofx_type convertFromOssia(const opp::value& v)
   {
@@ -135,14 +135,14 @@ template<> struct MatchingType<ofVec4f> {
 
   static ossia_type convert(ofx_type f)
   {
-    return std::array<float, 4>(f.x, f.y, f.z, f.w);
+    return std::array<float, 4>{f.x, f.y, f.z, f.w};
   }
 };
 
 template<> struct MatchingType<ofColor> {
   using ofx_type = ofColor;
   using ossia_type = std::array<float, 4>;
-  static const constexpr auto create_parameter = create_rgba;
+  std::function<ofColor>  create_parameter = create_rgba;
 
   static ofx_type convertFromOssia(const opp::value& v)
   {
@@ -159,7 +159,7 @@ template<> struct MatchingType<ofColor> {
 template<> struct MatchingType<ofFloatColor> {
   using ofx_type = ofFloatColor;
   using ossia_type = std::array<float, 4>;
-  static const constexpr auto create_parameter = create_argb8;
+  std::function<ofFloatColor>  create_parameter = create_argb8;
 
 // For those conversions, as there is no rgba8 type in ossia, we swap the 1st and 4th values
   static ofx_type convertFromOssia(const opp::value& v)
