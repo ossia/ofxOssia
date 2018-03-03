@@ -22,7 +22,7 @@ public:
     void setup();
 
     /**
-     * run with type == "oscquery" then specify name and specific port
+     * specify name and specific ports for OSC and WS
      **/
     void setup(string localname,
                int localportOSC, int localPortWS);

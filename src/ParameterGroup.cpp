@@ -21,9 +21,7 @@ namespace ossia {
     {
         //nodes->_parentNode = &parentNode;
         // TODO this is weird
-        _impl->_parentNode = nullptr;
-        _impl->_currentNode = &parentNode;
-        this->setName(name);
+        _impl->_parentNode.create_child(name);
         
         return *this;
     }
