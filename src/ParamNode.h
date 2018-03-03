@@ -1,7 +1,7 @@
 #pragma once
 
-#include "OssiaTypes.h"
 #include <ossia-cpp98.hpp>
+#include "OssiaTypes.h"
 
 namespace ossia { 
 

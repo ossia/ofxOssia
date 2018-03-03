@@ -30,11 +30,9 @@ struct GenericMatchingType
   using ossia_type = OssiaType;
   static const constexpr auto create_parameter = ParamCreateType;
 
-  virtual node create_parameter(); 
-
   static ofx_type convertFromOssia(const opp::value& v)
   {
-    return v.get_value();
+    return v.value();
   }
 
   static ossia_type convert(ofx_type f)
