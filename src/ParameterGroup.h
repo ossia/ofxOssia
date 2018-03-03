@@ -3,7 +3,7 @@
 #include <types/ofParameterGroup.h>
 #include "ParamNode.h"
 
-// namespace ossia { // Probably not necessary any more
+namespace ossia { // Probably not necessary any more
 
 /*
  * Class inheriting from ofParameterGroup
@@ -42,4 +42,4 @@ private:
     std::shared_ptr<ParamNode> _impl;
 
 };
-// } // namespace ossia 
+} // namespace ossia 

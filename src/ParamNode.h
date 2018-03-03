@@ -3,7 +3,7 @@
 // #include "OssiaTypes.h" // Probably not necessary any more
 #include <ossia-cpp/ossia-cpp98.hpp>
 
-// namespace ossia { // Probably not necessary any more
+namespace ossia { 
 
 /*
  * Class encapsulating node_base* to avoid segfault
@@ -140,4 +140,4 @@ public:
     }
   }
 };
-// } // namespace ossia 
+} // namespace ossia 
