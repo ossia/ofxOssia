@@ -119,8 +119,13 @@ public:
   node create_float(std::string addr);
   node create_bool(std::string addr);
   node create_list(std::string addr);
-  node create_string(std::string addr);
 
+  node create_vec2f(std::string addr);
+  node create_vec3f(std::string addr);
+  node create_vec4f(std::string addr);
+
+  node create_string(std::string addr);
+  
   node create_buffer(std::string addr);
   node create_filepath(std::string addr);
 
@@ -230,7 +235,7 @@ private:
 class OSSIA_EXPORT oscquery_server
 {
 public:
-  oscquery_server(std::string name, int wsPort = 5678, int oscPort = 1234);
+  oscquery_server(std::string name, int oscPort = 1234, int wsPort = 5678);
   ~oscquery_server();
   node get_root_node() const;
 
