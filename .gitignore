@@ -6,7 +6,6 @@ libs/build
 */*.so
 */*.dll
 */*.a
-*libs/ossia/*
 */bin
 */obj
 */Makefile.user
