@@ -5,16 +5,16 @@
 #undef False
 #undef status
 #undef None
-#include <ossia-cpp/ossia-cpp98.hpp>
+#include <ossia-cpp98.hpp>
 #include "Parameter.h"
 
 class ofxOssia {
 
 public:
     ofxOssia():
-        _device{"ossia", 3456, 5678}{
+        _device("ossia", 3456, 5678){
         _root_node.setup (_device.get_root_node(), "ossia");
-    };
+    }
 
     /**
      * default setup for ofxOssia. Create a root node with oscquery protocol on port 3456 for OSC and 5678 for WS
@@ -29,8 +29,8 @@ public:
                int localportOSC, int localPortWS);
 
 
-    ossia::ParameterGroup & get_root_node(){return _root_node;};
-    opp::oscquery_server & get_device(){return _device;};
+    ossia::ParameterGroup & get_root_node(){return _root_node;}
+    opp::oscquery_server & get_device(){return _device;}
 
 //    ossia::ParameterGroup & getNode(std::string & name);
 //    ossia::Parameter & getNode(std::string & name);

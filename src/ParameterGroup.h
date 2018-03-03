@@ -1,9 +1,9 @@
 #pragma once
-#include <ossia-cpp/ossia-cpp98.hpp>
+#include <ossia-cpp98.hpp>
 #include <types/ofParameterGroup.h>
 #include "ParamNode.h"
 
-namespace ossia { // Probably not necessary any more
+namespace ossia { 
 
 /*
  * Class inheriting from ofParameterGroup
@@ -24,7 +24,7 @@ public:
 
     ~ParameterGroup() = default;
 
-    ParameterGroup & setup(ossia::net::node_base & parentNode,
+    ParameterGroup & setup(opp::node parentNode,
                          const std::string& name);
 
     ParameterGroup & setup(ossia::ParameterGroup & parentNode,
@@ -32,8 +32,8 @@ public:
     
 //    void createNode(const std::string& name);
 
-    ossia::net::node_base& getNode(){
-    return  * _impl->_currentNode;
+    opp::node getNode(){
+    return _impl->_currentNode;
     }
 
 //    void clearNode();

@@ -1,7 +1,8 @@
 #pragma once
 #include "ParamNode.h"
 #include "ParameterGroup.h"
-#include <ossia/detail/optional.hpp>
+#include <ossia-cpp98.hpp>
+//#include <ossia/detail/optional.hpp>
 #include <types/ofParameter.h>
 #include <iostream>
 

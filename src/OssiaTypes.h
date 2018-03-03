@@ -1,5 +1,5 @@
 #pragma once
-#include <ossia-cpp/ossia-cpp98.hpp>
+#include <ossia-cpp98.hpp>
 #include <types/ofBaseTypes.h>
 #include <math/ofVectorMath.h>
 #include <string>
