@@ -11,6 +11,8 @@
 
 void ofxOssia::setup(){
     _device("ossia", 3456, 5678);
+
+    _root_node.setup(_device.get_root_node().create_child(localname), "ossia");
 }
 
 void ofxOssia::setup(std::string localname,
