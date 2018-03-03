@@ -139,8 +139,8 @@ template<> struct MatchingType<ofVec2f> {
 
   static ofx_type convertFromOssia(const opp::value& v)
   {
-    //const auto& t = v;
-    return ofx_type(v[0], v[1]);
+    const auto& t = v.to_list();
+    return ofx_type(t[0], t[1]);
   }
 
   static ossia_type convert(ofx_type f)
@@ -160,13 +160,13 @@ template<> struct MatchingType<ofVec3f> {
 
   static ofx_type convertFromOssia(const opp::value& v)
   {
-    //const auto& t = v.get_value();
-    return ofx_type(v[0], v[1], v[2]);
+    const auto& t = v.to_list();
+    return ofx_type(t[0], t[1], t[2]);
   }
 
   static ossia_type convert(ofx_type f)
   {
-      return std::array<float, 3>{{f.x, f.y, f.z}};
+      return std::array<float, 3>{f.x, f.y, f.z};
   }
 };
 
@@ -180,8 +180,8 @@ template<> struct MatchingType<ofVec4f> {
 
   static ofx_type convertFromOssia(const opp::value& v)
   {
-    //const auto& t = v.get_value();
-    return ofx_type(v[0], v[1], v[2], v[3]);
+    const auto& t = v.to_list();
+    return ofx_type(t[0], t[1], t[2], t[3]);
   }
 
   static ossia_type convert(ofx_type f)
@@ -199,13 +199,13 @@ template<> struct MatchingType<ofColor> {
 
   static ofx_type convertFromOssia(const opp::value& v)
   {
-    //const auto& t = v.get_value();
-    return ofx_type(v[0] * 255., v[1] * 255., v[2] * 255., v[3] * 255.);
+    const auto& t = v.to_list();
+    return ofx_type(t[0] * 255., t[1] * 255., t[2] * 255., t[3] * 255.);
   }
 
   static ossia_type convert(ofx_type f)
   {
-    return std::array<float, 4>(f.r / 255., f.g / 255., f.b / 255., f.a / 255.);
+    return std::array<float, 4>{f.r / 255., f.g / 255., f.b / 255., f.a / 255.};
   }
 };
 
@@ -219,13 +219,13 @@ template<> struct MatchingType<ofFloatColor> {
 // For those conversions, as there is no rgba8 type in ossia, we swap the 1st and 4th values
   static ofx_type convertFromOssia(const opp::value& v)
   {
-    //const auto& t = v.get_value();
-    return ofx_type(v[1], v[2], v[3], v[0]);
+    const auto& t = v.to_list();
+    return ofx_type(t[1], t[2], t[3], t[0]);
   }
 
   static ossia_type convert(ofx_type f)
   {
-    return std::array<float, 4>(f.a, f.r, f.g, f.b);
+    return std::array<float, 4>{f.a, f.r, f.g, f.b};
   }
 };
 //} // namespace ossia
