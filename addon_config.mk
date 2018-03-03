@@ -17,9 +17,9 @@
 meta:
 	ADDON_NAME = ofxOssia
 	ADDON_DESCRIPTION = Addon for remote control and scoring of parameters
-	ADDON_AUTHOR = Akané Levy, Thomas Pachoud, Jean-Michaël Celerier, Théo de la Hogue, Clément Bossut
+        ADDON_AUTHOR = Akané Levy, Thomas Pachoud, Jean-Michaël Celerier, Pascal Baltazar, Théo de la Hogue, Clément Bossut
 	ADDON_TAGS = "bridge" "utilities" "networking"
-	ADDON_URL = http://github.com/OSSIA/ofxOSSIA
+	ADDON_URL = http://github.com/OSSIA/ofxOssia
 
 common:
 	ADDON_INCLUDES += libs/ossia/include
@@ -63,48 +63,26 @@ common:
 
 	# when parsing the file system looking for sources exclude this for all or
 	# a specific platform
-	ADDON_SOURCES_EXCLUDE += libs/ossia/include/spdlog/fmt/bundled/%.cc
-	ADDON_SOURCES_EXCLUDE += libs/ossia/include/fmt/%.cc
-	ADDON_SOURCES_EXCLUDE += libs/ossia/include/asio/%.cpp
-	ADDON_SOURCES_EXCLUDE += libs/API/%
-	ADDON_SOURCES_EXCLUDE += libs/build/%
-	ADDON_INCLUDES_EXCLUDE += libs/API/%
-	ADDON_INCLUDES_EXCLUDE += libs/build/%
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/%
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/boost/%
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/asio/%
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/ossia/%
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/brigand/%
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/websocketpp/%
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/oscpack/%
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/chobo/%
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/eggs/%
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/spdlog/%
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/fmt/%
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/gsl/%
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/rapidjson/%
-	ADDON_INCLUDES_EXCLUDE += libs/boost_1_58_0/%
-	ADDON_INCLUDES_EXCLUDE += ../../libs/boost/include/boost/%
+
 
 	# when parsing the file system looking for include paths exclude this for all or
 	# a specific platform
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/fmt
 
 
 linux64:
 	ADDON_LIBS += libs/ossia/lib/linux64/libossia.a
-	ADDON_CPPFLAGS += -std=c++14
+        ADDON_CPPFLAGS += -std=c++98
 	ADDON_LDFLAGS += -lavahi-client -lavahi-common
 
 linux:
-	ADDON_CPPFLAGS += -std=c++14
+        ADDON_CPPFLAGS += -std=c++98
 	ADDON_LDFLAGS += -lavahi-client -lavahi-common
 
 msys2:
 	ADDON_CPPFLAGS += NOMINMAX
 	ADDON_CPPFLAGS += _CRT_SECURE_NO_WARNINGS
 	ADDON_CPPFLAGS += WIN32_LEAN_AND_MEAN
-	ADDON_CPPFLAGS += -std=c++14
+        ADDON_CPPFLAGS += -std=c++98
 
 	ADDON_LIBS += Ws2_32
 	ADDON_LIBS += winmm
@@ -128,17 +106,9 @@ android/armeabi:
 android/armeabi-v7a:
 
 osx:
-	ADDON_FRAMEWORKS += CoreMIDI
-	ADDON_FRAMEWORKS += CoreAudio
-	ADDON_FRAMEWORKS += CoreFoundation
 
 	ADDON_LIBS += libs/ossia/lib/osx/libossia.a
-	ADDON_INCLUDES_EXCLUDE += libs/ossia/include/boost/%
-	ADDON_SOURCES_EXCLUDE += libs/ossia/include/boost/%
-	ADDON_CPPFLAGS += -std=c++14
+        ADDON_CPPFLAGS += -std=c++98
     
 ios:
-	ADDON_FRAMEWORKS += CoreMIDI
-	ADDON_FRAMEWORKS += CoreAudio
-	ADDON_FRAMEWORKS += CoreFoundation
-	ADDON_CPPFLAGS += -std=c++14
+        ADDON_CPPFLAGS += -std=c++98
