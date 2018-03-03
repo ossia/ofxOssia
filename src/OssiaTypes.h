@@ -23,44 +23,65 @@
  */
 template<typename> struct MatchingType;
 
-template<typename OfType, typename OssiaType>
-struct GenericMatchingType
-{
-  using ofx_type = OfType;
-  using ossia_type = OssiaType;
-  virtual opp::node create_parameter(const std::string& _name, opp::node _parent);
+template<> struct MatchingType<float> {
+  using ofx_type = float;
+  using ossia_type = float;
+
+  opp::node create_parameter(const std::string& _name,
+                             opp::node _parent)
+       {return _parent.create_float(_name);}
 
   static ofx_type convertFromOssia(const opp::value& v)
   {
-    return v;
+    return v.to_float();
   }
 
   static ossia_type convert(ofx_type f)
   {
-    return f;
+    return float(f);
   }
 };
 
-template<> struct MatchingType<float> :
-        public GenericMatchingType<float, float>
-{
-    opp::node create_parameter(const std::string& _name, opp::node _parent)
-        {return _parent.create_float(_name);}
+
+template<> struct MatchingType<int> {
+  using ofx_type = int;
+  using ossia_type = int;
+
+  opp::node create_parameter(const std::string& _name,
+                             opp::node _parent)
+      {return _parent.create_int(_name);}
+
+  static ofx_type convertFromOssia(const opp::value& v)
+  {
+    return v.to_int();
+  }
+
+  static ossia_type convert(ofx_type f)
+  {
+    return int(f);
+  }
 };
 
-template<> struct MatchingType<int> final :
-        public GenericMatchingType<int, int>
-{
-    opp::node create_parameter(const std::string& _name, opp::node _parent)
-        {return _parent.create_int(_name);}
+
+template<> struct MatchingType<bool> {
+  using ofx_type = bool;
+  using ossia_type = bool;
+
+  opp::node create_parameter(const std::string& _name,
+                             opp::node _parent)
+       {return _parent.create_bool(_name);}
+
+  static ofx_type convertFromOssia(const opp::value& v)
+  {
+    return v.to_bool();
+  }
+
+  static ossia_type convert(ofx_type f)
+  {
+    return bool(f);
+  }
 };
 
-template<> struct MatchingType<bool> final :
-        public GenericMatchingType<bool, bool>
-{
-    opp::node create_parameter(const std::string& _name, opp::node _parent)
-        {return _parent.create_bool(_name);}
-};
 
 /* 
 // Do we really need char support ? 
@@ -71,11 +92,24 @@ template<> struct MatchingType<char> final :
 };
 */
 
-template<> struct MatchingType<std::string> final :
-        public GenericMatchingType<std::string, std::string>
-{
-    opp::node create_parameter(const std::string& _name, opp::node _parent)
-        {return _parent.create_string(_name);}
+
+template<> struct MatchingType<std::string> {
+  using ofx_type = string;
+  using ossia_type = string;
+
+  opp::node create_parameter(const std::string& _name,
+                             opp::node _parent)
+       {return _parent.create_string(_name);}
+
+  static ofx_type convertFromOssia(const opp::value& v)
+  {
+    return v.to_string();
+  }
+
+  static ossia_type convert(ofx_type f)
+  {
+    return std::string(f);
+  }
 };
 
 template<> struct MatchingType<double> {
@@ -87,7 +121,7 @@ template<> struct MatchingType<double> {
 
   static ofx_type convertFromOssia(const opp::value& v)
   {
-    return v;
+    return double(v.to_float());
   }
 
   static ossia_type convert(ofx_type f)
