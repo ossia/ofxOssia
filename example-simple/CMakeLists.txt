@@ -1,7 +1,7 @@
 # This CMakeLists.txt is intended to be used with ofnode CMake build system for openFrameworks
 # see https://github.com/ofnode/of
 
-project(ofxOSSIA-example)
+project(ofxOssia-example)
 set(APP ${PROJECT_NAME})
 
 cmake_minimum_required(VERSION 3.1)
@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.1)
 set(OF_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../of/" CACHE PATH "The root directory of ofnode/of project.")
 include(${OF_ROOT}/openFrameworks.cmake)
 
-ofxaddon(ofxOSSIA)
+ofxaddon(ofxOssia)
 ofxaddon(ofxGui)
 
 option(COTIRE "Use cotire" ON)
