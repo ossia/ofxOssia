@@ -12,7 +12,7 @@
 void ofxOssia::setup(){
     _device("ossia", 3456, 5678);
 
-    _root_node.setup(_device.get_root_node().create_child(localname), "ossia");
+    _root_node.setup(_device.get_root_node(), "ossia");
 }
 
 void ofxOssia::setup(std::string localname,
@@ -21,7 +21,7 @@ void ofxOssia::setup(std::string localname,
     // declare a distant program as an OSCQuery device
     _device(localname, localportOSC, localPortWS);
 
-    _root_node.setup(_device.get_root_node().create_child(localname), "ossia");
+    _root_node.setup(_device.get_root_node(), localname);
 }
 
 
