@@ -12,7 +12,7 @@
 #undef status
 #undef None
 
- namespace ossia // Probably not necessary any more
+ namespace ossia
  {
 /**
  * These classes contain the conversion mechanism from and to
@@ -128,14 +128,15 @@ template<> struct MatchingType<ofVec2f> {
   static ofx_type convertFromOssia(const opp::value& v)
   {
     const auto& t = v.to_list();
-    return ofVec2f(t[0].to_float(), t[1].to_float());
+    return ofVec2f(t[0].to_float(),
+                   t[1].to_float());
   }
 
   static ossia_type convert(ofx_type f)
   {
     // This could probably be done otherwise, see editor/value/vec.hpp (from where this comes), 
     // but for now (and for all vec types below), it will be done this way 
-    return std::array<float, 2>{{f.x, f.y}};
+    return std::array<float, 2>{f.x, f.y};
   }
 };
 
@@ -149,12 +150,14 @@ template<> struct MatchingType<ofVec3f> {
   static ofx_type convertFromOssia(const opp::value& v)
   {
     const auto& t = v.to_list();
-    return ofx_type(t[0].to_float(), t[1].to_float(), t[2].to_float());
+    return ofx_type(t[0].to_float(),
+                    t[1].to_float(),
+                    t[2].to_float());
   }
 
   static ossia_type convert(ofx_type f)
   {
-      return std::array<float, 3>{{f.x, f.y, f.z}};
+      return std::array<float, 3>{f.x, f.y, f.z};
   }
 };
 
@@ -169,12 +172,15 @@ template<> struct MatchingType<ofVec4f> {
   static ofx_type convertFromOssia(const opp::value& v)
   {
     const auto& t = v.to_list();
-    return ofx_type(t[0].to_float(), t[1].to_float(), t[2].to_float(), t[3].to_float());
+    return ofx_type(t[0].to_float(),
+                    t[1].to_float(),
+                    t[2].to_float(),
+                    t[3].to_float());
   }
 
   static ossia_type convert(ofx_type f)
   {
-    return std::array<float, 4>{{f.x, f.y, f.z, f.w}};
+    return std::array<float, 4>{f.x, f.y, f.z, f.w};
   }
 };
 
@@ -188,12 +194,15 @@ template<> struct MatchingType<ofColor> {
   static ofx_type convertFromOssia(const opp::value& v)
   {
     const auto& t = v.to_list();
-    return ofx_type(t[0].to_float() * 255., t[1].to_float() * 255., t[2].to_float() * 255., t[3].to_float() * 255.);
+    return ofx_type(t[0].to_float() * 255.,
+                    t[1].to_float() * 255.,
+                    t[2].to_float() * 255.,
+                    t[3].to_float() * 255.);
   }
 
   static ossia_type convert(ofx_type f)
   {
-    return std::array<float, 4>{{float(f.r / 255.), float(f.g / 255.), float(f.b / 255.), float(f.a / 255.)}};
+    return std::array<float, 4>{float(f.r / 255.), float(f.g / 255.), float(f.b / 255.), float(f.a / 255.)};
   }
 };
 
@@ -208,12 +217,15 @@ template<> struct MatchingType<ofFloatColor> {
   static ofx_type convertFromOssia(const opp::value& v)
   {
     const auto& t = v.to_list();
-    return ofx_type(t[1].to_float(), t[2].to_float(), t[3].to_float(), t[0].to_float());
+    return ofx_type(t[1].to_float(),
+                    t[2].to_float(),
+                    t[3].to_float(),
+                    t[0].to_float());
   }
 
   static ossia_type convert(ofx_type f)
   {
-    return std::array<float, 4>{{f.a, f.r, f.g, f.b}};
+    return std::array<float, 4>{f.a, f.r, f.g, f.b};
   }
 };
 } // namespace ossia
