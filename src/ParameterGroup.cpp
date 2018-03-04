@@ -21,20 +21,21 @@ namespace ossia {
     {
         //nodes->_parentNode = &parentNode;
         // TODO this is weird
-        _impl->_parentNode = nullptr;
-        _impl->_currentNode = &parentNode;
+        //_impl._parentNode = nullptr;
+        _impl._parentNode = parentNode;
+        _impl.createNode(name);
         this->setName(name);
         
         return *this;
     }
 
     ParameterGroup & ParameterGroup::setup(
-                            ossia::ParameterGroup & parentNode,
+                            const ossia::ParameterGroup & parentNode,
                             const std::string& name)
     {
-        _impl->_parentNode = &parentNode.getNode();
-        _impl->createNode(name);
-        this->setName(_impl->_currentNode->get_name());
+        _impl._parentNode = &parentNode.getNode();
+        _impl.createNode(name);
+        this->setName(_impl._currentNode.get_name());
         
         parentNode.add(*this);
         
