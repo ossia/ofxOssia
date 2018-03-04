@@ -71,15 +71,15 @@ public:
   DataValue pullNodeValue()
   {
     using ossia_type = MatchingType<DataValue>;
-    using value_type = typename ossia_type::ossia_type;
 
     try
     {
       auto val = _parameter.get_value();
-      if(val.template target<value_type>())
+      if(ossia_type::is_valid(val))
         return ossia_type::convertFromOssia(val);
       else
-        std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<<(int) val.getType()  << " " << (int) ossia_type::val << "\n" ;
+        std::cerr <<  "error [ofxOssia::pullNodeValue()] : Wrong type \n" ; // Was:
+                   // <<(int) val.getType()  << " " << (int) ossia_type::val << "\n" ; // Can we still do that with safeC++ ??
       return {};
     }
     catch(std::exception& e)
@@ -92,7 +92,8 @@ public:
     catch(...)
     {
       auto val = _parameter.get_value();
-      std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<< ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ;
+      std::cerr <<  "error [ofxOssia::pullNodeValue()] : : Wrong type \n" ; // Was:
+                 // << ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ; // Can we still do that with safeC++ ??
       return {};
     }
   }
@@ -103,16 +104,16 @@ public:
   DataValue cloneNodeValue()
   {
     using ossia_type = MatchingType<DataValue>;
-    using value_type = typename ossia_type::ossia_type;
 
     try
     {
       auto val = _parameter.get_value();
-      if(val.template target<value_type>())
+      if(ossia_type::is_valid(val))
         return ossia_type::convertFromOssia(val);
       else
-        std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<<(int) val.getType()  << " " << (int) ossia_type::val << "\n" ;
-      return {};
+          std::cerr <<  "error [ofxOssia::pullNodeValue()] : Wrong type \n" ; // Was:
+                     // <<(int) val.getType()  << " " << (int) ossia_type::val << "\n" ; // Can we still do that with safeC++ ??
+        return {};
     }
     catch(std::exception& e)
     {
@@ -124,7 +125,8 @@ public:
     catch(...)
     {
       auto val = _parameter.get_value();
-      std::cerr <<  "error [ofxOssia::pullNodeValue()] : "<< ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ;
+      std::cerr <<  "error [ofxOssia::pullNodeValue()] : : Wrong type \n" ; // Was:
+                 // << ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ; // Can we still do that with safeC++ ??
       return {};
     }
   }
