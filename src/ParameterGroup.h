@@ -23,14 +23,14 @@ public:
     ~ParameterGroup() = default;
 
     ParameterGroup & setup(opp::node parentNode,
-                         const std::string& name);
+                           const std::string& name);
 
-    ParameterGroup & setup(const ossia::ParameterGroup & parentNode,
-                         const std::string& name);
+    ParameterGroup & setup(ossia::ParameterGroup & parentNode,
+                           const std::string& name);
     
 //    void createNode(const std::string& name);
 
-    opp::node getNode(){
+    opp::node getNode() const{
     return _impl._currentNode;
     }
 

@@ -30,10 +30,10 @@ namespace ossia {
     }
 
     ParameterGroup & ParameterGroup::setup(
-                            const ossia::ParameterGroup & parentNode,
+                            ossia::ParameterGroup & parentNode,
                             const std::string& name)
     {
-        _impl._parentNode = &parentNode.getNode();
+        _impl._parentNode = parentNode.getNode();
         _impl.createNode(name);
         this->setName(_impl._currentNode.get_name());
         
