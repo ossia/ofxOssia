@@ -78,7 +78,7 @@ public:
       if(ossia_type::is_valid(val))
         return ossia_type::convertFromOssia(val);
       else
-        std::cerr <<  "error [ofxOssia::pullNodeValue()] : Wrong type \n" ; // Was:
+        std::cerr <<  "error [ofxOssia::pullNodeValue()] : of and ossia types do not match \n" ; // Was:
                    // <<(int) val.getType()  << " " << (int) ossia_type::val << "\n" ; // Can we still do that with safeC++ ??
       return {};
     }
@@ -92,7 +92,7 @@ public:
     catch(...)
     {
       auto val = _parameter.get_value();
-      std::cerr <<  "error [ofxOssia::pullNodeValue()] : : Wrong type \n" ; // Was:
+      std::cerr <<  "error [ofxOssia::pullNodeValue()] : : of and ossia types do not match \n" ; // Was:
                  // << ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ; // Can we still do that with safeC++ ??
       return {};
     }
@@ -111,13 +111,13 @@ public:
       if(ossia_type::is_valid(val))
         return ossia_type::convertFromOssia(val);
       else
-          std::cerr <<  "error [ofxOssia::pullNodeValue()] : Wrong type \n" ; // Was:
+          std::cerr <<  "error [ofxOssia::cloneNodeValue()] : of and ossia types do not match\n" ; // Was:
                      // <<(int) val.getType()  << " " << (int) ossia_type::val << "\n" ; // Can we still do that with safeC++ ??
         return {};
     }
     catch(std::exception& e)
     {
-      std::cerr <<  "error [ofxOssia::pullNodeValue()] : " << e.what() << "\n" ;
+      std::cerr <<  "error [ofxOssia::cloneNodeValue()] : " << e.what() << "\n" ;
       return {};
 
     }
@@ -125,7 +125,7 @@ public:
     catch(...)
     {
       auto val = _parameter.get_value();
-      std::cerr <<  "error [ofxOssia::pullNodeValue()] : : Wrong type \n" ; // Was:
+      std::cerr <<  "error [ofxOssia::cloneNodeValue()] : : of and ossia types do not match \n" ; // Was:
                  // << ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ; // Can we still do that with safeC++ ??
       return {};
     }

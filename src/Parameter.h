@@ -19,8 +19,8 @@ template <class DataValue>
 class Parameter : public ofParameter<DataValue>
 {
 private:
-  std::shared_ptr<ParamNode> _impl;
-  ossia::optional<ossia::net::parameter_base::iterator> _callbackIt;
+  ParamNode _impl;
+  //ossia::optional<ossia::net::parameter_base::iterator> _callbackIt;
 
   using ossia_type = MatchingType<DataValue>;
 
@@ -28,9 +28,9 @@ private:
   void listen(DataValue &data)
   {
     // check if the value to be published is not already published
-    if(_impl->cloneNodeValue<DataValue>() != data)
+    if(_impl.cloneNodeValue<DataValue>() != data)
     { // i-score->GUI OK
-      _impl->publishValue(data);
+      _impl.publishValue(data);
     }
   }
 
@@ -42,13 +42,13 @@ private:
 
   void cleanup()
   {
-    if(_impl)
+    if(_impl._currentNode.valid())
     {
       this->removeListener(this, &Parameter::listen);
-      if(_impl->_parameter && _callbackIt)
+      if(_impl._parameter) // && _callbackIt)
       {
-        _impl->_parameter->remove_callback(*_callbackIt);
-        _callbackIt = ossia::none;
+//TOFIX        _impl->_parameter->remove_callback(*_callbackIt);
+//TOFIX        _callbackIt = ossia::none;
       }
     }
   }
@@ -56,12 +56,12 @@ private:
   // Add i-score callback
   void enableRemoteUpdate()
   {
-    if(_impl->_parameter)
+    if(_impl._parameter.valid())
     {
-      _callbackIt = _impl->_parameter->add_callback([=](const ossia::value& val)
+      auto _callbackIt = _impl._parameter.set_value_callback([=](const ossia::value& val)
       {
-          using value_type = const typename ossia_type::ossia_type;
-          if(val.target<value_type>())
+          //using value_type = const typename ossia_type::ossia_type;
+          if(ossia_type::is_valid(val))
           {
               DataValue data = ossia_type::convertFromOssia(val);
               if(data != this->get())
@@ -71,7 +71,8 @@ private:
           }
           else
           {
-              std::cerr << "error [ofxOssia::enableRemoteUpdate()] : "<< (int) val.getType()  << " " << (int) ossia_type::val << "\n" ;
+              std::cerr << "error [ofxOssia::enableRemoteUpdate()] : : of and ossia types do not match \n" ;
+              // Was: "<< (int) val.getType()  << " " << (int) ossia_type::val << "\n" ;
               return;
           }
       });
@@ -134,8 +135,8 @@ public:
       const std::string& name,
       DataValue data)
   {
-    _impl->_parentNode = &parentNode.getNode();
-    _impl->createNode(name, data);
+    _impl._parentNode = parentNode.getNode();
+    _impl.createNode(name, data);
 
     enableLocalUpdate();
     enableRemoteUpdate();
@@ -151,8 +152,8 @@ public:
       const std::string& name,
       DataValue data, DataValue min, DataValue max)
   {
-    _impl->_parentNode = &parentNode.getNode();
-    _impl->createNode(name,data,min,max);
+    _impl._parentNode = parentNode.getNode();
+    _impl.createNode(name,data,min,max);
 
     enableLocalUpdate();
     enableRemoteUpdate();
@@ -168,22 +169,22 @@ public:
       const std::string& name,
       DataValue data, DataValue min, DataValue max)
   {
-    _impl->_parentNode = &parentNode.getNode();
+    _impl._parentNode = parentNode.getNode();
     this->set(name, data, min, max);
 
     parentNode.add(*this);
   }
 
   // Get the parameter of the node
-  ossia::net::parameter_base* getAddress() const
+  opp::node* getAddress() const
   {
-    return _impl->_parameter;
+    return _impl._parameter;
   }
 
   // Updates value of the parameter and publish to the node
   void update(DataValue data)
   {
-    _impl->publishValue(data);
+    _impl.publishValue(data);
 
     // change attribute value
     this->set(data);
