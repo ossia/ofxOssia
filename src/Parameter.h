@@ -58,7 +58,7 @@ private:
   {
     if(_impl._parameter.valid())
     {
-      auto _callbackIt = _impl._parameter.set_value_callback([=](const ossia::value& val)
+      auto _callbackIt = _impl._parameter.set_value_callback([=](const opp::value val)
       {
           //using value_type = const typename ossia_type::ossia_type;
           if(ossia_type::is_valid(val))
@@ -71,7 +71,7 @@ private:
           }
           else
           {
-              std::cerr << "error [ofxOssia::enableRemoteUpdate()] : : of and ossia types do not match \n" ;
+              std::cerr << "error [ofxOssia::enableRemoteUpdate()] : of and ossia types do not match \n" ;
               // Was: "<< (int) val.getType()  << " " << (int) ossia_type::val << "\n" ;
               return;
           }
