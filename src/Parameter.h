@@ -2,7 +2,6 @@
 #include "ParamNode.h"
 #include "ParameterGroup.h"
 #include <ossia-cpp98.hpp>
-//#include <ossia/detail/optional.hpp>
 #include <types/ofParameter.h>
 #include <iostream>
 
@@ -20,7 +19,7 @@ class Parameter : public ofParameter<DataValue>
 {
 private:
   ParamNode _impl;
-  //ossia::optional<ossia::net::parameter_base::iterator> _callbackIt;
+  opp::callback_index _callbackIt;
 
   using ossia_type = MatchingType<DataValue>;
 
@@ -45,10 +44,10 @@ private:
     if(_impl._currentNode.valid())
     {
       this->removeListener(this, &Parameter::listen);
-      if(_impl._parameter) // && _callbackIt)
+      if(_impl._parameter && _callbackIt)
       {
-//TOFIX        _impl->_parameter->remove_callback(*_callbackIt);
-//TOFIX        _callbackIt = ossia::none;
+        _impl._parameter.remove_value_callback(_callbackIt);
+        ~_callbackIt();
       }
     }
   }
@@ -58,7 +57,7 @@ private:
   {
     if(_impl._parameter.valid())
     {
-      auto _callbackIt = _impl._parameter.set_value_callback([=](const opp::value val)
+      _callbackIt = _impl._parameter.set_value_callback([=](const opp::value val)
       {
           //using value_type = const typename ossia_type::ossia_type;
           if(ossia_type::is_valid(val))
@@ -75,7 +74,7 @@ private:
               // Was: "<< (int) val.getType()  << " " << (int) ossia_type::val << "\n" ;
               return;
           }
-      });
+      }, &Parameter::listen);
     }
   }
 
