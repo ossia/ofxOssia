@@ -57,15 +57,17 @@ private:
   {
     if(_impl._parameter.valid())
     {
-      _callbackIt = _impl._parameter.set_value_callback([](void*, const opp::value& val)
+      DataValue dataCb;
+      _callbackIt = _impl._parameter.set_value_callback([](void* context, const opp::value& val)
       {
+          Parameter* self = reinterpret_cast<Parameter*>(context);
           //using value_type = const typename ossia_type::ossia_type;
           if(ossia_type::is_valid(val))
           {
               DataValue data = ossia_type::convertFromOssia(val);
-              if(data != this->get())
+              if(data != self->get())
               {
-                  this->set(data);
+                  self->set(data);
               }
           }
           else
@@ -74,7 +76,7 @@ private:
               // Was: "<< (int) val.getType()  << " " << (int) ossia_type::val << "\n" ;
               return;
           }
-      }, &Parameter::listen);
+      },  &dataCb);
     }
   }
 
