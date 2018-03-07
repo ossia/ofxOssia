@@ -44,7 +44,7 @@ private:
     if(_impl._currentNode.valid())
     {
       this->removeListener(this, &Parameter::listen);
-      if(_impl._parameter && _callbackIt)
+      if(_impl._parameter.valid() && _callbackIt)
       {
         _impl._parameter.remove_value_callback(_callbackIt);
         ~_callbackIt();
@@ -57,7 +57,7 @@ private:
   {
     if(_impl._parameter.valid())
     {
-      _callbackIt = _impl._parameter.set_value_callback([=](const opp::value val)
+      _callbackIt = _impl._parameter.set_value_callback([](void*, const opp::value& val)
       {
           //using value_type = const typename ossia_type::ossia_type;
           if(ossia_type::is_valid(val))
