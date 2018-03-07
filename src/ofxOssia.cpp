@@ -9,18 +9,20 @@
 
 #include "ofxOssia.h"
 
-void ofxOssia::setup(){
-    _device("ossia", 3456, 5678);
 
-    _root_node.setup(_device.get_root_node(), "ossia");
+void ofxOssia::setup()
+{
+    _device.setup(default_device_name, 3456, 5678);
+    _root_node.setup(_device.get_root_node(), default_device_name);
+
 }
 
 void ofxOssia::setup(std::string localname,
-                     int localportOSC, int localPortWS){
+                     int localportOSC, int localPortWS)
+{
 
     // declare a distant program as an OSCQuery device
-    _device(localname, localportOSC, localPortWS);
-
+    _device.setup(localname, localportOSC, localPortWS);
     _root_node.setup(_device.get_root_node(), localname);
 }
 

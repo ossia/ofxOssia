@@ -8,12 +8,14 @@
 #include <ossia-cpp98.hpp>
 #include "Parameter.h"
 
+#define default_device_name "ofxOssia"
+
 class ofxOssia {
 
 public:
     ofxOssia():
-        _device("ossia", 3456, 5678){
-        _root_node.setup (_device.get_root_node(), "ossia");
+        _device(){
+        _root_node.setup (_device.get_root_node(), default_device_name);
     }
 
     /**
@@ -24,7 +26,7 @@ public:
     /**
      * specify name and specific ports for OSC and WS
      **/
-    void setup(string localname,
+    void setup(std::string localname,
                int localportOSC, int localPortWS);
 
 
