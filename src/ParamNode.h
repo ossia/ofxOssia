@@ -39,7 +39,7 @@ public:
     //creates node
     _parameter = ossia_type::create_parameter(name, _parentNode);
     //sets value
-    _parameter.set_value(data);
+    _parameter.set_value(ossia_type::convert(data));
   }
 
   // Creates the node setting domain
@@ -51,7 +51,7 @@ public:
     //creates node
     _parameter = ossia_type::create_parameter(name, _parentNode);
     //sets value
-    _parameter.set_value(data);
+    _parameter.set_value(ossia_type::convert(data));
 
     //sets domain
     _parameter.set_min(ossia_type::convert(min));
