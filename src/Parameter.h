@@ -44,10 +44,10 @@ private:
     if(_impl._currentNode.valid())
     {
       this->removeListener(this, &Parameter::listen);
-      if(_impl._parameter.valid() && _callbackIt)
+      if(_impl._parameter.valid()) // && _callbackIt)
       {
         _impl._parameter.remove_value_callback(_callbackIt);
-        ~_callbackIt();
+        //~_callbackIt();
       }
     }
   }
@@ -57,7 +57,7 @@ private:
   {
     if(_impl._parameter.valid())
     {
-      DataValue dataCb;
+
       _callbackIt = _impl._parameter.set_value_callback([](void* context, const opp::value& val)
       {
           Parameter* self = reinterpret_cast<Parameter*>(context);
@@ -76,19 +76,19 @@ private:
               // Was: "<< (int) val.getType()  << " " << (int) ossia_type::val << "\n" ;
               return;
           }
-      },  &dataCb);
+      },  this);
     }
   }
 
 public:
   Parameter()
   {
-    _impl = std::make_shared<ParamNode> ();
+    _impl = ParamNode();
   }
 
   void cloneFrom(const Parameter& other) {
     _impl = other._impl;
-    if(other._callbackIt)
+    if(true)//other._callbackIt)
     {
       enableLocalUpdate();
       enableRemoteUpdate();

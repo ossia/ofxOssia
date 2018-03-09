@@ -131,7 +131,7 @@ template<> struct MatchingType<double> {
 
 template<> struct MatchingType<ofVec2f> {
   using ofx_type = ofVec2f;
-  using ossia_type = std::array<float, 2>;
+  using ossia_type = std::array<float, 2ul>;
 
   static opp::node create_parameter(const std::string& _name, opp::node _parent)
         {return _parent.create_vec2f(_name);}
@@ -141,21 +141,21 @@ template<> struct MatchingType<ofVec2f> {
   static ofx_type convertFromOssia(const opp::value& v)
   {
     const auto& t = v.to_list();
-    return ofVec2f(t[0].to_float(),
-                   t[1].to_float());
+    return ofx_type(t[0].to_float(),
+                    t[1].to_float());
   }
 
   static ossia_type convert(ofx_type f)
   {
     // This could probably be done otherwise, see editor/value/vec.hpp (from where this comes), 
     // but for now (and for all vec types below), it will be done this way 
-    return std::array<float, 2>{f.x, f.y};
+    return ossia_type{f.x, f.y};
   }
 };
 
 template<> struct MatchingType<ofVec3f> {
   using ofx_type = ofVec3f;
-  using ossia_type = std::array<float, 3>;
+  using ossia_type = std::array<float, 3ul>;
 
   static opp::node create_parameter(const std::string& _name, opp::node _parent)
                  {return _parent.create_vec3f(_name);}
@@ -172,13 +172,13 @@ template<> struct MatchingType<ofVec3f> {
 
   static ossia_type convert(ofx_type f)
   {
-      return std::array<float, 3>{f.x, f.y, f.z};
+      return ossia_type{f.x, f.y, f.z};
   }
 };
 
 template<> struct MatchingType<ofVec4f> {
   using ofx_type = ofVec4f;
-  using ossia_type = std::array<float, 4>;
+  using ossia_type = std::array<float, 4ul>;
 
   static opp::node create_parameter(const std::string& _name, opp::node _parent)
             {return _parent.create_vec4f(_name);}
@@ -196,13 +196,13 @@ template<> struct MatchingType<ofVec4f> {
 
   static ossia_type convert(ofx_type f)
   {
-    return std::array<float, 4>{f.x, f.y, f.z, f.w};
+    return ossia_type{f.x, f.y, f.z, f.w};
   }
 };
 
 template<> struct MatchingType<ofColor> {
   using ofx_type = ofColor;
-  using ossia_type = std::array<float, 4>;
+  using ossia_type = std::array<float, 4ul>;
 
   static opp::node create_parameter(const std::string& _name, opp::node _parent)
               {return _parent.create_rgba(_name);}
@@ -220,13 +220,13 @@ template<> struct MatchingType<ofColor> {
 
   static ossia_type convert(ofx_type f)
   {
-    return std::array<float, 4>{float(f.r / 255.), float(f.g / 255.), float(f.b / 255.), float(f.a / 255.)};
+    return ossia_type{float(f.r / 255.), float(f.g / 255.), float(f.b / 255.), float(f.a / 255.)};
   }
 };
 
 template<> struct MatchingType<ofFloatColor> {
   using ofx_type = ofFloatColor;
-  using ossia_type = std::array<float, 4>;
+  using ossia_type = std::array<float, 4ul>;
 
     static opp::node create_parameter(const std::string& _name, opp::node _parent)
                 {return _parent.create_argb8(_name);}
@@ -245,7 +245,7 @@ template<> struct MatchingType<ofFloatColor> {
 
   static ossia_type convert(ofx_type f)
   {
-    return std::array<float, 4>{f.a, f.r, f.g, f.b};
+    return ossia_type{f.a, f.r, f.g, f.b};
   }
 };
 } // namespace ossia
