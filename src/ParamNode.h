@@ -132,6 +132,7 @@ public:
   }
 
   ParamNode () = default;
+
   ~ParamNode ()
   {
     if (_currentNode.valid() && _parentNode.valid())

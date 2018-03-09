@@ -18,7 +18,7 @@ template <class DataValue>
 class Parameter : public ofParameter<DataValue>
 {
 private:
-  ParamNode _impl;
+  std::shared_ptr<ParamNode> _impl;
   opp::callback_index _callbackIt;
 
   using ossia_type = MatchingType<DataValue>;
@@ -27,9 +27,9 @@ private:
   void listen(DataValue &data)
   {
     // check if the value to be published is not already published
-    if(_impl.cloneNodeValue<DataValue>() != data)
+    if(_impl->cloneNodeValue<DataValue>() != data)
     { // i-score->GUI OK
-      _impl.publishValue(data);
+      _impl->publishValue(data);
     }
   }
 
@@ -41,12 +41,12 @@ private:
 
   void cleanup()
   {
-    if(_impl._currentNode.valid())
+    if(_impl->_currentNode.valid())
     {
       this->removeListener(this, &Parameter::listen);
-      if(_impl._parameter.valid()) // && _callbackIt)
+      if(_impl->_parameter.valid()) // && _callbackIt)
       {
-        _impl._parameter.remove_value_callback(_callbackIt);
+        _impl->_parameter.remove_value_callback(_callbackIt);
         //~_callbackIt();
       }
     }
@@ -55,10 +55,10 @@ private:
   // Add i-score callback
   void enableRemoteUpdate()
   {
-    if(_impl._parameter.valid())
+    if(_impl->_parameter.valid())
     {
 
-      _callbackIt = _impl._parameter.set_value_callback([](void* context, const opp::value& val)
+      _callbackIt = _impl->_parameter.set_value_callback([](void* context, const opp::value& val)
       {
           Parameter* self = reinterpret_cast<Parameter*>(context);
           //using value_type = const typename ossia_type::ossia_type;
@@ -83,7 +83,7 @@ private:
 public:
   Parameter()
   {
-    _impl = ParamNode();
+    _impl = std::make_shared<ParamNode> ();
   }
 
   void cloneFrom(const Parameter& other) {
@@ -136,8 +136,8 @@ public:
       const std::string& name,
       DataValue data)
   {
-    _impl._parentNode = parentNode.getNode();
-    _impl.createNode(name, data);
+    _impl->_parentNode = parentNode.getNode();
+    _impl->createNode(name, data);
 
     enableLocalUpdate();
     enableRemoteUpdate();
@@ -153,8 +153,8 @@ public:
       const std::string& name,
       DataValue data, DataValue min, DataValue max)
   {
-    _impl._parentNode = parentNode.getNode();
-    _impl.createNode(name,data,min,max);
+    _impl->_parentNode = parentNode.getNode();
+    _impl->createNode(name,data,min,max);
 
     enableLocalUpdate();
     enableRemoteUpdate();
@@ -170,7 +170,7 @@ public:
       const std::string& name,
       DataValue data, DataValue min, DataValue max)
   {
-    _impl._parentNode = parentNode.getNode();
+    _impl->_parentNode = parentNode.getNode();
     this->set(name, data, min, max);
 
     parentNode.add(*this);
@@ -179,13 +179,13 @@ public:
   // Get the parameter of the node
   opp::node* getAddress() const
   {
-    return _impl._parameter;
+    return _impl->_parameter;
   }
 
   // Updates value of the parameter and publish to the node
   void update(DataValue data)
   {
-    _impl.publishValue(data);
+    _impl->publishValue(data);
 
     // change attribute value
     this->set(data);
