@@ -15,7 +15,7 @@ void ofApp::setup(){
     ossia.setup();
 
     // pass a parent node to InteractiveCircle::setup() method, thus you can build hierarchy
-    // c.setup(ossia.get_root_node());
+    c.setup(ossia.get_root_node());
 
     // here we setup 10 InteractiveCircle instances
     for (int i=0 ; i<10 ; i++){

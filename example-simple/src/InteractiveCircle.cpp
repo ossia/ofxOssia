@@ -19,14 +19,15 @@ void InteractiveCircle::setup(ossia::ParameterGroup _parent_node){
                     ofVec2f(ofRandomWidth(), ofRandomHeight()),
                     ofVec2f(0., 0.), // Min
                     ofVec2f(ofGetWidth(), ofGetHeight())); // Max
-    
-    _colorParams.setup(_circleParams, "colorParams");
-    _color.setup(_colorParams,
-                 "color",
-                 ofColor(ofRandom(255), ofRandom(255), ofRandom(255), 255.),
-                 ofColor(0., 0., 0., 0.),
-                 ofColor(255., 255., 255., 255.));
-    _fill.setup(_colorParams,"fill",false);
+
+     _colorParams.setup(_circleParams, "colorParams");
+     _color.setup(_colorParams,
+                "color",
+                ofColor(ofRandom(255), ofRandom(255), ofRandom(255), 255.),
+                ofColor(0., 0., 0., 0.),
+                ofColor(255., 255., 255., 255.));
+
+     _fill.setup(_colorParams,"fill",false);
 
 }
 
