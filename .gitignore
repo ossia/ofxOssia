@@ -9,3 +9,5 @@ libs/build
 */bin
 */obj
 */Makefile.user
+/example-simple/CMakeCache.txt
+/example-simple/CMakeFiles
