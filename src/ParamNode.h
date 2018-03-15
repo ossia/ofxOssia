@@ -8,6 +8,7 @@ namespace ossia {
 /*
  * Class encapsulating node_base* to avoid segfault
  * */
+
 class ParamNode {
 public:
   opp::node _parentNode{};
@@ -36,7 +37,9 @@ public:
   {
     using ossia_type = MatchingType<DataValue>;
 
-    //creates node
+    // creates node
+    createNode(name);
+    // then parameter
     _parameter = ossia_type::create_parameter(name, _parentNode);
     //sets value
     _parameter.set_value(ossia_type::convert(data));
@@ -49,6 +52,8 @@ public:
     using ossia_type = MatchingType<DataValue>;
 
     //creates node
+    createNode(name);
+    // then parameter
     _parameter = ossia_type::create_parameter(name, _parentNode);
     //sets value
     _parameter.set_value(ossia_type::convert(data));
