@@ -21,6 +21,8 @@ set(SOURCES
     src/InteractiveCircle.cpp
     ../src/OssiaTypes.h
     ../src/ParamNode.h
+    ../libs/ossia/include/ossia-cpp98.hpp
+
 )
 
 add_executable(
