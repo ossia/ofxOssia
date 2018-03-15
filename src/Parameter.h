@@ -44,9 +44,9 @@ private:
     if(_impl->_currentNode.valid())
     {
       this->removeListener(this, &Parameter::listen);
-      if(_impl->_parameter.valid()) // && _callbackIt)
+      if(_impl->_currentNode.valid()) // && _callbackIt)
       {
-        _impl->_parameter.remove_value_callback(_callbackIt);
+        _impl->_currentNode.remove_value_callback(_callbackIt);
         //~_callbackIt();
       }
     }
@@ -55,10 +55,10 @@ private:
   // Add i-score callback
   void enableRemoteUpdate()
   {
-    if(_impl->_parameter.valid())
+    if(_impl->_currentNode.valid())
     {
 
-      _callbackIt = _impl->_parameter.set_value_callback([](void* context, const opp::value& val)
+      _callbackIt = _impl->_currentNode.set_value_callback([](void* context, const opp::value& val)
       {
           Parameter* self = reinterpret_cast<Parameter*>(context);
           //using value_type = const typename ossia_type::ossia_type;
@@ -179,7 +179,7 @@ public:
   // Get the parameter of the node
   opp::node* getAddress() const
   {
-    return _impl->_parameter;
+    return _impl->_currentNode;
   }
 
   // Updates value of the parameter and publish to the node

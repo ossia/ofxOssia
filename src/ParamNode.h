@@ -14,8 +14,6 @@ public:
   opp::node _parentNode{};
   opp::node _currentNode{};
 
-// TODO: check if we still need it to be mutable
-  mutable opp::node _parameter{};
   /**
    * Methods to communicate via OSSIA to i-score
    **/
@@ -37,12 +35,10 @@ public:
   {
     using ossia_type = MatchingType<DataValue>;
 
-    // creates node
-    createNode(name);
-    // then parameter
-    _parameter = ossia_type::create_parameter(name, _parentNode);
+    // creates node with parameter
+    _currentNode = ossia_type::create_parameter(name, _parentNode);
     //sets value
-    _parameter.set_value(ossia_type::convert(data));
+    _currentNode.set_value(ossia_type::convert(data));
   }
 
   // Creates the node setting domain
@@ -51,16 +47,14 @@ public:
   {
     using ossia_type = MatchingType<DataValue>;
 
-    //creates node
-    createNode(name);
-    // then parameter
-    _parameter = ossia_type::create_parameter(name, _parentNode);
+    /// creates node with parameter
+    _currentNode = ossia_type::create_parameter(name, _parentNode);
     //sets value
-    _parameter.set_value(ossia_type::convert(data));
+    _currentNode.set_value(ossia_type::convert(data));
 
     //sets domain
-    _parameter.set_min(ossia_type::convert(min));
-    _parameter.set_max(ossia_type::convert(max));
+    _currentNode.set_min(ossia_type::convert(min));
+    _currentNode.set_max(ossia_type::convert(max));
   }
 
   // Publishes value to the node
@@ -68,7 +62,7 @@ public:
   void publishValue(DataValue other)
   {
     using ossia_type = MatchingType<DataValue>;
-    _parameter.set_value(ossia_type::convert(other));
+    _currentNode.set_value(ossia_type::convert(other));
   }
 
   // Pulls the node value
@@ -79,7 +73,7 @@ public:
 
     try
     {
-      auto val = _parameter.get_value();
+      auto val = _currentNode.get_value();
       if(ossia_type::is_valid(val))
         return ossia_type::convertFromOssia(val);
       else
@@ -96,7 +90,7 @@ public:
 
     catch(...)
     {
-      auto val = _parameter.get_value();
+      auto val = _currentNode.get_value();
       std::cerr <<  "error [ofxOssia::pullNodeValue()] : : of and ossia types do not match \n" ; // Was:
                  // << ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ; // Can we still do that with safeC++ ??
       return {};
@@ -112,7 +106,7 @@ public:
 
     try
     {
-      auto val = _parameter.get_value();
+      auto val = _currentNode.get_value();
       if(ossia_type::is_valid(val))
         return ossia_type::convertFromOssia(val);
       else
@@ -129,7 +123,7 @@ public:
 
     catch(...)
     {
-      auto val = _parameter.get_value();
+      auto val = _currentNode.get_value();
       std::cerr <<  "error [ofxOssia::cloneNodeValue()] : : of and ossia types do not match \n" ; // Was:
                  // << ossia::value_to_pretty_string(val)  << " " << (int) ossia_type::val << "\n" ; // Can we still do that with safeC++ ??
       return {};
