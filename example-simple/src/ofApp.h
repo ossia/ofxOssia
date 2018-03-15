@@ -18,11 +18,8 @@ public:
 private:
     
     ofxOssia ossia;
-    
-    InteractiveCircle c;
+
     vector<InteractiveCircle> circles;
 
-
-    //ofxGui
     ofxPanel            _gui;
 };

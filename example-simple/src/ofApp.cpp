@@ -12,10 +12,9 @@ void ofApp::setup(){
     _gui.setPosition(0 , 0);
 
     // setup ofxOssia, by default it uses oscquery protocol on ports 3456 and 5678
-    ossia.setup();
-
-    // pass a parent node to InteractiveCircle::setup() method, thus you can build hierarchy
-    c.setup(ossia.get_root_node());
+    // ossia.setup();
+    // but specific name and ports can be provided:
+    ossia.setup("ofxTest", 3124, 7539);
 
     // here we setup 10 InteractiveCircle instances
     for (int i=0 ; i<10 ; i++){
@@ -38,12 +37,10 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 
-    c.draw();
 
     for (int i=0 ; i<circles.size() ; i++){
         circles[i].draw();
     }
-
 
     //draw gui
     _gui.draw();
