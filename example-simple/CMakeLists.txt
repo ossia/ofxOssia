@@ -19,6 +19,8 @@ set(SOURCES
     src/ofApp.cpp
     src/InteractiveCircle.h
     src/InteractiveCircle.cpp
+    ../src/OssiaTypes.h
+    ../src/ParamNode.h
 )
 
 add_executable(
