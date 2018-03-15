@@ -13,7 +13,9 @@ namespace ossia {
 class ParameterGroup : public ofParameterGroup
 {
 public:
-    ParameterGroup() {}
+    ParameterGroup() {
+        _impl = std::make_shared<ParamNode> ();
+    }
 
     ParameterGroup(const ParameterGroup&) = default;
     ParameterGroup(ParameterGroup&&) = default;
@@ -37,7 +39,7 @@ public:
 //    void clearNode();
 
 private:
-    std::shared_ptr<ParamNode> _impl;
+    std::shared_ptr<ParamNode> _impl{};
 
 };
 } // namespace ossia 

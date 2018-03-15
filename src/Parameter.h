@@ -18,7 +18,7 @@ template <class DataValue>
 class Parameter : public ofParameter<DataValue>
 {
 private:
-  std::shared_ptr<ParamNode> _impl;
+  std::shared_ptr<ParamNode> _impl{};
   opp::callback_index _callbackIt;
 
   using ossia_type = MatchingType<DataValue>;
