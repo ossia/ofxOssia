@@ -136,10 +136,9 @@ public:
   {
     if (_currentNode.valid() && _parentNode.valid())
     {
-      std::vector<opp::node> children_list;
-      children_list = _currentNode.get_children();
-      for (auto child : children_list)
-           _currentNode.remove_child(child.get_name());
+      _currentNode.remove_children();
+      //for (auto child : children_list)
+      //     if(child.valid()) _currentNode.remove_child(child.get_name());
       _parentNode.remove_child(_currentNode.get_name());
     }
   }
