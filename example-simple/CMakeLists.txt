@@ -6,7 +6,7 @@ set(APP ${PROJECT_NAME})
 
 cmake_minimum_required(VERSION 3.1)
 
-set(OF_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../of/" CACHE PATH "The root directory of ofnode/of project.")
+set(OF_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../../../of/" CACHE PATH "The root directory of ofnode/of project.")
 include(${OF_ROOT}/openFrameworks.cmake)
 
 ofxaddon(ofxOssia)
@@ -17,7 +17,12 @@ option(COTIRE "Use cotire" ON)
 set(SOURCES
     src/main.cpp
     src/ofApp.cpp
+    src/InteractiveCircle.h
     src/InteractiveCircle.cpp
+    ../src/OssiaTypes.h
+    ../src/ParamNode.h
+    ../libs/ossia/include/ossia-cpp98.hpp
+
 )
 
 add_executable(

@@ -9,5 +9,6 @@ libs/build
 */bin
 */obj
 */Makefile.user
+libossia.a
 /example-simple/CMakeCache.txt
 /example-simple/CMakeFiles
