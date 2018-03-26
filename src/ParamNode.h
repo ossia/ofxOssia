@@ -15,14 +15,15 @@ public:
   opp::node _currentNode{};
 
   /**
-   * Methods to communicate via OSSIA to i-score
+   * Methods to communicate via OSSIA to score or other OSCquery clients
    **/
-  // Creates the node without setting domain
+
   void cleanup(const opp::node)
   {
     _currentNode.~node();
   }
 
+  // Creates the node without setting domain
   void createNode (const std::string& name)
   {
     _currentNode = _parentNode.create_child(name);
@@ -134,11 +135,11 @@ public:
 
   ~ParamNode ()
   {
-    if (_currentNode.valid() && _parentNode.valid())
+    if (_currentNode && _parentNode)
     {
       _currentNode.remove_children();
       //for (auto child : children_list)
-      //     if(child.valid()) _currentNode.remove_child(child.get_name());
+      //     if(child) _currentNode.remove_child(child.get_name());
       _parentNode.remove_child(_currentNode.get_name());
     }
   }
