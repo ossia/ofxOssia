@@ -83,7 +83,7 @@ private:
 public:
   Parameter()
   {
-    _impl = ParamNode();
+    //_impl = ParamNode();
   }
 
   void cloneFrom(const Parameter& other) {
@@ -179,7 +179,7 @@ public:
   // Get the parameter of the node
   opp::node* getAddress() const
   {
-    return _impl._parameter;
+    return _impl._currentNode;
   }
 
   // Updates value of the parameter and publish to the node

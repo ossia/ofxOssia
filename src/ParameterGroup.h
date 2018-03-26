@@ -31,13 +31,13 @@ public:
 //    void createNode(const std::string& name);
 
     opp::node getNode() const{
-    return _impl->_currentNode;
+    return _impl._currentNode;
     }
 
 //    void clearNode();
 
 private:
-    std::shared_ptr<ParamNode> _impl{};
+    ParamNode _impl{};
 
 };
 } // namespace ossia 
