@@ -41,11 +41,10 @@ private:
 
   void cleanup()
   {
-    if(_impl->_currentNode.valid())
     if(_impl->_currentNode)
     {
       this->removeListener(this, &Parameter::listen);
-      if(_callbackIt)
+      if(_impl->_currentNode.has_parameter() && _callbackIt)
       {
         _impl->_currentNode.remove_value_callback(_callbackIt);
         //~_callbackIt();
@@ -56,10 +55,8 @@ private:
   // Add remote (e.g. score) callback
   void enableRemoteUpdate()
   {
-    if(_impl->_currentNode.valid())
-    if(_impl->_currentNode)
+    if(_impl->_currentNode.has_parameter())
     {
-
       _callbackIt = _impl->_currentNode.set_value_callback([](void* context, const opp::value& val)
       {
           Parameter* self = reinterpret_cast<Parameter*>(context);
@@ -90,7 +87,7 @@ public:
 
   void cloneFrom(const Parameter& other) {
     _impl = other._impl;
-    if(other->_callbackIt)
+    if(other._callbackIt)
     {
       enableLocalUpdate();
       enableRemoteUpdate();
