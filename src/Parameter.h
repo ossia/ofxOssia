@@ -10,7 +10,7 @@ namespace ossia
 
 /*
  * Class inheriting from ofParameter
- * Listeners (listening to i-score and GUI) are enabled
+ * Listeners (listening to OSCquery client(s) and GUI) are enabled
  * By passing a std::type in argument, the OSSIA type is deduced in the class
  **/
 
@@ -23,7 +23,7 @@ private:
 
   using ossia_type = MatchingType<DataValue>;
 
-  // Listener for the GUI (but called also when i-score sends value)
+  // Listener for the GUI (but called also when OSCquery client(s) send value)
   void listen(DataValue &data)
   {
     // check if the value to be published is not already published
@@ -44,10 +44,9 @@ private:
     if(_impl->_currentNode)
     {
       this->removeListener(this, &Parameter::listen);
-      if(_impl->_currentNode.has_parameter() && _callbackIt)
+      if(_impl->_currentNode.has_parameter()  && _callbackIt)
       {
         _impl->_currentNode.remove_value_callback(_callbackIt);
-        //~_callbackIt();
       }
     }
   }
