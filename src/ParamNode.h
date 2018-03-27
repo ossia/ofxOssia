@@ -27,8 +27,6 @@ public:
   void createNode (const std::string& name)
   {
     _currentNode = _parentNode.create_child(name);
-    // TODO : do we still need this next one ? I assumed not
-    // _currentNode->about_to_be_deleted.connect<ParamNode, &ParamNode::cleanup>(this);
   }
 
   template<typename DataValue>
