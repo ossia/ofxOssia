@@ -9,3 +9,4 @@ libs/build
 */bin
 */obj
 */Makefile.user
+libossia.a

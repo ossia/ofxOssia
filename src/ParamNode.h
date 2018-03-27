@@ -15,19 +15,18 @@ public:
   opp::node _currentNode{};
 
   /**
-   * Methods to communicate via OSSIA to i-score
+   * Methods to communicate via OSSIA to score or other OSCquery clients
    **/
-  // Creates the node without setting domain
+
   void cleanup(const opp::node)
   {
     _currentNode.~node();
   }
 
+  // Creates the node without setting domain
   void createNode (const std::string& name)
   {
     _currentNode = _parentNode.create_child(name);
-    // TODO : do we still need this next one ? I assumed not
-    // _currentNode->about_to_be_deleted.connect<ParamNode, &ParamNode::cleanup>(this);
   }
 
   template<typename DataValue>
@@ -134,12 +133,9 @@ public:
 
   ~ParamNode ()
   {
-    if (_currentNode.valid() && _parentNode.valid())
+    if (_currentNode && _parentNode)
     {
-      std::vector<opp::node> children_list;
-      children_list = _currentNode.get_children();
-      for (auto child : children_list)
-           _currentNode.remove_child(child.get_name());
+      _currentNode.remove_children();
       _parentNode.remove_child(_currentNode.get_name());
     }
   }

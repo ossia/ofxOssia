@@ -13,7 +13,7 @@ void InteractiveCircle::setup(ossia::ParameterGroup _parent_node){
     _circleParams.setup(_parent_node, "circle");
     
     _sizeParams.setup(_circleParams, "sizeParams");
-    _radius.setup(_sizeParams,"radius",ofRandomf()*99+1,1.,100.);
+    _radius.setup(_sizeParams,"radius",ofRandomf()*50+51,1.,100.);
     _position.setup(_sizeParams,
                     "position",
                     ofVec2f(ofRandomWidth(), ofRandomHeight()),
