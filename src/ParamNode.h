@@ -136,8 +136,6 @@ public:
     if (_currentNode && _parentNode)
     {
       _currentNode.remove_children();
-      //for (auto child : children_list)
-      //     if(child) _currentNode.remove_child(child.get_name());
       _parentNode.remove_child(_currentNode.get_name());
     }
   }
