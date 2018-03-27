@@ -135,7 +135,7 @@ public:
   {
     if (_currentNode && _parentNode)
     {
-      _currentNode.remove_children();
+      //_currentNode.remove_children();
       _parentNode.remove_child(_currentNode.get_name());
     }
   }

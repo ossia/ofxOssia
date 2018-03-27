@@ -55,7 +55,7 @@ private:
   // Add remote (e.g. score) callback
   void enableRemoteUpdate()
   {
-    if(_impl->_currentNode.has_parameter())
+    if(_impl->_currentNode) //.has_parameter())
     {
       _callbackIt = _impl->_currentNode.set_value_callback([](void* context, const opp::value& val)
       {
@@ -83,6 +83,7 @@ public:
   Parameter()
   {
     _impl = std::make_shared<ParamNode> ();
+    cout << "Create Parameter" << _impl.use_count() << " : " << _impl->_currentNode.get_name() << " from parent: " << _impl->_parentNode.get_name() << endl;
   }
 
   void cloneFrom(const Parameter& other) {
@@ -126,7 +127,9 @@ public:
 
   ~Parameter()
   {
+    cout << "Delete Parameter" << _impl.use_count() << " : " << _impl->_currentNode.get_name() << " from parent: " << _impl->_parentNode.get_name() << " / Has Parameter ? " << _impl->_currentNode.has_parameter() << endl;
     cleanup();
+    //_impl.reset();
   }
 
   // creates node and sets the name, the data

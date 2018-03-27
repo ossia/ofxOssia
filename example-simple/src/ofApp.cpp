@@ -17,9 +17,12 @@ void ofApp::setup(){
     ossia.setup("ofxTest", 3124, 7539);
 
     // here we setup 10 InteractiveCircle instances
-    for (int i=0 ; i<10 ; i++){
+    for (int i=0 ; i<2 ; i++){
+        cout << "Create Generic circle #" << i << endl;
         InteractiveCircle circle;
+        cout << "Setup Generic circle #" << i  << endl;
         circle.setup(ossia.get_root_node());
+        cout << "Copy Generic circle #" << i << " to vector" << endl;
         circles.push_back(circle);
     }
 
@@ -56,7 +59,7 @@ void ofApp::keyPressed(int key){
         }
     }
     else if (key == '-'){
-        for (int i=0 ; i<5 && circles.size()>1 ; i++){
+        for (int i=0 ; i<1 && circles.size()>1 ; i++){
             circles.pop_back();
         }
     }
