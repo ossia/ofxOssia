@@ -29,7 +29,6 @@ template<> struct MatchingType<float> {
                              opp::node _parent)
        {return _parent.create_float(_name);}
 
-
   static bool is_valid(opp::value v){ return v.is_float(); }
 
   static ofx_type convertFromOssia(const opp::value& v)

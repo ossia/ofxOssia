@@ -18,7 +18,7 @@ template <class DataValue>
 class Parameter : public ofParameter<DataValue>
 {
 private:
-  std::shared_ptr<ParamNode> _impl{};
+  std::shared_ptr<ParamNode> _impl;
   opp::callback_index _callbackIt;
 
   using ossia_type = MatchingType<DataValue>;
@@ -79,10 +79,51 @@ private:
   }
 
 public:
-  Parameter()
+  Parameter():
+      _impl{std::make_shared<ParamNode>()}
   {
-    _impl = std::make_shared<ParamNode> ();
+    //_impl = std::make_shared<ParamNode> ();
     cout << "Create Parameter" << _impl.use_count() << " : " << _impl->_currentNode.get_name() << " from parent: " << _impl->_parentNode.get_name() << endl;
+  }
+
+  // creates node and sets the name, the data
+  Parameter(
+      ossia::ParameterGroup & parentNode,
+      const std::string& name,
+      DataValue data):
+      _impl{std::make_shared<ParamNode>()}
+  {
+    //_impl = std::make_shared<ParamNode> ();
+    _impl->_parentNode = parentNode.getNode();
+    _impl->createNode(name, data);
+    cout << "Create Parameter" << _impl.use_count() << " : " << _impl->_currentNode.get_name() << " from parent: " << _impl->_parentNode.get_name() << endl;
+
+    enableLocalUpdate();
+    enableRemoteUpdate();
+    this->set(name, data);
+
+    parentNode.add(*this);
+    return *this;
+  }
+
+  // creates node and sets the name, the data, the minimum and maximum value (for the gui)
+  Parameter(
+      ossia::ParameterGroup & parentNode,
+      const std::string& name,
+      DataValue data, DataValue min, DataValue max):
+      _impl{std::make_shared<ParamNode>()}
+  {
+    //_impl = std::make_shared<ParamNode> ();
+    _impl->_parentNode = parentNode.getNode();
+    _impl->createNode(name,data,min,max);
+    cout << "Create Parameter" << _impl.use_count() << " : " << _impl->_currentNode.get_name() << " from parent: " << _impl->_parentNode.get_name() << endl;
+
+    enableLocalUpdate();
+    enableRemoteUpdate();
+    this->set(name, data, min, max);
+
+    parentNode.add(*this);
+    return *this;
   }
 
   void cloneFrom(const Parameter& other) {

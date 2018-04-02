@@ -11,6 +11,8 @@ void ofApp::setup(){
     _gui.setup("Gui");
     _gui.setPosition(0 , 0);
 
+    cout << "Start Setup " << endl;
+
     // setup ofxOssia, by default it uses oscquery protocol on ports 3456 and 5678
     // ossia.setup();
     // but specific name and ports can be provided:
@@ -19,11 +21,14 @@ void ofApp::setup(){
     // here we setup 10 InteractiveCircle instances
     for (int i=0 ; i<2 ; i++){
         cout << "Create Generic circle #" << i << endl;
-        InteractiveCircle circle;
+        InteractiveCircle circle{ossia.get_root_node()};
+         /*
         cout << "Setup Generic circle #" << i  << endl;
         circle.setup(ossia.get_root_node());
+         */
         cout << "Copy Generic circle #" << i << " to vector" << endl;
         circles.push_back(circle);
+
     }
 
     // then add all OSSIA elements (aka nodes) to the _gui
@@ -61,6 +66,7 @@ void ofApp::keyPressed(int key){
     else if (key == '-'){
         for (int i=0 ; i<1 && circles.size()>1 ; i++){
             circles.pop_back();
+            cout << " one circle less  \n";
         }
     }
 }

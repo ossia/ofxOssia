@@ -13,6 +13,9 @@
 class InteractiveCircle {
     
 public :
+
+    InteractiveCircle(){}
+    InteractiveCircle(ossia::ParameterGroup _parent_node);
     
 //    ~InteractiveCircle(){
 //        _colorParams.clearChild();
@@ -20,7 +23,8 @@ public :
 //        _circleParams.clearChild();
 //    }
     
-    void setup(ossia::ParameterGroup _parent_node);
+    InteractiveCircle& setup(ossia::ParameterGroup _parent_node);
+
     void update();
     void draw();
     
@@ -29,12 +33,15 @@ public :
     }
     
 private:
-    ossia::Parameter<float> _radius;
-    ossia::Parameter<ofVec2f> _position;
-    ossia::Parameter<bool> _fill;
-    ossia::Parameter<ofColor> _color;
-    
-    ossia::ParameterGroup _colorParams;
-    ossia::ParameterGroup _sizeParams;
+
     ossia::ParameterGroup _circleParams;
+
+        ossia::ParameterGroup _sizeParams;
+            ossia::Parameter<float> _radius;
+            ossia::Parameter<ofVec2f> _position;
+
+        ossia::ParameterGroup _colorParams;
+            ossia::Parameter<ofColor> _color;
+            ossia::Parameter<bool> _fill;
+
 };

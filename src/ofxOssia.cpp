@@ -12,18 +12,19 @@
 
 void ofxOssia::setup()
 {
+    cout << "Setup default device \n";
     _device.setup(default_device_name, 3456, 5678);
-    _root_node.setup(_device.get_root_node(), default_device_name);
+    _root_node.setup(_device);
 
 }
 
 void ofxOssia::setup(std::string localname,
                      int localportOSC, int localPortWS)
 {
-
+    cout << "Setup device " <<  localname << " with ports OSC: " << localportOSC << " & WS: " << localPortWS << "\n";
     // declare a distant program as an OSCQuery device
     _device.setup(localname, localportOSC, localPortWS);
-    _root_node.setup(_device.get_root_node(), localname);
+    _root_node.setup(_device);
 }
 
 

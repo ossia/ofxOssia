@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ossia-cpp98.hpp>
+#include "ofxOssia.h"
 #include "OssiaTypes.h"
 
 namespace ossia { 
@@ -11,8 +12,8 @@ namespace ossia {
 
 class ParamNode {
 public:
-  opp::node _parentNode{};
-  opp::node _currentNode{};
+  opp::node _parentNode;
+  opp::node _currentNode;
 
   /**
    * Methods to communicate via OSSIA to score or other OSCquery clients
@@ -129,13 +130,36 @@ public:
     }
   }
 
-  ParamNode () = default;
+  ParamNode() = default;
+
+  ParamNode(opp::oscquery_server& dev):
+      _parentNode{},
+      _currentNode{dev.get_root_node()}
+  {
+      std::cout << "Create root Node ParamNode " << _currentNode.get_name() << "\n";
+  }
+
+  ParamNode(opp::node parentNode,
+             const std::string& name):
+      _parentNode{parentNode},
+      _currentNode{_parentNode.create_child(name)}
+  {
+      std::cout << "Create ParamNode " << name << " from  parent: " << parentNode.get_name() << "\n";
+  }
+
+
+  ParamNode(const ParamNode&) = default;
+  ParamNode(ParamNode&&) = default;
+  ParamNode& operator=(const ParamNode&) = default;
+  ParamNode& operator=(ParamNode&&) = default;
 
   ~ParamNode ()
+
   {
     if (_currentNode && _parentNode)
     {
-      //_currentNode.remove_children();
+      cout << " -- Deleting ParamNode: " << _currentNode.get_name() << '\n';
+      _currentNode.remove_children();
       _parentNode.remove_child(_currentNode.get_name());
     }
   }

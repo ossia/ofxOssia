@@ -8,15 +8,13 @@
 #include <ossia-cpp98.hpp>
 #include "Parameter.h"
 
-#define default_device_name "ofxOssia"
+#define default_device_name "ofxOssiaDevice"
 
 class ofxOssia {
 
 public:
     ofxOssia():
-        _device(){
-        _root_node.setup (_device.get_root_node(), default_device_name);
-    }
+        _device(){}
 
     /**
      * default setup for ofxOssia. Create a root node with oscquery protocol on port 3456 for OSC and 5678 for WS

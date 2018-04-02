@@ -8,7 +8,28 @@
 
 #include "InteractiveCircle.h"
 
-void InteractiveCircle::setup(ossia::ParameterGroup _parent_node){
+InteractiveCircle::InteractiveCircle(ossia::ParameterGroup _parent_node):
+    _circleParams{_parent_node, "circle"},
+
+    _sizeParams{_circleParams, "sizeParams"},
+    _radius{_sizeParams,"radius",ofRandomf()*50+51,1.,100.},
+    _position{_sizeParams,
+                    "position",
+                    ofVec2f(ofRandomWidth(), ofRandomHeight()),
+                    ofVec2f(0., 0.), // Min
+                    ofVec2f(ofGetWidth(), ofGetHeight())}, // Max
+
+     _colorParams{_circleParams, "colorParams"},
+     _color{_colorParams,
+                "color",
+                ofColor(ofRandom(255), ofRandom(255), ofRandom(255), 255.),
+                ofColor(0., 0., 0., 0.),
+                ofColor(255., 255., 255., 255.)},
+
+     _fill{_colorParams,"fill",false}
+{}
+
+InteractiveCircle& InteractiveCircle::setup(ossia::ParameterGroup _parent_node){
     
     _circleParams.setup(_parent_node, "circle");
     
@@ -28,6 +49,8 @@ void InteractiveCircle::setup(ossia::ParameterGroup _parent_node){
                 ofColor(255., 255., 255., 255.));
 
      _fill.setup(_colorParams,"fill",false);
+
+     return *this;
 
 }
 
