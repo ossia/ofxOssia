@@ -72,6 +72,9 @@ public:
   int to_int() const;
   float to_float() const;
   bool to_bool() const;
+  vec2f to_vec2f() const;
+  vec3f to_vec3f() const;
+  vec4f to_vec4f() const;
   std::vector<opp::value> to_list() const;
   std::string to_string() const;
 
@@ -109,7 +112,7 @@ private:
 
 typedef void (*value_callback)(void*, const opp::value&);
 
-struct callback_index {
+struct OSSIA_EXPORT callback_index {
     callback_index();
     ~callback_index();
     callback_index(const callback_index&);
@@ -121,7 +124,7 @@ struct callback_index {
 
     struct impl;
     impl* index;
-    bool active = false;
+
 };
 
 class OSSIA_EXPORT node
@@ -198,7 +201,7 @@ public:
   node create_vec4f(std::string addr);
 
   node create_string(std::string addr);
-  
+
   node create_buffer(std::string addr);
   node create_filepath(std::string addr);
 
@@ -228,7 +231,7 @@ public:
   opp::value fetch_value() const;
 
   callback_index set_value_callback(value_callback c, void* ctx);
-  void remove_value_callback(callback_index id);
+  void remove_value_callback(callback_index idx);
 
   node& set_min(opp::value min);
   opp::value get_min() const;

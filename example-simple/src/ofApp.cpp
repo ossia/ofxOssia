@@ -14,7 +14,7 @@ void ofApp::setup(){
     // setup ofxOssia, by default it uses oscquery protocol on ports 3456 and 5678
     // ossia.setup();
     // but specific name and ports can be provided:
-    ossia.setup("ofxTest", 3124, 7539);
+    ossia.setup("ofxOssiaTest", 3124, 7539);
 
     // here we setup 10 InteractiveCircle instances
     for (int i=0 ; i<10 ; i++){
