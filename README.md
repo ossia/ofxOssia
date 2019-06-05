@@ -1,5 +1,7 @@
 # ofxOSSIA
 
+**This project is outdated and not maintained anymore. Please look at [ofxOscQuery](https://github.com/bltzr/ofxOscQuery) if you're looking for a quick and convenient way to add OscQuery connectivity to your OpenFrameworks project.**
+
 ## Introduction
 
 This openFrameworks addon is a wrapper for the [OSSIA library](https://github.com/OSSIA/libossia) , 
